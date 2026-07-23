@@ -3,9 +3,9 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -54,6 +54,10 @@ model UserProfile {
   name        String
   email       String
   department  String?
+
+  strengthTags    Json?
+  personalityTags Json?
+  funTags         Json?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
