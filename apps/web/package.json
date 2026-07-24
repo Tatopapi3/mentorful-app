@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "synthetic": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-synthetic-culture-scan.ts",
     "synthetic:dry": "npm run synthetic -- --dry-run",
     "synthetic:clean": "npm run synthetic -- --clean",
