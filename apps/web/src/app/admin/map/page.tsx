@@ -21,7 +21,14 @@ export default async function AdminMapPage() {
     include: { _count: { select: { users: true } } },
   });
 
-  const school = schools.sort((a, b) => b._count.users - a._count.users)[0];
+  // Annotate the sort params explicitly. Vercel's build doesn't infer these
+  // from the Prisma result the way the local build does (see note at bottom),
+  // so derive the element type from the query result rather than relying on
+  // contextual inference.
+  type SchoolWithCount = (typeof schools)[number];
+  const school = schools.sort(
+    (a: SchoolWithCount, b: SchoolWithCount) => b._count.users - a._count.users
+  )[0];
 
   if (!school) {
     return (
@@ -69,7 +76,10 @@ export default async function AdminMapPage() {
       })
     : [];
 
-  const edges = pairings.map((p) => ({
+  // Same reasoning as the sort above: annotate from the query result type so
+  // the strict build doesn't fall back to implicit any on the callback param.
+  type PairingRow = (typeof pairings)[number];
+  const edges = pairings.map((p: PairingRow) => ({
     id: p.id,
     source: p.hostId,
     target: p.visitorId,
