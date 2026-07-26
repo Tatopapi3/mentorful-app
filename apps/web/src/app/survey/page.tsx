@@ -44,18 +44,36 @@ export default function SurveyPage() {
 
   useEffect(() => {
     const supabase = createClient();
+    let settled = false;
+
+    // Never spin forever: if the read hasn't resolved in time, surface an error
+    // rather than an infinite "Loading…".
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        setLoadError(
+          "The survey is taking too long to load. Check your connection and refresh the page."
+        );
+      }
+    }, 15000);
+
     supabase
       .from("survey_items")
       .select("id, position, dimension, reverse, text")
       .eq("active", true)
       .order("position")
       .then(({ data, error }) => {
+        settled = true;
+        clearTimeout(timeout);
         if (error) {
           setLoadError(error.message);
           return;
         }
+        // An RLS denial returns an empty array with no error, so [] is a real
+        // outcome the render must handle — not a perpetual loading state.
         setItems((data ?? []) as Item[]);
       });
+
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
@@ -96,14 +114,35 @@ export default function SurveyPage() {
     return (
       <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
         <p style={{ color: "red" }}>Could not load survey: {loadError}</p>
+        <p style={{ marginTop: 8 }}>
+          Please refresh the page. If it keeps happening, contact the person who shared this link.
+        </p>
       </main>
     );
   }
 
-  if (!items || !hydrated || sections.length === 0) {
+  // Still fetching (items null) or hydrating localStorage — a genuine loading state.
+  if (items === null || !hydrated) {
     return (
       <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
         <p>Loading…</p>
+      </main>
+    );
+  }
+
+  // Fetch resolved but returned nothing usable (empty table, or an RLS denial
+  // which returns [] with no error). Show a clear message — never keep spinning.
+  if (items.length === 0 || sections.length === 0) {
+    return (
+      <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
+        <h1 style={{ fontSize: 20 }}>Survey unavailable</h1>
+        <p style={{ marginTop: 8 }}>
+          No survey questions were returned, so the scan can’t be shown right now. The survey may not
+          be published yet, or the questions couldn’t be read.
+        </p>
+        <p style={{ marginTop: 8 }}>
+          Please refresh, and if it keeps happening, contact the person who shared this link.
+        </p>
       </main>
     );
   }

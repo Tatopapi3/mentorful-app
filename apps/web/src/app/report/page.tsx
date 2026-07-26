@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { loadReportStats } from "@/lib/report/data";
 import { buildFindings } from "@/lib/report/findings";
 import { SLIDE_COUNT } from "@/lib/report/deck";
@@ -16,15 +14,13 @@ import ActionsSlide from "./slides/ActionsSlide";
  *
  * Server component: the service-key read and the whole stats computation happen
  * here, and only the aggregate reaches the slides. No response row is ever
- * serialized to the client.
+ * serialized to the client — only dimension-level aggregates.
  *
- * Signed-in only. The gate runs before loadReportStats, so an anonymous request
- * never reaches the service-key read at all — the redirect is the cheap path,
- * not an afterthought applied to already-fetched data.
- *
- * TODO: this is authentication, not authorization — any signed-in user can read
- * any school's aggregate. Scope to the user's school membership (and to
- * leadership roles) once memberships are modelled.
+ * ⚠️ DEMO/PILOT: this page is intentionally PUBLIC (no auth gate) so principals
+ * can open it during a demo and it just works. It currently shows SYNTHETIC data
+ * behind the amber banner. Before any real school's data goes live this MUST be
+ * re-gated (auth + school/role scoping) and the synthetic rows wiped — see the
+ * "Demo/pilot open access" section in CLAUDE.md.
  */
 
 // Reads the DB on every request; never prerender at build time.
@@ -35,15 +31,6 @@ export const metadata = { title: "Culture Scan report" };
 const page: React.CSSProperties = { maxWidth: 1120, margin: "40px auto", padding: 24 };
 
 export default async function ReportPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
   const load = await loadReportStats();
 
   if (load.status === "misconfigured") {

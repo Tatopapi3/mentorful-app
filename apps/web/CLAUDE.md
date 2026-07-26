@@ -2,6 +2,21 @@
 
 Next.js 16 (App Router, Turbopack) + React 19 + TypeScript. Part of the `mentorful-app` monorepo; this app lives at `apps/web`.
 
+## ⚠️ Demo/pilot open access — MUST be reverted before real school data goes live
+
+Deployed to Vercel at `app.mentorful.co` for principal demos and friction-free pilot use. During this phase, access is **intentionally loosened**:
+
+- **`/report` is PUBLIC** — the auth gate was removed so a principal can open the link and it just works. It currently renders **synthetic demo data** behind an amber banner.
+- **`/survey` is PUBLIC and anonymously submittable** — pilot teachers take the scan with no login. RLS was opened so the `anon` role can read `survey_items` and insert `survey_responses` (guarded: must reference a valid, not-closed survey + an active item; anonymity preserved; one-submission-per-browser is a client-side `localStorage` guard only — bypassable).
+- `/dashboard` and `/admin` remain gated.
+
+**Before any real school's data goes live, ALL of the following are required:**
+1. **Re-gate `/report`** — restore the `getUser()` gate (and add school/role scoping; it was auth-only, never authorization-scoped).
+2. **Wipe the synthetic rows** — `npm run synthetic:clean`, and flip `INCLUDE_SYNTHETIC = false` in `src/lib/report/data.ts`.
+3. **Tighten submission** — revoke or restrict the `anon` INSERT policy on `survey_responses` (back to authenticated, or add real rate-limiting/CAPTCHA; RLS cannot rate-limit, and the `localStorage` guard is trivially bypassed).
+
+The open-access RLS changes are in `scripts/003_demo_open_access.sql`. Reverting them is part of the checklist above.
+
 ## Where we left off (2026-07-21)
 
 - Magic-link auth working end to end: `/login` → email → `/auth/callback` → `/dashboard`.
@@ -17,6 +32,8 @@ Next.js 16 (App Router, Turbopack) + React 19 + TypeScript. Part of the `mentorf
 Schema changes are hand-run SQL, kept in `scripts/*.sql` and numbered. Applied so far:
 - `001_add_synthetic_column.sql` — `survey_responses.synthetic boolean not null default false`, plus an index on `(survey_id, synthetic)`. **Every report query must filter on `synthetic`.**
 - `002_fix_survey_item_resolution.sql` — drops the dead `surveys.item_ids` and adds `surveys.instrument_version`.
+- `003_demo_open_access.sql` — **demo/pilot only.** Opens `anon` SELECT on `survey_items` and guarded `anon` INSERT on `survey_responses`. Must be reverted before real data (see the open-access warning at the top).
+- `004_fix_anon_submit_guard.sql` — **required with 003.** Fixes a bug where 003's insert `WITH CHECK` read `surveys` (which anon can't SELECT), rejecting every anonymous submission. Replaces the check with a `SECURITY DEFINER` function `survey_is_open()`. Revert alongside 003.
 
 ### Item resolution (read before writing report queries)
 
