@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import SiteHeader from "@/components/SiteHeader";
 
 const PROGRESS_KEY = "mentorful:culture-scan-v2:progress";
 const COMPLETED_KEY = "mentorful:culture-scan-v2:completed";
@@ -112,21 +113,27 @@ export default function SurveyPage() {
 
   if (loadError) {
     return (
-      <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-        <p style={{ color: "red" }}>Could not load survey: {loadError}</p>
-        <p style={{ marginTop: 8 }}>
-          Please refresh the page. If it keeps happening, contact the person who shared this link.
-        </p>
-      </main>
+      <>
+        <SiteHeader />
+        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
+          <p style={{ color: "red" }}>Could not load survey: {loadError}</p>
+          <p style={{ marginTop: 8 }}>
+            Please refresh the page. If it keeps happening, contact the person who shared this link.
+          </p>
+        </main>
+      </>
     );
   }
 
   // Still fetching (items null) or hydrating localStorage — a genuine loading state.
   if (items === null || !hydrated) {
     return (
-      <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-        <p>Loading…</p>
-      </main>
+      <>
+        <SiteHeader />
+        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
+          <p>Loading…</p>
+        </main>
+      </>
     );
   }
 
@@ -134,16 +141,19 @@ export default function SurveyPage() {
   // which returns [] with no error). Show a clear message — never keep spinning.
   if (items.length === 0 || sections.length === 0) {
     return (
-      <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-        <h1 style={{ fontSize: 20 }}>Survey unavailable</h1>
-        <p style={{ marginTop: 8 }}>
-          No survey questions were returned, so the scan can’t be shown right now. The survey may not
-          be published yet, or the questions couldn’t be read.
-        </p>
-        <p style={{ marginTop: 8 }}>
-          Please refresh, and if it keeps happening, contact the person who shared this link.
-        </p>
-      </main>
+      <>
+        <SiteHeader />
+        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
+          <h1 style={{ fontSize: 20 }}>Survey unavailable</h1>
+          <p style={{ marginTop: 8 }}>
+            No survey questions were returned, so the scan can’t be shown right now. The survey may
+            not be published yet, or the questions couldn’t be read.
+          </p>
+          <p style={{ marginTop: 8 }}>
+            Please refresh, and if it keeps happening, contact the person who shared this link.
+          </p>
+        </main>
+      </>
     );
   }
 
@@ -195,74 +205,77 @@ export default function SurveyPage() {
   }
 
   return (
-    <main style={{ maxWidth: 640, margin: "40px auto", padding: 24 }}>
-      <p style={{ marginTop: 0 }}>
-        Section {currentSection + 1} of {totalSections}
-      </p>
+    <>
+      <SiteHeader />
+      <main style={{ maxWidth: 640, margin: "40px auto", padding: 24 }}>
+        <p style={{ marginTop: 0 }}>
+          Section {currentSection + 1} of {totalSections}
+        </p>
 
-      <ol style={{ display: "flex", flexDirection: "column", gap: 24, paddingLeft: 20 }}>
-        {currentItems.map((item) => (
-          <li key={item.id}>
-            <p style={{ margin: "0 0 8px" }}>{item.text}</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {SCALE.map((s) => (
-                <label key={s.value} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input
-                    type="radio"
-                    name={item.id}
-                    value={s.value}
-                    checked={answers[item.id] === s.value}
-                    onChange={() =>
-                      setAnswers((prev) => ({ ...prev, [item.id]: s.value }))
-                    }
-                  />
-                  {s.label}
-                </label>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ol>
+        <ol style={{ display: "flex", flexDirection: "column", gap: 24, paddingLeft: 20 }}>
+          {currentItems.map((item) => (
+            <li key={item.id}>
+              <p style={{ margin: "0 0 8px" }}>{item.text}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {SCALE.map((s) => (
+                  <label key={s.value} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                      type="radio"
+                      name={item.id}
+                      value={s.value}
+                      checked={answers[item.id] === s.value}
+                      onChange={() =>
+                        setAnswers((prev) => ({ ...prev, [item.id]: s.value }))
+                      }
+                    />
+                    {s.label}
+                  </label>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ol>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 32,
-        }}
-      >
-        <button
-          type="button"
-          disabled={currentSection === 0}
-          onClick={() => setCurrentSection((s) => s - 1)}
-          style={{ padding: 8, borderRadius: 4 }}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: 32,
+          }}
         >
-          Back
-        </button>
-        {isLast ? (
           <button
             type="button"
-            disabled={!allAnsweredOnScreen || submitting}
-            onClick={handleSubmit}
+            disabled={currentSection === 0}
+            onClick={() => setCurrentSection((s) => s - 1)}
             style={{ padding: 8, borderRadius: 4 }}
           >
-            {submitting ? "Submitting…" : "Submit"}
+            Back
           </button>
-        ) : (
-          <button
-            type="button"
-            disabled={!allAnsweredOnScreen}
-            onClick={() => setCurrentSection((s) => s + 1)}
-            style={{ padding: 8, borderRadius: 4 }}
-          >
-            Next
-          </button>
-        )}
-      </div>
+          {isLast ? (
+            <button
+              type="button"
+              disabled={!allAnsweredOnScreen || submitting}
+              onClick={handleSubmit}
+              style={{ padding: 8, borderRadius: 4 }}
+            >
+              {submitting ? "Submitting…" : "Submit"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={!allAnsweredOnScreen}
+              onClick={() => setCurrentSection((s) => s + 1)}
+              style={{ padding: 8, borderRadius: 4 }}
+            >
+              Next
+            </button>
+          )}
+        </div>
 
-      {submitError && (
-        <p style={{ color: "red", marginTop: 16 }}>{submitError}</p>
-      )}
-    </main>
+        {submitError && (
+          <p style={{ color: "red", marginTop: 16 }}>{submitError}</p>
+        )}
+      </main>
+    </>
   );
 }
