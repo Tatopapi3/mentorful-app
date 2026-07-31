@@ -17,13 +17,25 @@ Deployed to Vercel at `app.mentorful.co` for principal demos and friction-free p
 
 The open-access RLS changes are in `scripts/003_demo_open_access.sql`. Reverting them is part of the checklist above.
 
-## Where we left off (2026-07-26)
+## Where we left off (2026-07-30)
+
+### Open items — read these first
+
+- **`006` is written but NOT applied.** Until it is, v2 and v3 items cannot coexist, so no v3 can be seeded. `005` is applied and confirmed firing.
+- **The `pg_constraint` confirmation has not been run.** `006` is written against the inference that `survey_items_position_key` is a single-column unique on `position` — that name is PostgreSQL's default for `<table>_<column>_key`, and a composite would have been named `survey_items_instrument_version_position_key`. Strong, but unconfirmed. Run the query in the migrations list above before applying.
+- **The Vercel deploy does not reflect `cc540bd`.** The branding, metadata, favicon and light-theme commit is on `main` but not live at `app.mentorful.co`. Anything demoed from the deployed URL still shows the old "Create Next App" titles and the scaffolded dark mode.
+- **The participation floor is not really enforced.** `MIN_RESPONDENTS = 1` in `src/lib/report/data.ts`. The documented rule (>= 30 respondents or 60% of faculty, whichever is higher) is a TODO there — faculty headcount isn't modelled, so today the report opens as soon as any response exists.
+- **`INCLUDE_SYNTHETIC = true`.** Every number on `/report` is generated. Flip it and wipe the synthetic rows before any real school sees the page.
+
+### State
 
 - Magic-link auth working end to end: `/login` → email → `/auth/callback` → `/dashboard`.
 - **Culture Scan v1 → v2 complete.** The instrument is now the 4-dimension social-capital scan (structural / relational / cognitive / efficacy, 26 items, reverse on positions 5/11/21/25). `survey_items.instrument_version = 2`. `surveys` gained a `wave int` column for delta-readiness (baseline vs re-measure). `survey_responses` did **not** change — long format with anonymous respondent token was already correct.
 - **Survey-taking flow works end to end.** `/dashboard` shows a Culture Scan card with status (Not started / In progress / Completed). `/survey` presents the 26 items across 4 sections in dimension order (no dimension header shown — biases answers), Back/Next gated on all items answered, submit writes 26 rows to `survey_responses` in one insert. The flow was verified by live submission during the v2 build, but **those rows no longer exist** — as of 2026-07-21 the only rows in `survey_responses` are the 50 synthetic respondents. Re-take the survey if you need a real row to test the `synthetic = false` path.
-- **Report engine step 1 done: synthetic data + validated math.** 50 synthetic respondents seeded, and the dimension means / Pearson / partial-correlation math is verified. See "Report engine" below. No report UI exists yet.
-- **Next up:** the report engine's **rendering** layer. Four-node partial-correlation network on the four dimensions, plus Tier 1 panels. Must be delta-ready from day one (uses `surveys.wave`). All aggregation runs server-side with the service key — the anon/authenticated role literally cannot read `survey_responses`.
+- **Report engine: synthetic data, validated math, and the deck are all built.** 50 synthetic respondents seeded; dimension means / Pearson / partial-correlation math verified. `/report` renders six 16:9 slides (intro, dimension means, network, efficacy–structure gap, start here, actions) with a PNG/PDF export toolbar. All aggregation runs server-side with the service key — the anon/authenticated role literally cannot read `survey_responses`.
+- **The instrument is frozen and committed**, with a canonical definition and a hash to prove it hasn't drifted. See "The instrument is frozen" above. This is the prerequisite for a meaningful wave-2 delta.
+- **Branding and theme done** (`cc540bd`): shared `SiteHeader` on `/`, `/login`, `/survey`, `/report`; real title/template/description replacing the create-next-app defaults; 256px logo favicon; the scaffolded dark-mode block removed and `color-scheme: light` declared, since the report palette and exported slides are authored for light surfaces. **Not yet live on Vercel** — see open items.
+- **Next up:** apply `006`, get the Vercel deploy current, then implement the real participation floor (needs faculty headcount modelled) and flip `INCLUDE_SYNTHETIC` off with the synthetic rows wiped.
 
 ## Database
 
@@ -34,6 +46,14 @@ Schema changes are hand-run SQL, kept in `scripts/*.sql` and numbered. Applied s
 - `002_fix_survey_item_resolution.sql` — drops the dead `surveys.item_ids` and adds `surveys.instrument_version`.
 - `003_demo_open_access.sql` — **demo/pilot only.** Opens `anon` SELECT on `survey_items` and guarded `anon` INSERT on `survey_responses`. Must be reverted before real data (see the open-access warning at the top).
 - `004_fix_anon_submit_guard.sql` — **required with 003.** Fixes a bug where 003's insert `WITH CHECK` read `surveys` (which anon can't SELECT), rejecting every anonymous submission. Replaces the check with a `SECURITY DEFINER` function `survey_is_open()`. Revert alongside 003.
+- `005_instrument_version_invariant.sql` — **applied 2026-07-30.** A `DEFERRABLE INITIALLY DEFERRED` constraint trigger enforcing that every row with `active = true` shares one `instrument_version`. Confirmed firing with errcode `23514`. This is what makes `active = true` sufficient on its own everywhere — see "Item resolution" below. Adds no table and no new anon-readable surface.
+- `006_position_unique_per_version.sql` — **WRITTEN, NOT YET APPLIED.** Replaces the global `unique (position)` (`survey_items_position_key`) with `unique (instrument_version, position)`. Until this is applied, v2 and v3 items **cannot coexist as rows**, so seeding a v3 fails on the first insert and 005's deferrable swap protects a state the schema can't reach. Apply 005 first. Before applying, confirm the existing constraint really is single-column:
+
+```sql
+select conname, pg_get_constraintdef(oid)
+  from pg_constraint
+ where conrelid = 'public.survey_items'::regclass and contype in ('u','p');
+```
 
 ### Item resolution (read before writing report queries)
 
@@ -41,13 +61,18 @@ Schema changes are hand-run SQL, kept in `scripts/*.sql` and numbered. Applied s
 
 ```sql
 select * from survey_items
- where active and instrument_version = <surveys.instrument_version>
+ where active
  order by position;
 ```
 
-`surveys.item_ids` used to look like it held this, but it was `integer[]` while `survey_items.id` is `uuid` — it could never have referenced an item. Dropped in `002`. If you find code reading it, that code is broken.
+**This supersedes the old rule.** Earlier guidance here said to pin `instrument_version` on every read, because "all active items" would silently span versions the moment a v3 was seeded. That is no longer true: `005` enforces at the database that all active rows share a single `instrument_version`, so `active = true` already identifies exactly one instrument. Pinning the version is now redundant, and the invariant holds even for a caller who forgets — which was the actual failure mode, since a filter every reader has to remember is a filter someone eventually doesn't.
 
-The reason this matters for the report engine: without pinning `instrument_version`, "all active items" silently spans instrument versions the moment a v3 is seeded, and cross-version aggregates look plausible while being wrong.
+Two consequences worth holding onto:
+
+- `order by position` is a **total order** only because of `005`. `006` makes `position` unique per version rather than globally, so if the active set ever spanned two versions the positions would interleave. `005` is what prevents that. The two migrations are load-bearing as a pair.
+- `position` is **presentation order, never identity**. Audited 2026-07-30: report scoring (`src/lib/report/stats.ts`) joins `survey_responses.item_id → survey_items.id` and reads `dimension`/`reverse` off the matched row; the survey flow keys answers by `item.id` and inserts `item_id`. `position` appears only in `ORDER BY` and in deriving section order from the dimension sequence. Keep it that way — anything that looks up an item *by position* breaks the moment a second version exists.
+
+`surveys.item_ids` used to look like it held the item set, but it was `integer[]` while `survey_items.id` is `uuid` — it could never have referenced an item. Dropped in `002`. If you find code reading it, that code is broken.
 
 **Ignore the Prisma/Neon setup in this repo** (`prisma/`, `prisma.config.ts`, `@prisma/*` deps, `DATABASE_URL` in `.env`). Not in use. Do not run migrations or generate a Prisma client.
 
@@ -72,6 +97,32 @@ Seeded in Supabase (v2, social-capital instrument). Items are data, not hardcode
 - `surveys` — has a `wave int` column so the same instrument can be re-run for baseline vs delta measurements without collision.
 - `survey_responses` — **long format**, one row per (respondent, item). `respondent` is a random per-submission uuid, never `auth.uid()`. RLS is **insert-only for authenticated**, with `WITH CHECK (respondent <> auth.uid())` enforcing anonymity at the database. **No SELECT policy** — only the `service_role` key can read responses, so any leadership dashboard must run in a server route using the service key and return dimension-level aggregates only.
 - Report gating: participation floor is >= 30 respondents OR 60% of faculty, whichever is higher.
+
+### The instrument is frozen — canonical definition and hash
+
+The instrument used to exist only as 26 rows in one Supabase project: nothing to review, nothing to diff, nothing to rebuild from. It now has a committed canonical definition, and the DB is downstream of it.
+
+`scripts/seed-culture-scan-items.ts` holds all 26 items as a literal array — position, dimension, framing, reverse, text, scale_min, scale_max, and the **real uuids**, so re-seeding is a rebuild rather than a fork and `survey_responses.item_id` keeps resolving. `active` and `instrument_version` are applied as constants, so the seed structurally cannot emit a mixed-version or half-active bank. Idempotent: rows upsert on primary key.
+
+```
+npm run items          # upsert, then verify
+npm run items:dry      # print the instrument + hash, no DB access
+npm run items:verify   # read-only drift check; exits non-zero on mismatch
+```
+
+**Frozen as of 2026-07-30:**
+
+| | |
+|---|---|
+| instrument_version | `2` |
+| items | 26 (structural 6, relational 9, cognitive 6, efficacy 5) |
+| reverse positions | 5, 11, 21, 25 |
+| canonical form | `mentorful.culture-scan.canonical.v1` |
+| instrument hash | `d9ca364b4feae67af90ab764bd5ed1ef5cfb71f3618dad5a3797eb28b517843d` |
+
+The hash is SHA-256 over every field that determines what a respondent is asked and how it scores: position, dimension, framing, reverse, scale_min, scale_max, text. It excludes `id` (a storage detail) and `active`/`instrument_version` (deployment state, enforced by 005). The exact canonical encoding is documented in the script's `instrumentHash` docstring and was cross-checked against an independent implementation.
+
+**Run `npm run items:verify` before wave 2.** If the hash still reads `d9ca364b…`, the instrument is unchanged and a wave-1 → wave-2 delta measures the school. **If the hash has changed, the instrument drifted and the wave comparison is invalid** — a delta then conflates a change in the school with a change in the questions, and there is no way to separate them after the fact. Record the canonical form alongside the hash; a bare digest means nothing without the recipe that produced it. `CANONICAL_FORM` is itself hashed, so a future change to the recipe moves the number *and* announces itself rather than silently looking like instrument drift.
 
 ### Survey-taking flow (built)
 
@@ -121,7 +172,13 @@ The headline: structural–efficacy goes **.260 → -.036** under partialling.
 
 ### Still to build
 
-Rendering: four-node partial-correlation network + Tier 1 panels, delta-aware via `surveys.wave`. Report gating (>= 30 respondents or 60% of faculty, whichever is higher) is not implemented yet. All aggregation must run server-side with the service key and return dimension-level aggregates only.
+The deck is built — six 16:9 slides in `src/app/report/slides/`, shared shell in `SlideShell.tsx`, layout constants in `src/lib/report/deck.ts`, export in `DeckExport.tsx`. What remains:
+
+- **The real participation floor.** `MIN_RESPONDENTS = 1` today. The rule is >= 30 respondents or 60% of faculty, whichever is higher, and the second half needs faculty headcount modelled first. The `below-floor` branch exists and renders; only the threshold is wrong.
+- **Turning off synthetic data.** `INCLUDE_SYNTHETIC = true` in `src/lib/report/data.ts`; run `npm run synthetic:clean` and flip it.
+- **Delta / wave 2.** The slides are single-wave. `surveys.wave` exists and the instrument hash is in place to prove comparability, but nothing renders a baseline-vs-remeasure comparison yet.
+
+All aggregation must keep running server-side with the service key and return dimension-level aggregates only.
 
 ### The two-axes rule (never merge)
 
