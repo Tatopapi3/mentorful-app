@@ -17,7 +17,7 @@ Deployed to Vercel at `app.mentorful.co` for principal demos and friction-free p
 
 The open-access RLS changes are in `scripts/003_demo_open_access.sql`. Reverting them is part of the checklist above.
 
-## Where we left off (2026-07-21)
+## Where we left off (2026-07-26)
 
 - Magic-link auth working end to end: `/login` → email → `/auth/callback` → `/dashboard`.
 - **Culture Scan v1 → v2 complete.** The instrument is now the 4-dimension social-capital scan (structural / relational / cognitive / efficacy, 26 items, reverse on positions 5/11/21/25). `survey_items.instrument_version = 2`. `surveys` gained a `wave int` column for delta-readiness (baseline vs re-measure). `survey_responses` did **not** change — long format with anonymous respondent token was already correct.
