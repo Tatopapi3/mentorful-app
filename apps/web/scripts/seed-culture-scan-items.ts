@@ -18,11 +18,18 @@
  * no-op. The ids are the ones already live, which is what makes this a rebuild
  * rather than a fork — survey_responses.item_id keeps resolving.
  *
+ * SCHEMA DEPENDENCY. Seeding a *second* instrument version alongside an existing
+ * one requires scripts/006. Before that migration, survey_items carries a global
+ * unique constraint on position alone (survey_items_position_key), so a v3 with
+ * positions 1..N collides with v2 on the first insert. Nothing in this script
+ * assumes position is globally unique — it keys entirely on id — but the DB will
+ * refuse the write until 006 is applied. Re-seeding v2 alone is unaffected.
+ *
  * WAVE COMPARISON. --verify prints a SHA-256 over every field that determines
  * what is asked and how it scores (see instrumentHash). A wave-2 delta is only
- * meaningful against
- * an unchanged instrument, so record the hash with each wave and compare before
- * reading any change as a change in the school rather than in the questions.
+ * meaningful against an unchanged instrument, so record the hash with each wave
+ * and compare before reading any change as a change in the school rather than
+ * in the questions.
  */
 
 import { createHash } from "node:crypto";
@@ -517,8 +524,24 @@ async function checkNoOtherActiveVersion(db: Db): Promise<void> {
 
 async function upsertItems(db: Db): Promise<void> {
   const rows = ITEMS.map(toRow);
+  // Conflict target is the primary key, not (instrument_version, position):
+  // an id that already exists is the same item being rewritten, whereas a
+  // position collision is a genuine error we want surfaced rather than merged.
   const { error } = await db.from(TABLE).upsert(rows, { onConflict: "id" });
-  if (error) throw new Error(`upsert failed: ${error.message}`);
+  if (!error) return;
+
+  // Translate the pre-006 schema failure, which is otherwise just a bare
+  // constraint name and reads as a bug in this script.
+  if (error.message.includes("survey_items_position_key")) {
+    throw new Error(
+      `upsert failed on survey_items_position_key.\n` +
+        `That is the global unique constraint on position alone, which prevents two\n` +
+        `instrument versions from coexisting. Apply scripts/006 to narrow it to\n` +
+        `(instrument_version, position), then re-run.\n` +
+        `Original: ${error.message}`
+    );
+  }
+  throw new Error(`upsert failed: ${error.message}`);
 }
 
 // ---------------------------------------------------------------- compare

@@ -55,9 +55,10 @@ function serviceClient(url: string, key: string) {
 type Db = ReturnType<typeof serviceClient>;
 
 async function fetchItems(db: Db): Promise<ReportItem[]> {
-  // TODO: once surveys.instrument_version exists, pin this to the survey's
-  // version instead of "every active item" — otherwise a future v3 instrument
-  // silently blends into these aggregates.
+  // active = true is sufficient on its own: scripts/005 enforces that all active
+  // rows share one instrument_version, so this can never blend a future v3 into
+  // the aggregates. The invariant lives in the database rather than in a filter
+  // every caller has to remember.
   const { data, error } = await db
     .from("survey_items")
     .select("id, position, dimension, reverse")
