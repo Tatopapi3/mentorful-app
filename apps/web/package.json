@@ -11,7 +11,10 @@
     "synthetic": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-synthetic-culture-scan.ts",
     "synthetic:dry": "npm run synthetic -- --dry-run",
     "synthetic:clean": "npm run synthetic -- --clean",
-    "synthetic:stats": "npm run synthetic -- --stats-only"
+    "synthetic:stats": "npm run synthetic -- --stats-only",
+    "items": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-culture-scan-items.ts",
+    "items:dry": "npm run items -- --dry-run",
+    "items:verify": "npm run items -- --verify"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
