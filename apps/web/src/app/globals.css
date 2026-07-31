@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/*
+ * Palette and type ported from the app-screens prototype. Values are copied
+ * verbatim from its :root block — do not re-derive them by eye.
+ */
 :root {
   /* The app is light-only on purpose: the report palette (src/lib/report/svg.ts)
      and the exported 16:9 slides are authored for light surfaces. Declaring
@@ -7,24 +11,57 @@
      scrollbars light on a dark-mode OS, and stops mobile browsers from
      auto-darkening the page. */
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #171717;
+
+  --navy: #16283c;
+  --navy-deep: #0e1b29;
+  --paper: #faf7f2;
+  --card: #fffefb;
+  --paper-2: #f1ece3;
+  --teal: #00897b;
+  --teal-dk: #00695c;
+  --teal-bg: #e6f2f0;
+  --amber: #c8500a;
+  --amber-bg: #fdf0e7;
+  --ink: #2c2416;
+  --muted: #8b8377;
+  --line: rgba(44, 36, 22, 0.13);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* Shared site header — see src/components/SiteHeader.tsx */
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Small uppercase label. */
+.mono {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- header */
 
 .site-header {
   display: flex;
@@ -42,6 +79,271 @@ body {
 
 .site-wordmark {
   font-family: var(--font-serif), Georgia, "Times New Roman", serif;
-  font-size: 22px;
+  font-weight: 700;
+  font-size: 19px;
   line-height: 1;
+}
+
+/* ---------------------------------------------------------------- shared */
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 13px 24px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--teal-dk);
+}
+
+.btn:disabled {
+  background: #d6d1c7;
+  color: #9a9287;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--teal);
+  border: 1.5px solid rgba(0, 137, 123, 0.4);
+}
+
+.btn-ghost:hover {
+  background: var(--teal-bg);
+}
+
+.field {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+/* ---------------------------------------------------------------- landing */
+
+.land-hero {
+  background: var(--navy);
+  color: #fff;
+  padding: 80px 0 88px;
+}
+
+.land-hero h1 {
+  color: #fff;
+  font-size: clamp(30px, 3.6vw, 44px);
+  max-width: 640px;
+  margin-bottom: 18px;
+}
+
+.land-hero p {
+  color: #b9cbd9;
+  font-size: 18px;
+  max-width: 520px;
+  margin: 0;
+}
+
+.land-cta {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.land-demo {
+  padding-top: 52px;
+  padding-bottom: 70px;
+}
+
+.demo-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.demo {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.demo:hover {
+  border-color: var(--teal);
+}
+
+.demo b {
+  display: block;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.demo span {
+  font-size: 13.5px;
+  color: #6b6459;
+}
+
+/* ---------------------------------------------------------------- auth */
+
+/* The prototype reserved 46px for its screen-switcher bar; here that space is
+   the shared SiteHeader, so the offset is the same. */
+.auth {
+  min-height: calc(100vh - 62px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 40px;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 390px;
+}
+
+.auth-box h1 {
+  font-size: 29px;
+  margin-bottom: 10px;
+}
+
+.auth-box .sub {
+  color: #6b6459;
+  font-size: 16px;
+  margin-bottom: 28px;
+}
+
+.auth-label {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 7px;
+}
+
+.auth-right {
+  background: var(--navy);
+  color: #fff;
+  padding: 56px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-right h2 {
+  color: #fff;
+  font-size: 24px;
+  margin-bottom: 16px;
+  max-width: 340px;
+}
+
+.auth-right p {
+  color: #a6baca;
+  font-size: 15.5px;
+  max-width: 360px;
+  margin: 0;
+}
+
+.steps-mini {
+  margin-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.steps-mini div {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  gap: 13px;
+  font-size: 15px;
+  color: #c3d3df;
+}
+
+.steps-mini i {
+  font-style: normal;
+  color: var(--amber);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  padding-top: 3px;
+}
+
+.help {
+  font-size: 14px;
+  color: #6b6459;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.help a,
+.auth-right a {
+  color: var(--teal);
+}
+
+.auth-right a {
+  color: #fff;
+}
+
+.sent-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--teal-bg);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.auth-error {
+  color: #b3261e;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.auth-status {
+  color: var(--teal-dk);
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+@media (max-width: 860px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+  .auth-right {
+    order: -1;
+    padding: 36px 28px;
+  }
+  .demo-row {
+    grid-template-columns: 1fr 1fr;
+  }
 }

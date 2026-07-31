@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Lora, Public_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Type system ported from the app-screens prototype: Lora for headings and the
+// wordmark, Public Sans for body, JetBrains Mono for small uppercase labels.
+// Geist was create-next-app scaffolding and was referenced by nothing.
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Wordmark face. Only used by the header wordmark today.
-const instrumentSerif = Instrument_Serif({
+const lora = Lora({
   variable: "--font-serif",
-  weight: "400",
+  weight: ["400", "600", "700"],
+  subsets: ["latin"],
+});
+
+const publicSans = Public_Sans({
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  weight: ["400", "500"],
   subsets: ["latin"],
 });
 
@@ -40,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

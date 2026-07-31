@@ -4,25 +4,40 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import SiteHeader from "@/components/SiteHeader";
 
+/**
+ * Login and check-your-email screens, ported from the app-screens prototype.
+ *
+ * The prototype repeated the logo inside the left column; here the shared
+ * SiteHeader sits above both screens instead, so the mark isn't rendered twice.
+ * All other copy is verbatim, except the address on the sent screen, which is
+ * the one the person actually typed rather than the prototype's placeholder.
+ */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
   const [error, setError] = useState<string | null>(null);
+  // Separate from `status` so a failed resend doesn't drop the person back to
+  // the form — they still have a valid link from the first send.
+  const [resend, setResend] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function sendLink(address: string) {
+    const supabase = createClient();
+    return supabase.auth.signInWithOtp({
+      email: address,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("sending");
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    const { error } = await sendLink(email);
 
     if (error) {
       setStatus("error");
@@ -30,17 +45,83 @@ export default function LoginPage() {
       return;
     }
 
+    setResend("idle");
     setStatus("sent");
+  }
+
+  async function handleResend() {
+    setResend("sending");
+    const { error } = await sendLink(email);
+    setResend(error ? "error" : "sent");
+  }
+
+  function handleStartOver() {
+    // Keep the address in the field — "wrong address?" means correct it, not
+    // retype it from scratch.
+    setStatus("idle");
+    setResend("idle");
+    setError(null);
   }
 
   if (status === "sent") {
     return (
       <>
         <SiteHeader />
-        <main style={{ maxWidth: 400, margin: "80px auto", padding: 24 }}>
-          <h1>Check your email</h1>
-          <p>We sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
-        </main>
+        <div className="auth">
+          <div className="auth-left">
+            <div className="auth-box">
+              <div className="sent-icon" aria-hidden>
+                ✉
+              </div>
+              <h1>Check your email</h1>
+              <p className="sub">
+                A sign-in link is on its way to <strong>{email}</strong>. It works once and
+                expires in an hour.
+              </p>
+              <p style={{ fontSize: 15, color: "#6B6459" }}>
+                Nothing after a minute? School spam filters are the usual culprit. Look for a
+                message from Mentorful, or send another link.
+              </p>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{ marginTop: 10 }}
+                onClick={handleResend}
+                disabled={resend === "sending"}
+              >
+                {resend === "sending" ? "Sending…" : "Send another link"}
+              </button>
+              {resend === "sent" && (
+                <p className="auth-status">Another link is on its way.</p>
+              )}
+              {resend === "error" && (
+                <p className="auth-error">
+                  {"That didn't send. Wait a moment and try again — your first link should still work."}
+                </p>
+              )}
+              <p className="help">
+                Wrong address?{" "}
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleStartOver();
+                  }}
+                >
+                  Start over
+                </a>
+              </p>
+            </div>
+          </div>
+          <div className="auth-right">
+            <h2>{"Still can't get in?"}</h2>
+            <p>
+              Some school districts block outside links entirely. If nothing arrives after two
+              attempts, email <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>{" "}
+              {"and we'll sort it out with your administrator. You won't be the only one."}
+            </p>
+          </div>
+        </div>
       </>
     );
   }
@@ -48,29 +129,60 @@ export default function LoginPage() {
   return (
     <>
       <SiteHeader />
-      <main style={{ maxWidth: 400, margin: "80px auto", padding: 24 }}>
-        <h1>Sign in</h1>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4 }}
-          />
-          <button
-            type="submit"
-            disabled={status === "sending"}
-            style={{ padding: 8, borderRadius: 4 }}
-          >
-            {status === "sending" ? "Sending…" : "Send magic link"}
-          </button>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-        </form>
-      </main>
+      <div className="auth">
+        <div className="auth-left">
+          <div className="auth-box">
+            <h1>Sign in with your school email</h1>
+            <p className="sub">{"No password. We'll email you a link that signs you in."}</p>
+            <form onSubmit={handleSubmit}>
+              <label className="mono auth-label" htmlFor="email">
+                School email
+              </label>
+              <input
+                id="email"
+                className="field"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@yourschool.org"
+                autoComplete="email"
+              />
+              <button
+                type="submit"
+                className="btn"
+                style={{ width: "100%", marginTop: 14 }}
+                disabled={status === "sending"}
+              >
+                {status === "sending" ? "Sending…" : "Send my link"}
+              </button>
+              {error && <p className="auth-error">{error}</p>}
+            </form>
+            <p className="help">
+              {"Your school set up your account, so there's nothing to create. Can't get in? "}
+              <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>
+            </p>
+          </div>
+        </div>
+        <div className="auth-right">
+          <h2>{"You're here because your school is running a Culture Scan."}</h2>
+          <p>{"It takes about six minutes, once. Here's the whole thing:"}</p>
+          <div className="steps-mini">
+            <div>
+              <i>01</i>
+              <span>Answer 26 questions about the school around you.</span>
+            </div>
+            <div>
+              <i>02</i>
+              <span>Your answers are unlinked from you the moment you submit.</span>
+            </div>
+            <div>
+              <i>03</i>
+              <span>Your school gets the combined picture. Nobody gets yours.</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
