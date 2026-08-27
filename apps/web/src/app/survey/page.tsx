@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import SiteHeader from "@/components/SiteHeader";
@@ -29,7 +29,26 @@ type Progress = {
   respondent: string;
   currentSection: number;
   answers: Record<string, number>;
+  /** Presentation only: whether the intro screen has been dismissed. Persisted
+   *  so leaving and coming back mid-scan doesn't replay the intro. */
+  started?: boolean;
 };
+
+/**
+ * The six labels break onto two lines in the prototype ("Strongly" / "disagree")
+ * so the boxes stay a uniform height. Every label is one or two words, so
+ * splitting on the space reproduces it exactly — and the accessible name is
+ * still the full "Strongly disagree", since a <br> is whitespace to a screen
+ * reader.
+ */
+function twoLine(label: string) {
+  return label.split(" ").map((word, i) => (
+    <Fragment key={word}>
+      {i > 0 && <br />}
+      {word}
+    </Fragment>
+  ));
+}
 
 export default function SurveyPage() {
   const router = useRouter();
@@ -42,6 +61,7 @@ export default function SurveyPage() {
   const [respondent, setRespondent] = useState<string>("");
   const [currentSection, setCurrentSection] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -85,6 +105,7 @@ export default function SurveyPage() {
         setRespondent(p.respondent);
         setCurrentSection(p.currentSection ?? 0);
         setAnswers(p.answers ?? {});
+        setStarted(p.started ?? false);
       } catch {
         const r = crypto.randomUUID();
         setRespondent(r);
@@ -98,9 +119,9 @@ export default function SurveyPage() {
 
   useEffect(() => {
     if (!hydrated || !respondent) return;
-    const p: Progress = { respondent, currentSection, answers };
+    const p: Progress = { respondent, currentSection, answers, started };
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
-  }, [hydrated, respondent, currentSection, answers]);
+  }, [hydrated, respondent, currentSection, answers, started]);
 
   const sections = useMemo(() => {
     if (!items) return [] as string[];
@@ -158,10 +179,68 @@ export default function SurveyPage() {
   }
 
   const totalSections = sections.length;
+
+  if (!started) {
+    return (
+      <>
+        <SiteHeader
+          sticky
+          right={
+            <span className="mono" style={{ color: "var(--muted)" }}>
+              School Culture Scan
+            </span>
+          }
+        />
+        <main className="sv-body sv-intro">
+          <h1>Before you start</h1>
+          <p>
+            Twenty-six questions, about six minutes. There are no right answers, and none of this is
+            about your teaching.
+          </p>
+          <p>
+            We’re asking about the school around you: who you can go to when something goes wrong,
+            whether it’s safe to say a lesson didn’t work, and whether the adults here are pulling in
+            the same direction.
+          </p>
+          <div className="privacy">
+            <b>Your answers are anonymous, structurally.</b>
+            <p>
+              Not “we promise not to look.” When you submit, your responses are stored against a
+              random code that is never connected to your login. There is no way to trace an answer
+              back to you, including for us. Your principal sees the whole faculty’s pattern and
+              nothing else.
+            </p>
+          </div>
+          <p>
+            Answer for the school as it is right now, not as you hope it will be. The scan runs again
+            later in the year, and the comparison is the part that matters.
+          </p>
+          <button
+            type="button"
+            className="btn"
+            style={{ marginTop: 16 }}
+            onClick={() => setStarted(true)}
+          >
+            Start
+          </button>
+          <p className="sv-fine">
+            You can leave and come back. Your answers stay on this device until you submit.
+          </p>
+        </main>
+      </>
+    );
+  }
+
   const currentDimension = sections[currentSection];
   const currentItems = items.filter((i) => i.dimension === currentDimension);
   const allAnsweredOnScreen = currentItems.every((i) => answers[i.id] != null);
   const isLast = currentSection === totalSections - 1;
+
+  const remaining = currentItems.filter((i) => answers[i.id] == null).length;
+  const remainingLabel =
+    remaining === 0
+      ? "All answered"
+      : `${remaining} question${remaining > 1 ? "s" : ""} left in this section`;
 
   async function handleSubmit() {
     if (!items) return;
@@ -201,80 +280,89 @@ export default function SurveyPage() {
 
     localStorage.removeItem(PROGRESS_KEY);
     localStorage.setItem(COMPLETED_KEY, new Date().toISOString());
-    router.push("/dashboard");
+    router.push("/survey/complete");
   }
 
   return (
     <>
-      <SiteHeader />
-      <main style={{ maxWidth: 640, margin: "40px auto", padding: 24 }}>
-        <p style={{ marginTop: 0 }}>
-          Section {currentSection + 1} of {totalSections}
-        </p>
-
-        <ol style={{ display: "flex", flexDirection: "column", gap: 24, paddingLeft: 20 }}>
-          {currentItems.map((item) => (
-            <li key={item.id}>
-              <p style={{ margin: "0 0 8px" }}>{item.text}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {SCALE.map((s) => (
-                  <label key={s.value} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <SiteHeader
+        sticky
+        right={
+          <div className="prog">
+            {/* The dimension name is deliberately never shown while answering —
+                seeing the name of a thing changes how people rate it. Only the
+                section number appears here. */}
+            <div className="lbl">
+              Section {currentSection + 1} of {totalSections}
+            </div>
+            <div className="bar">
+              <i style={{ width: `${((currentSection + 1) / totalSections) * 100}%` }} />
+            </div>
+          </div>
+        }
+      />
+      <main className="sv-body">
+        {currentItems.map((item) => (
+          <fieldset key={item.id} className="item">
+            <legend className="q">{item.text}</legend>
+            <div className="scale">
+              {SCALE.map((s) => {
+                const id = `${item.id}-${s.value}`;
+                return (
+                  <div key={s.value} className="scale-opt">
                     <input
                       type="radio"
+                      id={id}
                       name={item.id}
                       value={s.value}
                       checked={answers[item.id] === s.value}
-                      onChange={() =>
-                        setAnswers((prev) => ({ ...prev, [item.id]: s.value }))
-                      }
+                      onChange={() => setAnswers((prev) => ({ ...prev, [item.id]: s.value }))}
                     />
-                    {s.label}
-                  </label>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ol>
+                    <label htmlFor={id}>{twoLine(s.label)}</label>
+                  </div>
+                );
+              })}
+            </div>
+          </fieldset>
+        ))}
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: 32,
-          }}
-        >
-          <button
-            type="button"
-            disabled={currentSection === 0}
-            onClick={() => setCurrentSection((s) => s - 1)}
-            style={{ padding: 8, borderRadius: 4 }}
-          >
-            Back
-          </button>
-          {isLast ? (
+        <div className="sv-nav">
+          <span className="left" aria-live="polite">
+            {remainingLabel}
+          </span>
+          <div className="actions">
             <button
               type="button"
-              disabled={!allAnsweredOnScreen || submitting}
-              onClick={handleSubmit}
-              style={{ padding: 8, borderRadius: 4 }}
+              className="btn btn-ghost"
+              onClick={() =>
+                currentSection === 0 ? setStarted(false) : setCurrentSection((s) => s - 1)
+              }
             >
-              {submitting ? "Submitting…" : "Submit"}
+              Back
             </button>
-          ) : (
-            <button
-              type="button"
-              disabled={!allAnsweredOnScreen}
-              onClick={() => setCurrentSection((s) => s + 1)}
-              style={{ padding: 8, borderRadius: 4 }}
-            >
-              Next
-            </button>
-          )}
+            {isLast ? (
+              <button
+                type="button"
+                className="btn"
+                disabled={!allAnsweredOnScreen || submitting}
+                onClick={handleSubmit}
+              >
+                {submitting ? "Submitting…" : "Submit"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn"
+                disabled={!allAnsweredOnScreen}
+                onClick={() => setCurrentSection((s) => s + 1)}
+              >
+                Next section
+              </button>
+            )}
+          </div>
         </div>
 
-        {submitError && (
-          <p style={{ color: "red", marginTop: 16 }}>{submitError}</p>
-        )}
+        {submitError && <p className="sv-error">{submitError}</p>}
       </main>
     </>
   );

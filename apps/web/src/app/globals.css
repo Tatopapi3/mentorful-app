@@ -7,9 +7,11 @@
 :root {
   /* The app is light-only on purpose: the report palette (src/lib/report/svg.ts)
      and the exported 16:9 slides are authored for light surfaces. Declaring
-     color-scheme keeps native form controls (the survey's radio inputs) and
-     scrollbars light on a dark-mode OS, and stops mobile browsers from
-     auto-darkening the page. */
+     color-scheme keeps native form controls and scrollbars light on a dark-mode
+     OS, and stops mobile browsers from auto-darkening the page.
+     (The survey's radio inputs used to be the main native control this
+     protected; they are now visually replaced by styled labels — see .scale —
+     so this mostly guards inputs elsewhere and the page chrome.) */
   color-scheme: light;
 
   --navy: #16283c;
@@ -67,6 +69,39 @@ h3 {
   display: flex;
   align-items: center;
   padding: 16px 24px;
+}
+
+/* The logo sits left and anything passed as `right` sits far right. With no
+   right-hand content this collapses to the original left-aligned header, so
+   the pages that render <SiteHeader /> bare are unaffected. */
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Sticky variant, used by /survey and /survey/complete. In the prototype this
+   was a separate `.sv-top` bar that stuck below the 46px screen-switcher; here
+   it is the real header, so it sticks to 0. */
+.site-header--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.site-header--sticky .site-header__inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.site-header--sticky .site-wordmark {
+  font-size: 17px;
 }
 
 .site-header__link {
@@ -335,6 +370,281 @@ h3 {
   margin-top: 12px;
 }
 
+/* ---------------------------------------------------------------- survey */
+
+/* Progress readout in the sticky header: mono uppercase label over a hairline
+   teal bar. */
+.prog {
+  flex: 1;
+  max-width: 340px;
+}
+
+.prog .lbl {
+  font-family: var(--font-mono), monospace;
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.prog .bar {
+  height: 5px;
+  background: var(--paper-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog .bar i {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  border-radius: 3px;
+}
+
+.sv-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 44px 28px 90px;
+}
+
+.sv-body p {
+  margin: 0 0 1em;
+}
+
+.sv-intro h1 {
+  font-size: 31px;
+  margin-bottom: 18px;
+}
+
+.sv-intro p {
+  font-size: 17px;
+  color: #4a443a;
+}
+
+.privacy {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px;
+  padding: 20px 22px;
+  margin: 26px 0;
+}
+
+.privacy b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  display: block;
+  margin-bottom: 7px;
+}
+
+.privacy p {
+  font-size: 15.5px;
+  color: #4a443a;
+  margin: 0;
+}
+
+.sv-fine {
+  font-size: 14.5px;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+/* One item = one radio group. The <fieldset> carries the grouping and the
+   <legend> is the question, so a screen reader announces the question before
+   each option rather than six bare labels. */
+.item {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: 26px 0;
+  min-inline-size: 0; /* fieldset defaults to min-content; this lets it shrink */
+}
+
+.item .q {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 18.5px;
+  line-height: 1.45;
+  margin-bottom: 18px;
+  padding: 0;
+  display: block;
+  width: 100%;
+  color: var(--ink);
+}
+
+.scale {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+/* Input-plus-label, not <button>. The radio stays a real, focusable radio —
+   it is only made transparent and stretched over its label, so arrow-key
+   navigation within the group and screen-reader semantics both survive.
+   Never swap this for display:none / visibility:hidden: that drops the input
+   out of the tab order and kills arrow-key selection. */
+.scale-opt {
+  position: relative;
+  display: flex;
+}
+
+.scale-opt input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.scale-opt label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 11px 4px;
+  min-height: 62px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #6b6459;
+}
+
+.scale-opt input:hover + label {
+  border-color: var(--teal);
+}
+
+.scale-opt input:checked + label {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+/* The input is transparent, so its own focus ring is invisible — draw the
+   ring on the label instead. */
+.scale-opt input:focus-visible + label {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.sv-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 34px;
+  gap: 16px;
+}
+
+.sv-nav .left {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.sv-nav .actions {
+  display: flex;
+  gap: 10px;
+}
+
+.sv-error {
+  color: #b3261e;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* ---------------------------------------------------------------- done */
+
+.done {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 70px 28px 90px;
+}
+
+.done p {
+  margin: 0 0 1em;
+}
+
+.done h1 {
+  font-size: 33px;
+  margin-bottom: 16px;
+}
+
+.done h2 {
+  font-size: 21px;
+}
+
+.done .lede {
+  font-size: 17.5px;
+  color: #4a443a;
+}
+
+.done .say {
+  font-size: 16px;
+  color: #5e574c;
+}
+
+.dims {
+  margin-top: 34px;
+  border-top: 1px solid var(--line);
+}
+
+.dim {
+  padding: 19px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dim b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.dim span {
+  font-size: 15px;
+  color: #5e574c;
+}
+
+.partic {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 22px;
+  margin-top: 32px;
+}
+
+.partic .barwrap {
+  height: 9px;
+  background: var(--paper-2);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 12px 0 9px;
+}
+
+.partic .barwrap i {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+}
+
+.partic .count {
+  font-size: 15px;
+  color: #4a443a;
+}
+
+.partic .caveat {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
 @media (max-width: 860px) {
   .auth {
     grid-template-columns: 1fr;
@@ -345,5 +655,9 @@ h3 {
   }
   .demo-row {
     grid-template-columns: 1fr 1fr;
+  }
+  /* Six across stops fitting; drop to three across in two rows. */
+  .scale {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
