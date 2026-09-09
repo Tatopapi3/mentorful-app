@@ -12,6 +12,9 @@
     "synthetic:dry": "npm run synthetic -- --dry-run",
     "synthetic:clean": "npm run synthetic -- --clean",
     "synthetic:stats": "npm run synthetic -- --stats-only",
+    "migrate:neon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/migrate-neon-to-supabase.ts",
+    "migrate:neon:dry": "npm run migrate:neon -- --dry-run",
+    "migrate:neon:clean": "npm run migrate:neon -- --clean",
     "items": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-culture-scan-items.ts",
     "items:dry": "npm run items -- --dry-run",
     "items:verify": "npm run items -- --verify"
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
