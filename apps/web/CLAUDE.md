@@ -190,13 +190,46 @@ Final policy set: `conversation_logs` 1 (pair only) · `profiles` 2 (read own + 
 
 Open question this raises: the `is_admin()` clause was somebody's intentional design. **The same "does this table assume admin reads?" question may apply elsewhere in that schema** — worth auditing before any other table starts holding candid teacher writing.
 
+### Step 4 — DONE (deployed and verified 2026-09-08)
+
+**`/admin/map` reads Supabase. Verified in the browser: Nodes 50 / Edges 32, with the `(supabase)` label.** Matches what Neon rendered, which was the bar.
+
+`src/app/admin/map/page.tsx` has `loadFromSupabase()` and `loadFromNeon()` returning the same shape, selected by `FACULTY_MAP_SOURCE`: `neon` picks the old Prisma path, **anything else — including unset — defaults to supabase**. Rollback is an env var, not a revert. The header renders the active source beside the counts, which is how the verification above was possible at a glance.
+
+- The fetch runs on the **user's session client** (anon key + cookies via `@supabase/ssr`), never the service key — `009`/`011` policies are what scope the page to the reader's own school. **Do not "optimise" this to the service key**; it would bypass every policy and silently show one school's faculty to another.
+- Cycle is picked by `ends_at desc`, **not** `status = 'active'` — the one migrated cycle is `complete`, and an `active` filter renders an empty graph.
+- School comes from the reader's own profile, replacing the old "school with the most rows" heuristic that existed only to dodge a stray `Test School`.
+- `FacultyMapClient` was **unchanged and needed no change**. The page adapts Supabase's shape to it: `first_name`+`last_name` → `name`, `strength_tags` → `strengthTags`.
+- Nodes are filtered to `is_demo = true`. **Drop that filter when a real roster exists**, or real teachers will be invisible on the map.
+
+⚠️ **Nothing in the app reads Neon any more** except the deliberately-retained `loadFromNeon()` branch. Neon is now a rollback target and nothing else.
+
 ### Remaining
 
-- **Step 4 — code landed 2026-09-08, deployed, needs browser confirmation.** `src/app/admin/map/page.tsx` now has `loadFromSupabase()` and `loadFromNeon()` behind `FACULTY_MAP_SOURCE` (`neon` selects the old path; anything else defaults to **supabase**). The header renders the active source beside the counts. Fetch runs on the **user's session client** — anon key + cookies via `@supabase/ssr` — so `009`/`011` policies apply; never the service key. Cycle is picked by `ends_at desc`, **not** `status = 'active'` (the one cycle is `complete`). School comes from the reader's own profile rather than the old row-count heuristic. `FacultyMapClient` was unchanged — the page adapts `first_name`+`last_name` → `name` and `strength_tags` → `strengthTags`. **Still to confirm in the browser: Nodes: 50 | Edges: 32 with `(supabase)` beside it.**
-- **Step 5 — remove Prisma.** See the section above.
-- **Step 6 — decommission Neon.** `pg_dump` first, read-only for a couple of weeks, then delete. Remove `DATABASE_URL` last.
-- **Retire the `neon_id` columns** on `profiles` / `cycles` / `pairings` / `conversation_logs` once Step 5 lands.
-- **Replace `009` §4** (row-level same-school read on `profiles`) with a column-restricted view before real teachers exist.
+**Step 5 — remove Prisma.** Only after the Supabase map has run in production long enough that you'd have heard about a problem. Removing Prisma deletes the rollback path, so it is the point of no return, not a cleanup chore.
+
+Delete together, in one commit — the `postinstall` line is the trap, since dropping the deps while it survives breaks every `npm ci` including Vercel's:
+
+- `src/app/admin/map/page.tsx` — the `loadFromNeon()` branch, the `FACULTY_MAP_SOURCE` flag, the `(source)` label, and the `prisma` import
+- `src/lib/prisma.ts`
+- `prisma/` — `schema.prisma`, `migrations/`, `seed.ts`, and the three stale `seed.ts.bak*` files
+- `prisma.config.ts`
+- `package.json` — deps `@prisma/client`, `@prisma/adapter-pg`, `prisma`, `pg`, devDep `@types/pg`; **remove `prisma generate` from `build` and delete the `postinstall` script**
+- `scripts/migrate-neon-to-supabase.ts` — it imports `pg`; it has done its job and keeping it means keeping the dependency
+- The untracked stray root `src/` — including `src/app/api/test/route.ts`, the GET handler that created a `Test School` row on every request
+- Also unset `FACULTY_MAP_SOURCE` in Vercel
+
+Verify with a clean `rm -rf node_modules .next && npm ci && npm run build`, `grep -ri prisma src/` returning nothing, and a real deploy.
+
+**Step 6 — decommission Neon.** `pg_dump` to somewhere durable first, leave the branch read-only for a couple of weeks, then delete. Remove `DATABASE_URL` from `.env` and from Vercel **last** — a stale build-time env var is harmless; a prematurely deleted database is not.
+
+**Debts that outlive the merge:**
+
+- **Retire the `neon_id` columns** on `profiles` / `cycles` / `pairings` / `conversation_logs` once Step 5 lands. They exist only for migration idempotency.
+- **Replace the same-school `profiles` read with a column-restricted view** before real teacher data. The policy is row-level, so it exposes `email` / `why_teach` / `big_five` / `years_teaching`, not just the name, department and tags the map needs — RLS cannot restrict columns. `011` §3 carries the `create view` sketch; it also needs `page.tsx` repointed at the view.
+- **Drop the `is_demo = true` filter** in `loadFromSupabase()` when a real roster exists, or real teachers will not appear on the map.
+- **Audit the rest of the schema for `is_admin()` read grants.** The `conversation_logs` leak came from a deliberate admin-read clause in the original design. The same assumption may sit on other tables — check before anything else starts holding candid teacher writing.
+- **The pre-pilot gate at the top of this file is still open**: `MIN_RESPONDENTS = 1`, `INCLUDE_SYNTHETIC = true`, `FACULTY_PROGRESS` hardcoded. Merge Step 3 supplied the faculty headcount those were blocked on — 50 school-scoped rows in `profiles` — so the denominator excuse is gone.
 
 ### Status vocabularies — use the schema's words, not the ones you'd pick
 
