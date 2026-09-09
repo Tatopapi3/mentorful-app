@@ -17,33 +17,68 @@ Deployed to Vercel at `app.mentorful.co` for principal demos and friction-free p
 
 The open-access RLS changes are in `scripts/003_demo_open_access.sql`. Reverting them is part of the checklist above.
 
-## Where we left off (2026-07-30)
+## Pre-pilot gate
+
+Three values are hardcoded to keep the demo working. Each is wrong for a real school, and **none of them fails loudly** — the product renders normally with all three in place, which is precisely why they need a list. The warning above covers the RLS and auth surface; this covers hardcoded values. Both have to clear before a real school sees anything.
+
+Verified against source 2026-08-27.
+
+### 1. `MIN_RESPONDENTS` — `src/lib/report/data.ts:43`
+
+- **Now:** `1`. The report opens as soon as a single response exists. It gates the `below-floor` branch at `data.ts:130`, so with a value of 1 that branch is effectively unreachable.
+- **Needs to become:** `>= 30 respondents OR 60% of faculty, whichever is higher`. The `below-floor` branch already exists and renders — only the threshold is wrong. **Blocked on faculty headcount:** the 60% half has no denominator.
+- **If shipped as-is:** a school reads dimension means off a handful of responses and small-n noise is presented as culture. It also quietly weakens the anonymity promise — an aggregate over three people is not anonymous in practice, whatever the schema guarantees.
+
+### 2. `INCLUDE_SYNTHETIC` — `src/lib/report/data.ts:36`
+
+- **Now:** `true`. Every number on `/report` comes from the 50 synthetic respondents. `data.ts:90` applies `.eq("synthetic", false)` *only* when the flag is off.
+- **Needs to become:** `false`, **and** the synthetic rows wiped (`npm run synthetic:clean`). Flipping alone is not enough — the rows stay in the table, and any future query that forgets the `synthetic` filter picks them up again.
+- **If shipped as-is:** demo data blends into a real school's numbers, marked only by the amber banner that `includesSynthetic` drives on `/report`.
+
+### 3. `FACULTY_PROGRESS` — `src/app/survey/complete/page.tsx:65`
+
+- **Now:** `{ finished: 32, total: 50, closes: "Friday" }`. Invented, identical for every teacher who finishes, and always claims the scan closes Friday.
+- **Needs to become:** a real count of distinct respondents over a real faculty headcount, with the close date read off `surveys`. Two blockers: headcount isn't modelled (no denominator), and the numerator **cannot** be read from the browser — `survey_responses` has no SELECT policy, so a real count needs a server route using the service key that returns an aggregate only, never rows.
+- **If shipped as-is:** a teacher is told 32 of 50 colleagues have finished when the true number might be 3. This is the screen immediately after she is asked to trust the privacy promise, so being caught inventing a number here costs more than the number is worth.
+
+### Faculty headcount is the shared blocker — model it, stop routing around it
+
+It now blocks **two of the three**: the 60% half of `MIN_RESPONDENTS`, and the denominator of `FACULTY_PROGRESS`. Each was routed around separately — the floor dropped to `1`, the progress bar hardcoded — and each workaround is now its own thing to remember, find, and undo.
+
+Modelling it is small: a headcount on `schools`, or a real staff roster if the faculty map ends up needing one anyway. Doing it once retires both workarounds and switches the `below-floor` branch back on. Continuing to route around it means a third stub the next time something needs a denominator, and the stubs are individually cheap in a way that hides how they add up.
+
+**The merge is about to supply this.** Step 3 lands 50 faculty rows in `profiles`, school-scoped, with `is_demo` separating generated identities from real ones — which is the staff roster, and therefore the denominator. Both workarounds become removable in the same pass. Do not let that pass end without removing them, or the roster arrives and the stubs stay anyway.
+
+## Where we left off (2026-09-07)
 
 ### Open items — read these first
 
+- **The Neon → Supabase merge is mid-flight.** Step 1 (`007`) is applied and login was verified after. Next up: `008`, then Step 2 (RLS). See "Neon → Supabase merge" below — it supersedes anything else in this file about Prisma, about `conversation_logs` not existing, or about `survey_responses` holding only synthetic rows.
+- **The `invites` policy is broken and blocks roster work.** It errors instead of denying (`42501 permission denied for table users`) — a policy predicate reaches into `auth.users` as the calling role. Same class of bug as the one `004` fixed. Fix it in Step 2.
 - **`006` is written but NOT applied.** Until it is, v2 and v3 items cannot coexist, so no v3 can be seeded. `005` is applied and confirmed firing.
-- **The `pg_constraint` confirmation has not been run.** `006` is written against the inference that `survey_items_position_key` is a single-column unique on `position` — that name is PostgreSQL's default for `<table>_<column>_key`, and a composite would have been named `survey_items_instrument_version_position_key`. Strong, but unconfirmed. Run the query in the migrations list above before applying.
-- **The participation floor is not really enforced.** `MIN_RESPONDENTS = 1` in `src/lib/report/data.ts`. The documented rule (>= 30 respondents or 60% of faculty, whichever is higher) is a TODO there — faculty headcount isn't modelled, so today the report opens as soon as any response exists.
-- **`INCLUDE_SYNTHETIC = true`.** Every number on `/report` is generated. Flip it and wipe the synthetic rows before any real school sees the page.
+- **The `pg_constraint` confirmation for `006`.** `006` is written against the inference that `survey_items_position_key` is a single-column unique on `position` — PostgreSQL's default name for `<table>_<column>_key`, where a composite would have been `survey_items_instrument_version_position_key`. Strong, but record the actual query output here once you have it rather than leaving this as an inference. (Query C in the Step 0 catalog covers it.)
+- **The participation floor is not really enforced.** `MIN_RESPONDENTS = 1` in `src/lib/report/data.ts`. The documented rule (>= 30 respondents or 60% of faculty, whichever is higher) is a TODO there — faculty headcount isn't modelled, so today the report opens as soon as any response exists. **Merge Step 3 lands 50 faculty rows in `profiles`, which is the denominator this has been blocked on** — see the headcount section above.
+- **`INCLUDE_SYNTHETIC = true`.** Every number on `/report` is generated. Flip it and wipe the synthetic rows before any real school sees the page. Note this is no longer an all-or-nothing choice: **52 real rows now exist** (2 respondents), so flipping the flag makes `/report` render off n=2 — which at `MIN_RESPONDENTS = 1` would be presented as a school's culture. The floor and the flag have to move together.
 
 ### State
 
 - Magic-link auth working end to end: `/login` → email → `/auth/callback` → `/dashboard`.
 - **Culture Scan v1 → v2 complete.** The instrument is now the 4-dimension social-capital scan (structural / relational / cognitive / efficacy, 26 items, reverse on positions 5/11/21/25). `survey_items.instrument_version = 2`. `surveys` gained a `wave int` column for delta-readiness (baseline vs re-measure). `survey_responses` did **not** change — long format with anonymous respondent token was already correct.
-- **Survey-taking flow works end to end.** `/dashboard` shows a Culture Scan card with status (Not started / In progress / Completed). `/survey` presents the 26 items across 4 sections in dimension order (no dimension header shown — biases answers), Back/Next gated on all items answered, submit writes 26 rows to `survey_responses` in one insert. The flow was verified by live submission during the v2 build, but **those rows no longer exist** — as of 2026-07-21 the only rows in `survey_responses` are the 50 synthetic respondents. Re-take the survey if you need a real row to test the `synthetic = false` path.
+- **Survey-taking flow works end to end.** `/dashboard` shows a Culture Scan card with status (Not started / In progress / Completed). `/survey` presents the 26 items across 4 sections in dimension order (no dimension header shown — biases answers), Back/Next gated on all items answered, submit writes 26 rows to `survey_responses` in one insert. **Real submissions exist again.** As of 2026-09-06 `survey_responses` holds 1352 rows: 1300 synthetic (50 respondents) and **52 real (2 respondents, `synthetic = false`, submitted 2026-08-02 and 2026-09-01)**. An earlier note here said the only rows were synthetic; that stopped being true in August. The `synthetic = false` path is testable without re-taking the survey.
 - **Report engine: synthetic data, validated math, and the deck are all built.** 50 synthetic respondents seeded; dimension means / Pearson / partial-correlation math verified. `/report` renders six 16:9 slides (intro, dimension means, network, efficacy–structure gap, start here, actions) with a PNG/PDF export toolbar. All aggregation runs server-side with the service key — the anon/authenticated role literally cannot read `survey_responses`.
 - **The instrument is frozen and committed**, with a canonical definition and a hash to prove it hasn't drifted. See "The instrument is frozen" above. This is the prerequisite for a meaningful wave-2 delta.
 - **Branding and theme done** (`cc540bd`): shared `SiteHeader` on `/`, `/login`, `/survey`, `/report`; real title/template/description replacing the create-next-app defaults; 256px logo favicon; the scaffolded dark-mode block removed and `color-scheme: light` declared, since the report palette and exported slides are authored for light surfaces.
 - **Landing, login, and check-email screens ported** (`67d84d8`) from the `app-screens` prototype: navy hero with demo cards on `/`, two-column `/login` with the Culture Scan orientation panel, and a styled check-email state with resend and start-over. App typography is Lora / Public Sans / JetBrains Mono on a warm paper surface, matching mentorful.co. Live at `app.mentorful.co`.
-- **Next up:** apply `006`, then implement the real participation floor (needs faculty headcount modelled) and flip `INCLUDE_SYNTHETIC` off with the synthetic rows wiped.
+- **Merge Step 1 done** (`007`, 2026-09-06): identity decoupled via `profiles.auth_user_id`, the three empty tables reshaped to receive Neon's data, `concern_domain` enum created, `surveys.item_ids` dropped, `002` retired. Login verified after.
+- **Next up:** `008` (dimension enum), then merge Step 2 (RLS on the new tables, starting with the `invites` fix), Step 3 (data migration), Step 4 (faculty map off Prisma), Step 5 (remove Prisma). `006` and the participation floor are still open and are independent of the merge.
 
 ## Database
 
-**Supabase is the live DB.** Project: `https://kxcjmsqjogaoaiazucsk.supabase.co`. All 8 tables exist with RLS on.
+**Supabase is the live DB.** Project: `https://kxcjmsqjogaoaiazucsk.supabase.co`. **Nine** tables: `schools`, `profiles`, `cycles`, `pairings`, `conversation_logs`, `invites`, `surveys`, `survey_items`, `survey_responses`. **RLS is on with policies everywhere** as of `009` (2026-09-07) — the survey tables, `profiles`/`schools`, and the four merged tables. None of them is empty any more: `profiles` holds 54 rows (50 migrated + 4 real), `cycles` 1, `pairings` 32, `conversation_logs` 32, `survey_responses` 1352.
 
 Schema changes are hand-run SQL, kept in `scripts/*.sql` and numbered. Applied so far:
 - `001_add_synthetic_column.sql` — `survey_responses.synthetic boolean not null default false`, plus an index on `(survey_id, synthetic)`. **Every report query must filter on `synthetic`.**
-- `002_fix_survey_item_resolution.sql` — drops the dead `surveys.item_ids` and adds `surveys.instrument_version`.
+- `002_fix_survey_item_resolution.sql` — **RETIRED. Never applied — do not apply it.** The Step 0 reconciliation (2026-09-06) proved it never ran: `surveys.item_ids` was still present holding `[0,1,2,3,4,5,6,7]`, and `surveys.instrument_version` did not exist, even though this list claimed 002 was applied. Its `instrument_version` half was superseded by `005` (see "Item resolution" below — pinning the version on the survey is now redundant). Its one real effect, dropping the dead `item_ids`, was folded into `007`.
 - `003_demo_open_access.sql` — **demo/pilot only.** Opens `anon` SELECT on `survey_items` and guarded `anon` INSERT on `survey_responses`. Must be reverted before real data (see the open-access warning at the top).
 - `004_fix_anon_submit_guard.sql` — **required with 003.** Fixes a bug where 003's insert `WITH CHECK` read `surveys` (which anon can't SELECT), rejecting every anonymous submission. Replaces the check with a `SECURITY DEFINER` function `survey_is_open()`. Revert alongside 003.
 - `005_instrument_version_invariant.sql` — **applied 2026-07-30.** A `DEFERRABLE INITIALLY DEFERRED` constraint trigger enforcing that every row with `active = true` shares one `instrument_version`. Confirmed firing with errcode `23514`. This is what makes `active = true` sufficient on its own everywhere — see "Item resolution" below. Adds no table and no new anon-readable surface.
@@ -54,6 +89,15 @@ select conname, pg_get_constraintdef(oid)
   from pg_constraint
  where conrelid = 'public.survey_items'::regclass and contype in ('u','p');
 ```
+
+- `007_merge_neon_schema.sql` — **applied 2026-09-06.** Step 1 of the Neon → Supabase merge. Schema only; no RLS, no data. ⚠️ Its `cycles_status_check` block was a **no-op** — see "Status vocabularies" below. See "Neon → Supabase merge" for the rest.
+- `007_verify.sql` — read-only verification for 007. Not a migration.
+- `008_dimension_enum.sql` — **applied 2026-09-07.** `survey_items.dimension` text → `culture_dimension` enum. Instrument hash unchanged.
+- `009_rls_merged_tables.sql` — **applied 2026-09-07.** Step 2: RLS + policies on `cycles`/`pairings`/`conversation_logs`/`invites`, the `SECURITY DEFINER` helpers, the `invites` `auth.users` fix, and school/admin assignment for the 4 real profiles.
+- `010_drop_profiles_id_fkey.sql` — **applied 2026-09-07.** Drops the `profiles.id` → `auth.users(id)` FK that 007 left behind, completing the identity decoupling.
+- `011_conversation_logs_pair_private.sql` — **applied 2026-09-08.** Closes an admin read leak on `conversation_logs` and consolidates duplicate read policies on `profiles`/`cycles`/`pairings`. See "The conversation_logs leak" below. Verified: admin-visible logs went **32 → 0**.
+- `scripts/migrate-neon-to-supabase.ts` — **run 2026-09-07.** Step 3 data migration (`npm run migrate:neon`). Not SQL, but part of the same sequence.
+- `scripts/step0_catalog.sql` is not in this repo — it was the read-only reconciliation used to establish what was actually live before 007. **Its lesson stands: this list is documentation, not truth.** 002 sat here marked applied for weeks while the database said otherwise. Verify against `pg_policies` / `pg_constraint` / `pg_trigger` before trusting any entry.
 
 ### Item resolution (read before writing report queries)
 
@@ -72,9 +116,107 @@ Two consequences worth holding onto:
 - `order by position` is a **total order** only because of `005`. `006` makes `position` unique per version rather than globally, so if the active set ever spanned two versions the positions would interleave. `005` is what prevents that. The two migrations are load-bearing as a pair.
 - `position` is **presentation order, never identity**. Audited 2026-07-30: report scoring (`src/lib/report/stats.ts`) joins `survey_responses.item_id → survey_items.id` and reads `dimension`/`reverse` off the matched row; the survey flow keys answers by `item.id` and inserts `item_id`. `position` appears only in `ORDER BY` and in deriving section order from the dimension sequence. Keep it that way — anything that looks up an item *by position* breaks the moment a second version exists.
 
-`surveys.item_ids` used to look like it held the item set, but it was `integer[]` while `survey_items.id` is `uuid` — it could never have referenced an item. Dropped in `002`. If you find code reading it, that code is broken.
+`surveys.item_ids` used to look like it held the item set, but it was `integer[]` while `survey_items.id` is `uuid` — it could never have referenced an item. **Dropped in `007`** (2026-09-06); `002`, which was supposed to drop it, never ran. If you find code reading it, that code is broken.
 
-**Ignore the Prisma/Neon setup in this repo** (`prisma/`, `prisma.config.ts`, `@prisma/*` deps, `DATABASE_URL` in `.env`). Not in use. Do not run migrations or generate a Prisma client.
+### The Prisma/Neon setup is real, in use, and on its way out
+
+Earlier guidance here said to ignore it. **That was wrong** — `/admin` and `/admin/map` read faculty data from Neon through Prisma today, and they are the only routes that do. It is being removed, not ignored:
+
+- **In use:** `src/lib/prisma.ts`, `src/app/admin/map/page.tsx` (5 queries), `prisma/schema.prisma`, `prisma/seed.ts`, `prisma.config.ts`, `@prisma/*` + `pg` deps, `DATABASE_URL` in `.env`, and `prisma generate` in both the `build` and `postinstall` scripts.
+- **Not in use:** everything else. The report engine, both seeders, and the survey flow are pure Supabase.
+- **Do not** add new Prisma call sites, run `prisma migrate`, or extend `schema.prisma`. Neon is frozen; all new schema work is hand-run SQL in `scripts/*.sql` against Supabase.
+
+Removal is Step 5 of the merge below. The `postinstall: prisma generate` script is the trap — dropping the deps without deleting that line breaks every `npm ci`, including on Vercel.
+
+## Neon → Supabase merge (in progress)
+
+Consolidating onto one database. Supabase is the destination; Prisma/Neon goes away entirely.
+
+Two things found during planning that contradicted this file: Supabase already had **nine** tables (not eight) — `cycles`, `pairings`, `conversation_logs`, and `invites` existed but were empty, so `conversation_logs` is *not* "not yet built" — and `survey_responses` holds **52 real rows** (2 respondents, submitted 2026-08-02 and 2026-09-01) on top of the 1300 synthetic, not zero.
+
+### Step 1 — DONE (`007`, applied 2026-09-06, login verified after)
+
+- **Identity decoupled.** `profiles.id` no longer has to equal `auth.users.id`. A nullable, unique `profiles.auth_user_id` → `auth.users(id)` (`on delete set null`) carries the link explicitly; the 4 existing rows were backfilled `auth_user_id = id`. This is what lets a roster row exist for a teacher who hasn't signed up yet. **RLS keys on `auth_user_id`, never on `id`** — the "update own profile" policy was rewritten in the same migration, since leaving it on `id` would have been silently wrong the moment a roster row appeared.
+- `profiles` also gained `strength_tags` / `personality_tags` / `fun_tags` (jsonb), `is_demo`, `neon_id`, and a `role` CHECK of `(admin, teacher)`.
+- **`cycles`, `pairings`, `conversation_logs` reshaped** to receive Neon's data. `pairings.teacher_a`/`teacher_b` became `host_id`/`visitor_id` — a pairing is directional, the host is observed and the visitor observes, and `a`/`b` threw that away. `conversation_logs` gained `vision`, `host_id`, `visitor_id`, `strategic_tag`, `status`, `submitted_at`.
+- **`concern_domain` enum created** (see the two-axes rule below).
+- **`surveys.item_ids` dropped.**
+
+`neon_id` on the four migrated tables is **temporary** — Step 3 upserts on it for idempotency, Step 5 drops it.
+
+### 008 — DONE (applied 2026-09-07)
+
+`survey_items.dimension` is now the `culture_dimension` enum (`structural, relational, cognitive, efficacy`, in instrument order). `npm run items:verify` still prints **`d9ca364b…`**, and the retype was independently confirmed applied — so the unchanged hash means what it should: the instrument's content did not move, only its storage type. Wave-1 → wave-2 comparability is intact. Both axes are now distinct Postgres types.
+
+### 009 — DONE (Step 2, applied 2026-09-07)
+
+RLS enabled with policies on `cycles`, `pairings`, `conversation_logs`, `invites`. Helpers `my_profile_id()` / `my_school_id()` / `is_school_admin()` / `my_email()` are `SECURITY DEFINER` — a policy on `profiles` that queried `profiles` would recurse — and key on `auth_user_id`, never `id`.
+
+- **`conversation_logs` has no admin SELECT policy, by design.** Pair-private only. Admin visibility is `concern_domain_counts(cycle)`: counts per domain, nulled below a cell floor of 5, never rows. Same shape as `survey_responses` + `survey_is_open()`. **Do not add an admin read policy to this table.**
+- **`invites` fixed.** It used to error rather than deny (`42501 permission denied for table users`) because a policy predicate read `auth.users` as the calling role — the same bug `004` fixed for `surveys`. Now routed through `my_email()`; anon gets `200` and an empty result.
+- The 4 real profiles are attached to the sandbox school; `nick@kurianconsulting.com` is `role = 'admin'`.
+- `009` §4 also added a same-school SELECT on `profiles`, which Step 4 needs. It is row-level, so it exposes `email` / `why_teach` / `big_five` alongside the map fields. **Replace it with a column-restricted view before real teachers are in this table.**
+
+### 010 — DONE (applied 2026-09-07)
+
+Dropped `profiles_id_fkey`. **007's decoupling was half-done:** it added `auth_user_id` and rewrote the policy but left a foreign key from `profiles.id` to `auth.users(id)`, so `id` was still *required* to be a real auth user and every roster row was rejected. The link now lives in `auth_user_id` alone. For signup-created rows `id` still happens to equal it — that is a convention now, not a constraint.
+
+### Step 3 — DONE (applied 2026-09-07)
+
+`npm run migrate:neon` landed 50 profiles, 1 cycle, 32 pairings, 32 conversation logs. Verified independently against Neon rather than by the script's own report: counts, per-domain tallies, FK resolution, 1:1 log↔pairing, byte-identical prose across all five text fields, and a teacher's partner list matching end to end. `survey_responses` untouched at 1352; the 4 real profiles untouched and none flagged `is_demo`.
+
+Decisions baked in: `Test School` dropped (created by the stray `api/test` route, not real); `Mentorful Demo School` → the existing `Mentorful Sandbox` row; the three duplicate `Fall 2025` cycles collapsed to the one carrying all 32 pairings (`prisma/seed.ts:78` hardcodes a create inside the loop, producing three identical rows); `clerkUserId` dropped; logs migrated as `submitted`; `approved_at` backfilled from `created_at` (Neon set `status = APPROVED` but never wrote a date); all 50 get `is_demo = true` and `auth_user_id = null`.
+
+`scripts/migrate-neon-to-supabase.ts` derives every target id as **UUIDv5 of the Neon cuid**, so the cuid→uuid map is built in one pass before any write and re-runs converge byte-identically. `--dry-run` and `--clean` (deletes only rows with `neon_id not null`) are both supported.
+
+### 011 — DONE (applied 2026-09-08): the `conversation_logs` leak
+
+**An admin could read all 32 pair-private conversation logs.** Caught by testing RLS as the admin account before deploying Step 4, not by a report.
+
+Two causes, and both matter:
+
+1. **A pre-existing `"teachers can read own logs"` policy carried an `is_admin()` clause.** That is a deliberate admin-read grant from the original schema design, and it directly contradicts the pair-private model. Its *non-admin* branch was also broken — it compared `host_id = auth.uid()` when `host_id` references `profiles.id`, and since `010` those are different values — so it matched nothing and **the admin clause was doing 100% of the work**.
+2. **`009` added policies without dropping pre-existing ones.** Postgres OR-s permissive policies, so the old grant survived alongside the new one. `009` §3 did drop-then-recreate for `invites`; §4–§7 did not.
+
+Blast radius was `authenticated` only — `anon` saw 0 rows and no prose, verified the same day. Not public exposure.
+
+`011` fixes it by **enumerating and dropping every SELECT/ALL policy** on the four tables, then recreating exactly the intended set — deterministic regardless of what was there, which is the property `009` lacked. It also adds `FORCE ROW LEVEL SECURITY` on `conversation_logs`, and **self-tests inside the transaction**: it aborts unless `conversation_logs` ends with exactly one read policy whose `qual` contains no `is_school_admin` / `my_school_id` / `is_admin`. That assertion is a permanent regression guard — re-adding an admin branch makes this migration fail.
+
+Final policy set: `conversation_logs` 1 (pair only) · `profiles` 2 (read own + same school) · `cycles` 1 (same school) · `pairings` 1 (participant or admin).
+
+**`profiles` has two, not one, deliberately.** A self-read path has to exist independently of the same-school one, or anyone whose `school_id` is null — the state every new signup starts in — cannot read their own row, and `/admin/map`'s `where auth_user_id = <me>` returns nothing.
+
+⚠️ **The lesson, and it is the third instance of one root cause.** `007` guarded a constraint by *name* and silently no-op'd. `009` added policies without dropping and silently under-secured. `011` was needed because both assumed an object wasn't already there. **Assume it is. Enumerate, echo, replace — and assert the end state before committing.** A migration that reports success while changing nothing is worse than one that fails.
+
+Open question this raises: the `is_admin()` clause was somebody's intentional design. **The same "does this table assume admin reads?" question may apply elsewhere in that schema** — worth auditing before any other table starts holding candid teacher writing.
+
+### Remaining
+
+- **Step 4 — code landed 2026-09-08, deployed, needs browser confirmation.** `src/app/admin/map/page.tsx` now has `loadFromSupabase()` and `loadFromNeon()` behind `FACULTY_MAP_SOURCE` (`neon` selects the old path; anything else defaults to **supabase**). The header renders the active source beside the counts. Fetch runs on the **user's session client** — anon key + cookies via `@supabase/ssr` — so `009`/`011` policies apply; never the service key. Cycle is picked by `ends_at desc`, **not** `status = 'active'` (the one cycle is `complete`). School comes from the reader's own profile rather than the old row-count heuristic. `FacultyMapClient` was unchanged — the page adapts `first_name`+`last_name` → `name` and `strength_tags` → `strengthTags`. **Still to confirm in the browser: Nodes: 50 | Edges: 32 with `(supabase)` beside it.**
+- **Step 5 — remove Prisma.** See the section above.
+- **Step 6 — decommission Neon.** `pg_dump` first, read-only for a couple of weeks, then delete. Remove `DATABASE_URL` last.
+- **Retire the `neon_id` columns** on `profiles` / `cycles` / `pairings` / `conversation_logs` once Step 5 lands.
+- **Replace `009` §4** (row-level same-school read on `profiles`) with a column-restricted view before real teachers exist.
+
+### Status vocabularies — use the schema's words, not the ones you'd pick
+
+These are the **real** allowed values, read off `pg_constraint` on 2026-09-07. They predate the merge and are intentional (the same design that gave `profiles` its `disc_style` / `teaching_style` / `archetype_id` columns and a `superadmin` role). **Do not standardise them to something tidier** — the tables were designed this way on purpose.
+
+| table | column | allowed values |
+|---|---|---|
+| `cycles` | `status` | `upcoming` · `active` · **`complete`** |
+| `pairings` | `status` | `pending` · `approved` · `rejected` |
+| `conversation_logs` | `status` | `draft` · `submitted` |
+
+⚠️ **`007` claims to add `cycles_status_check` allowing `planned/active/closed`. That block was a no-op** and those values are wrong. A constraint of that name already existed, and 007's guard keyed on the constraint *name* rather than its definition, so the `ADD` was skipped while the migration reported success. The file carries a correction comment; it is applied history, so it was not rewritten.
+
+**The lesson, which cost three failed runs:** PostgREST's OpenAPI document — what every probe in this repo reaches for first — reports columns, types, defaults, and foreign keys *within the exposed schema*. It does **not** report CHECK constraints, cross-schema foreign keys (anything pointing at `auth.*`), triggers, or RLS policies. Every merge defect so far lived in exactly that blind spot: `profiles_id_fkey` → `auth.users` (invisible), `cycles_status_check` (invisible), and `002`'s phantom application. **Before writing DDL against a table, query `pg_constraint` / `pg_trigger` / `pg_policies` directly.** Guard clauses should test a constraint's *definition*, not its name.
+
+### Identity: matching teachers to auth users
+
+All 50 Neon emails are `@demo.mentorful.co`, generated by the seeder. **Zero overlap with the 4 real auth users** — email matching is the right mechanism, it just has nothing to match until a real roster is loaded. Claim-on-first-login sets `auth_user_id` by `lower(email)`; match on `lower()`, since Supabase Auth lowercases but a hand-entered roster won't.
+
+Two existing-data notes: all 4 `profiles` rows have `school_id = null`, so any school-scoped policy returns nothing for them until they're attached; and the signup path writes `first_name` = the email local part with an empty `last_name`, which is worth repairing while there are only four rows to fix.
 
 ## Auth
 
@@ -184,10 +326,19 @@ All aggregation must keep running server-side with the service key and return di
 
 Mentorful has two separate measurement axes. They meet only on the admin dashboard as lagging vs leading indicators. **Never store them in one shared field.**
 
-- **Culture Scan = 4 social-capital DIMENSIONS.** School-level, anonymized, admin product. Field name: `dimension` on `survey_items`. Values: `structural`, `relational`, `cognitive`, `efficacy`.
-- **Domains of Concern = 4+1 activity DOMAINS.** Conversation-driven, private to the mentoring pair, individual-teacher product. Field name: `domain` on conversation logs (not yet built). Values: Classroom Culture, Lesson Planning, Communication, Assessment & Feedback, Celebrations.
+- **Culture Scan = 4 social-capital DIMENSIONS.** School-level, anonymized, admin product. Lagging indicator. Field name: `dimension` on `survey_items`. Values: `structural`, `relational`, `cognitive`, `efficacy`. Still `text` + CHECK; becomes the `culture_dimension` enum in `008`.
+- **Domains of Concern = 4+1 activity DOMAINS.** Conversation-driven, private to the mentoring pair, individual-teacher product. Leading indicator. Field name: `domain` on `pairings` and `conversation_logs`. Type: the **`concern_domain` enum**, created in `007`. Values: `CLASSROOM`, `PLANNING`, `COMMUNICATION`, `ASSESSMENT`, `CELEBRATIONS`.
 
 If a single "domain" or "dimension" field is ever asked to hold both, that is the bug — split it.
+
+**Both axes now live in one database**, which is exactly when they get easy to confuse: four values each, near-synonymous English names. The guards are structural, not conventional:
+
+- **Distinct enum types, deliberately against this schema's `text` + CHECK convention.** A CHECK catches a bad *value*; a distinct type catches a bad *column*. Assigning a dimension into a domain is a type error at the point of the mistake, and a query that UNIONs the two axes fails outright instead of returning a plausible-looking blend.
+- **Never let the column names cross.** No `domain` on a survey table, no `dimension` on a pairing or log table.
+- **Keep the value sets textually disjoint.** They are (`structural` vs `CLASSROOM`, different casing too). Never rename a concern domain to something like "Structural Planning" — disjointness is what makes a mix-up visible in a result set rather than merely wrong.
+- **No shared lookup table.** Don't build `taxonomies` or `categories` with a `kind` discriminator. That table is how these two collapse into one field, and it will look like normalization when it happens.
+
+`CELEBRATIONS` — the "+1" — exists in the enum but has no Neon source; Neon only ever had four. It was added while every consuming table was empty, because later it means `ALTER TYPE … ADD VALUE`, which can't share a transaction with other DDL.
 
 ## Env
 
