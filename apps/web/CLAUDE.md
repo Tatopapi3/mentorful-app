@@ -53,7 +53,7 @@ Modelling it is small: a headcount on `schools`, or a real staff roster if the f
 
 ### Open items — read these first
 
-- **The Neon → Supabase merge is mid-flight.** Step 1 (`007`) is applied and login was verified after. Next up: `008`, then Step 2 (RLS). See "Neon → Supabase merge" below — it supersedes anything else in this file about Prisma, about `conversation_logs` not existing, or about `survey_responses` holding only synthetic rows.
+- **The Neon → Supabase merge is DONE** (Steps 1–5, 2026-09-06 → 09-12). **One database; Prisma and Neon are removed.** Only Step 6 remains — decommission the Neon instance and drop `DATABASE_URL` from Vercel — and that is post-soak cleanup, not urgent, since no code reads it. See "Neon → Supabase merge" below, which supersedes anything else in this file about Prisma, about `conversation_logs` not existing, or about `survey_responses` holding only synthetic rows.
 - **The `invites` policy is broken and blocks roster work.** It errors instead of denying (`42501 permission denied for table users`) — a policy predicate reaches into `auth.users` as the calling role. Same class of bug as the one `004` fixed. Fix it in Step 2.
 - **`006` is written but NOT applied.** Until it is, v2 and v3 items cannot coexist, so no v3 can be seeded. `005` is applied and confirmed firing.
 - **The `pg_constraint` confirmation for `006`.** `006` is written against the inference that `survey_items_position_key` is a single-column unique on `position` — PostgreSQL's default name for `<table>_<column>_key`, where a composite would have been `survey_items_instrument_version_position_key`. Strong, but record the actual query output here once you have it rather than leaving this as an inference. (Query C in the Step 0 catalog covers it.)
@@ -70,7 +70,8 @@ Modelling it is small: a headcount on `schools`, or a real staff roster if the f
 - **Branding and theme done** (`cc540bd`): shared `SiteHeader` on `/`, `/login`, `/survey`, `/report`; real title/template/description replacing the create-next-app defaults; 256px logo favicon; the scaffolded dark-mode block removed and `color-scheme: light` declared, since the report palette and exported slides are authored for light surfaces.
 - **Landing, login, and check-email screens ported** (`67d84d8`) from the `app-screens` prototype: navy hero with demo cards on `/`, two-column `/login` with the Culture Scan orientation panel, and a styled check-email state with resend and start-over. App typography is Lora / Public Sans / JetBrains Mono on a warm paper surface, matching mentorful.co. Live at `app.mentorful.co`.
 - **Merge Step 1 done** (`007`, 2026-09-06): identity decoupled via `profiles.auth_user_id`, the three empty tables reshaped to receive Neon's data, `concern_domain` enum created, `surveys.item_ids` dropped, `002` retired. Login verified after.
-- **Next up:** `008` (dimension enum), then merge Step 2 (RLS on the new tables, starting with the `invites` fix), Step 3 (data migration), Step 4 (faculty map off Prisma), Step 5 (remove Prisma). `006` and the participation floor are still open and are independent of the merge.
+- **Merge complete through Step 5** (2026-09-12). One database; Prisma and Neon removed.
+- **Next up:** the pre-pilot gate at the top of this file — `MIN_RESPONDENTS`, `INCLUDE_SYNTHETIC`, `FACULTY_PROGRESS`. Step 3 supplied the faculty headcount all three were blocked on. `006` is also still open and independent of the merge.
 
 ## Database
 
@@ -96,7 +97,7 @@ select conname, pg_get_constraintdef(oid)
 - `009_rls_merged_tables.sql` — **applied 2026-09-07.** Step 2: RLS + policies on `cycles`/`pairings`/`conversation_logs`/`invites`, the `SECURITY DEFINER` helpers, the `invites` `auth.users` fix, and school/admin assignment for the 4 real profiles.
 - `010_drop_profiles_id_fkey.sql` — **applied 2026-09-07.** Drops the `profiles.id` → `auth.users(id)` FK that 007 left behind, completing the identity decoupling.
 - `011_conversation_logs_pair_private.sql` — **applied 2026-09-08.** Closes an admin read leak on `conversation_logs` and consolidates duplicate read policies on `profiles`/`cycles`/`pairings`. See "The conversation_logs leak" below. Verified: admin-visible logs went **32 → 0**.
-- `scripts/migrate-neon-to-supabase.ts` — **run 2026-09-07.** Step 3 data migration (`npm run migrate:neon`). Not SQL, but part of the same sequence.
+- `scripts/migrate-neon-to-supabase.ts` — **run 2026-09-07, deleted 2026-09-12** (Step 5; it imported `pg`). Step 3 data migration. Recoverable from git history at `2810363~1` if ever needed.
 - `scripts/step0_catalog.sql` is not in this repo — it was the read-only reconciliation used to establish what was actually live before 007. **Its lesson stands: this list is documentation, not truth.** 002 sat here marked applied for weeks while the database said otherwise. Verify against `pg_policies` / `pg_constraint` / `pg_trigger` before trusting any entry.
 
 ### Item resolution (read before writing report queries)
@@ -118,19 +119,21 @@ Two consequences worth holding onto:
 
 `surveys.item_ids` used to look like it held the item set, but it was `integer[]` while `survey_items.id` is `uuid` — it could never have referenced an item. **Dropped in `007`** (2026-09-06); `002`, which was supposed to drop it, never ran. If you find code reading it, that code is broken.
 
-### The Prisma/Neon setup is real, in use, and on its way out
+### Prisma and Neon are GONE (removed 2026-09-12, merge Step 5)
 
-Earlier guidance here said to ignore it. **That was wrong** — `/admin` and `/admin/map` read faculty data from Neon through Prisma today, and they are the only routes that do. It is being removed, not ignored:
+**There is one database. Every read and write in this app goes to Supabase.**
 
-- **In use:** `src/lib/prisma.ts`, `src/app/admin/map/page.tsx` (5 queries), `prisma/schema.prisma`, `prisma/seed.ts`, `prisma.config.ts`, `@prisma/*` + `pg` deps, `DATABASE_URL` in `.env`, and `prisma generate` in both the `build` and `postinstall` scripts.
-- **Not in use:** everything else. The report engine, both seeders, and the survey flow are pure Supabase.
-- **Do not** add new Prisma call sites, run `prisma migrate`, or extend `schema.prisma`. Neon is frozen; all new schema work is hand-run SQL in `scripts/*.sql` against Supabase.
+Nothing named `prisma` or `pg` remains: no `src/lib/prisma.ts`, no `prisma/` directory, no `prisma.config.ts`, no `@prisma/*` / `pg` / `@types/pg` packages, no `prisma generate` in `build`, **no `postinstall` script at all**, and no `DATABASE_URL` (the `.env` file that held it is deleted; `.env.local` keeps the Supabase vars). The `loadFromNeon()` rollback branch and the `FACULTY_MAP_SOURCE` flag are gone from `src/app/admin/map/page.tsx` — the map reads Supabase unconditionally.
 
-Removal is Step 5 of the merge below. The `postinstall: prisma generate` script is the trap — dropping the deps without deleting that line breaks every `npm ci`, including on Vercel.
+Verified by `rm -rf node_modules .next && npm ci && npm run build`, which is what Vercel runs and where the `postinstall` trap would have fired. Clean, plus `tsc --noEmit` clean and all 9 routes building.
 
-## Neon → Supabase merge (in progress)
+**Do not reintroduce an ORM or a second database.** Data access is the Supabase client: `src/lib/supabase/server.ts` (session client — use this in server components so RLS applies) and `client.ts` (browser). Schema changes are hand-run SQL in `scripts/*.sql`, numbered, applied by hand. The service key is server-only and bypasses RLS; it belongs in the report engine and one-off scripts, never in a page.
 
-Consolidating onto one database. Supabase is the destination; Prisma/Neon goes away entirely.
+Two references survive on purpose and are not stragglers: a comment in `scripts/007_merge_neon_schema.sql` explaining why a CHECK exists that Prisma could not express, and the historical notes in this file. Both are records of how the schema got here.
+
+## Neon → Supabase merge (COMPLETE through Step 5)
+
+Consolidated onto one database. Supabase is the only datastore; Prisma and Neon were removed on 2026-09-12. **Only Step 6 remains — decommissioning the dormant Neon instance — and nothing depends on it.**
 
 Two things found during planning that contradicted this file: Supabase already had **nine** tables (not eight) — `cycles`, `pairings`, `conversation_logs`, and `invites` existed but were empty, so `conversation_logs` is *not* "not yet built" — and `survey_responses` holds **52 real rows** (2 respondents, submitted 2026-08-02 and 2026-09-01) on top of the 1300 synthetic, not zero.
 
@@ -194,7 +197,7 @@ Open question this raises: the `is_admin()` clause was somebody's intentional de
 
 **`/admin/map` reads Supabase. Verified in the browser: Nodes 50 / Edges 32, with the `(supabase)` label.** Matches what Neon rendered, which was the bar.
 
-`src/app/admin/map/page.tsx` has `loadFromSupabase()` and `loadFromNeon()` returning the same shape, selected by `FACULTY_MAP_SOURCE`: `neon` picks the old Prisma path, **anything else — including unset — defaults to supabase**. Rollback is an env var, not a revert. The header renders the active source beside the counts, which is how the verification above was possible at a glance.
+At the time, `src/app/admin/map/page.tsx` carried both `loadFromSupabase()` and `loadFromNeon()` behind a `FACULTY_MAP_SOURCE` flag, so rollback was an env var rather than a revert, and the header rendered the active source beside the counts — which is what made the verification above readable at a glance. **Step 5 removed both the flag and the Neon branch;** the function is now just `loadFacultyMap()`.
 
 - The fetch runs on the **user's session client** (anon key + cookies via `@supabase/ssr`), never the service key — `009`/`011` policies are what scope the page to the reader's own school. **Do not "optimise" this to the service key**; it would bypass every policy and silently show one school's faculty to another.
 - Cycle is picked by `ends_at desc`, **not** `status = 'active'` — the one migrated cycle is `complete`, and an `active` filter renders an empty graph.
@@ -202,26 +205,19 @@ Open question this raises: the `is_admin()` clause was somebody's intentional de
 - `FacultyMapClient` was **unchanged and needed no change**. The page adapts Supabase's shape to it: `first_name`+`last_name` → `name`, `strength_tags` → `strengthTags`.
 - Nodes are filtered to `is_demo = true`. **Drop that filter when a real roster exists**, or real teachers will be invisible on the map.
 
-⚠️ **Nothing in the app reads Neon any more** except the deliberately-retained `loadFromNeon()` branch. Neon is now a rollback target and nothing else.
+### Step 5 — DONE (2026-09-12): Prisma removed, one database
+
+**The rollback path is gone and the merge is effectively complete.** Prisma, `pg`, the `prisma/` directory, `prisma.config.ts`, `src/lib/prisma.ts`, the `migrate-neon-to-supabase.ts` script, the `loadFromNeon()` branch, the `FACULTY_MAP_SOURCE` flag, `DATABASE_URL`, and the `postinstall: prisma generate` line all went in one commit — they had to, since dropping the packages while `postinstall` survived would break every `npm ci` including Vercel's.
+
+Also swept: the stray root `src/` (with `api/test/route.ts`, the GET handler that created a `Test School` row on every request), the three `prisma/seed.ts.bak*` files, and the `next` / `web@0.1.0` junk artifacts, now gitignored. `tsconfig.json`'s `exclude` no longer lists `prisma`.
+
+Verified before commit: clean `npm ci` (where the trap would fire), `tsc --noEmit` clean, `next build` green across all 9 routes.
+
+See "Prisma and Neon are GONE" above for what the data-access story is now.
 
 ### Remaining
 
-**Step 5 — remove Prisma.** Only after the Supabase map has run in production long enough that you'd have heard about a problem. Removing Prisma deletes the rollback path, so it is the point of no return, not a cleanup chore.
-
-Delete together, in one commit — the `postinstall` line is the trap, since dropping the deps while it survives breaks every `npm ci` including Vercel's:
-
-- `src/app/admin/map/page.tsx` — the `loadFromNeon()` branch, the `FACULTY_MAP_SOURCE` flag, the `(source)` label, and the `prisma` import
-- `src/lib/prisma.ts`
-- `prisma/` — `schema.prisma`, `migrations/`, `seed.ts`, and the three stale `seed.ts.bak*` files
-- `prisma.config.ts`
-- `package.json` — deps `@prisma/client`, `@prisma/adapter-pg`, `prisma`, `pg`, devDep `@types/pg`; **remove `prisma generate` from `build` and delete the `postinstall` script**
-- `scripts/migrate-neon-to-supabase.ts` — it imports `pg`; it has done its job and keeping it means keeping the dependency
-- The untracked stray root `src/` — including `src/app/api/test/route.ts`, the GET handler that created a `Test School` row on every request
-- Also unset `FACULTY_MAP_SOURCE` in Vercel
-
-Verify with a clean `rm -rf node_modules .next && npm ci && npm run build`, `grep -ri prisma src/` returning nothing, and a real deploy.
-
-**Step 6 — decommission Neon.** `pg_dump` to somewhere durable first, leave the branch read-only for a couple of weeks, then delete. Remove `DATABASE_URL` from `.env` and from Vercel **last** — a stale build-time env var is harmless; a prematurely deleted database is not.
+**Step 6 — decommission Neon.** The only migration item left, and it is **post-soak cleanup, not urgent**: nothing reads Neon, so it costs nothing to leave sitting. `pg_dump` to somewhere durable first, leave the branch read-only for a couple of weeks, then delete. `DATABASE_URL` is still set in **Vercel** — harmless now that no code reads it; remove it **last**, after the database is actually gone. A stale build-time env var is harmless; a prematurely deleted database is not.
 
 **Debts that outlive the merge:**
 

@@ -137,3 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# macOS
+.DS_Store
+
+# Artifacts of mistyped shell redirects (e.g. `npm run dev > next`)
+/apps/web/next
+/apps/web/web@*
