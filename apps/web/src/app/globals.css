@@ -661,3 +661,298 @@ h3 {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ---------------------------------------------------------------- admin */
+/* Leadership dashboard. Same palette and type as the report deck: Lora for
+   headings, Public Sans for body, JetBrains Mono for the small uppercase
+   labels, teal as the only accent on warm paper. */
+
+.adm {
+  max-width: 1180px;
+  padding-top: 8px;
+  padding-bottom: 80px;
+}
+
+.adm-denied {
+  padding: 70px 28px 90px;
+  max-width: 640px;
+}
+
+.adm-denied h1 {
+  font-size: 29px;
+  margin-bottom: 12px;
+}
+
+.adm-denied p {
+  color: #6b6459;
+}
+
+.adm-head {
+  padding: 22px 0 26px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 26px;
+}
+
+.adm-eyebrow {
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.adm-head h1 {
+  font-size: 31px;
+  margin-bottom: 7px;
+}
+
+.adm-sub {
+  margin: 0;
+  color: #6b6459;
+  font-size: 15px;
+}
+
+.adm-status {
+  color: var(--teal-dk);
+}
+
+/* ------------------------------------------------------- metric strip */
+
+.adm-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.adm-metric {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adm-metric .mono {
+  color: var(--muted);
+}
+
+.adm-metric b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.adm-metric-note {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------- cards */
+
+.adm-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 20px 22px 22px;
+  margin-bottom: 18px;
+}
+
+.adm-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.adm-card-head h2 {
+  font-size: 19px;
+}
+
+.adm-count {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.adm-lede {
+  margin: -6px 0 16px;
+  font-size: 14.5px;
+  color: #6b6459;
+  max-width: 62ch;
+}
+
+.adm-foot {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 58ch;
+}
+
+.adm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.adm-grid .adm-card {
+  margin-bottom: 0;
+}
+
+/* The map component sizes itself to the viewport; cap it inside the card. */
+.adm-map-card {
+  padding-bottom: 16px;
+}
+
+.adm-map {
+  height: 560px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.adm-map > div {
+  height: 100% !important;
+}
+
+/* --------------------------------------------------------------- bars */
+
+.adm-bars,
+.adm-styles,
+.adm-pairs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adm-bar + .adm-bar,
+.adm-styles li + li {
+  margin-top: 14px;
+}
+
+.adm-bar-top,
+.adm-style-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 14.5px;
+}
+
+.adm-bar-top .mono,
+.adm-style-top .mono {
+  color: var(--muted);
+}
+
+.adm-track {
+  height: 8px;
+  background: var(--paper-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.adm-track i {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  border-radius: 4px;
+}
+
+.adm-style-top b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.adm-tagline {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* -------------------------------------------------------------- pairs */
+
+.adm-pairs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.adm-pair {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 13px 15px;
+  background: var(--paper);
+}
+
+.adm-pair-people {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.adm-pair-people b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.adm-pair-people em {
+  font-style: normal;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.adm-pair-amp {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.adm-pair-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adm-chip {
+  display: inline-block;
+  background: var(--teal-bg);
+  color: var(--teal-dk);
+  border-radius: 3px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adm-why {
+  font-size: 12.5px;
+  color: #6b6459;
+}
+
+.adm-why-dim {
+  color: var(--muted);
+}
+
+.adm-note {
+  margin: 22px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+@media (max-width: 1040px) {
+  .adm-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .adm-grid,
+  .adm-pairs {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FacultyMapClient from "./FacultyMapClient";
+import {
+  DOMAIN_LABEL,
+  ARCHETYPE_LABEL,
+  TEACHING_STYLE,
+  domainsForTags,
+  type TeachingStyle,
+} from "@/lib/domains";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +17,9 @@ type MapUser = {
   name: string;
   department: string | null;
   strengthTags?: unknown;
-  personalityTags?: unknown;
-  funTags?: unknown;
+  domains?: string[];
+  archetype?: string | null;
+  teachingStyle?: string | null;
 };
 type MapEdge = { id: string; source: string; target: string; label?: string };
 type MapData = {
@@ -80,7 +88,7 @@ async function loadFacultyMap(): Promise<MapData | { error: string }> {
   //    will not appear on the map.
   const { data: people, error: peopleErr } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, department, strength_tags, personality_tags, fun_tags")
+    .select("id, first_name, last_name, department, strength_tags, archetype_id, teaching_style")
     .eq("school_id", school.id)
     .eq("is_demo", true)
     .order("department", { ascending: true })
@@ -109,8 +117,11 @@ async function loadFacultyMap(): Promise<MapData | { error: string }> {
       name: [p.first_name, p.last_name].filter(Boolean).join(" ").trim(),
       department: p.department,
       strengthTags: p.strength_tags,
-      personalityTags: p.personality_tags,
-      funTags: p.fun_tags,
+      domains: domainsForTags(p.strength_tags).map((d) => DOMAIN_LABEL[d]),
+      archetype: p.archetype_id ? ARCHETYPE_LABEL[p.archetype_id] : null,
+      teachingStyle: p.teaching_style
+        ? TEACHING_STYLE[p.teaching_style as TeachingStyle]?.label ?? null
+        : null,
     })),
     edges: (pairings ?? []).map((p) => ({
       id: p.id,

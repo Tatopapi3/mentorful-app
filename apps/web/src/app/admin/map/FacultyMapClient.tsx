@@ -25,12 +25,14 @@ type UserNode = {
   id: string;
   name: string;
   department: string | null;
-  strengthTags?: any;
-  personalityTags?: any;
-  funTags?: any;
+  strengthTags?: unknown;
+  /** Domains resolved from strengthTags by the caller (see src/lib/domains.ts). */
+  domains?: string[];
+  archetype?: string | null;
+  teachingStyle?: string | null;
 };
 
-type LayoutMode = "grid" | "pairings" | "department" | "strength" | "personality";
+type LayoutMode = "grid" | "pairings" | "department" | "strength";
 
 function firstTag(v: any): string {
   if (!v) return "None";
@@ -85,6 +87,11 @@ export default function FacultyMapClient(props: {
 
   // preserve manual drag positions as new "starting positions"
   const draggedPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+
+  // ReactFlow instance, captured so the view can be re-fitted once a layout
+  // tween finishes. `fitView` on mount fits the pre-layout grid; the tween then
+  // moves every node, which is what left the graph sitting off-screen.
+  const rfRef = useRef<{ fitView: (o?: Record<string, unknown>) => void } | null>(null);
 
   useEffect(() => {
     // if users list changes (shouldn't often), rebuild nodes but keep dragged positions if any
@@ -194,11 +201,6 @@ export default function FacultyMapClient(props: {
       centers = computeClusterCenters(keys);
       const map = new Map(props.users.map((u) => [u.id, firstTag(u.strengthTags)]));
       keyForId = (id) => map.get(id) ?? "None";
-    } else if (mode === "personality") {
-      const keys = Array.from(new Set(props.users.map((u) => firstTag(u.personalityTags)))).sort();
-      centers = computeClusterCenters(keys);
-      const map = new Map(props.users.map((u) => [u.id, firstTag(u.personalityTags)]));
-      keyForId = (id) => map.get(id) ?? "None";
     }
 
     // Simulation
@@ -219,7 +221,7 @@ export default function FacultyMapClient(props: {
     );
 
     // Cluster attraction for certain modes
-    if (mode === "department" || mode === "strength" || mode === "personality") {
+    if (mode === "department" || mode === "strength") {
       sim.force(
         "x",
         forceX((d: any) => centers.get(keyForId(d.id))?.x ?? 550).strength(0.25)
@@ -269,7 +271,12 @@ export default function FacultyMapClient(props: {
           return { ...n, position: { x, y } };
         })
       );
-      if (f < frames) requestAnimationFrame(step);
+      if (f < frames) {
+        requestAnimationFrame(step);
+      } else {
+        // Final frame: the nodes are where they are going to stay, so fit now.
+        rfRef.current?.fitView({ padding: 0.22, duration: 240 });
+      }
     };
 
     requestAnimationFrame(step);
@@ -307,7 +314,7 @@ export default function FacultyMapClient(props: {
           }}
         >
           <div style={{ fontWeight: 700, marginRight: 8 }}>Layout</div>
-          {(["grid", "pairings", "department", "strength", "personality"] as LayoutMode[]).map(
+          {(["grid", "pairings", "department", "strength"] as LayoutMode[]).map(
             (m) => (
               <button
                 key={m}
@@ -329,9 +336,7 @@ export default function FacultyMapClient(props: {
                     ? "Pairings"
                     : m === "department"
                       ? "Department"
-                      : m === "strength"
-                        ? "Strength"
-                        : "Personality"}
+                      : "Strength"}
               </button>
             )
           )}
@@ -342,8 +347,12 @@ export default function FacultyMapClient(props: {
           edges={edgesRF}
           onNodesChange={onNodesChange}
           onNodeClick={(_, node) => setSelectedId(node.id)}
+          onInit={(inst) => {
+            rfRef.current = inst as unknown as typeof rfRef.current;
+          }}
           fitView
           fitViewOptions={{ padding: 0.22 }}
+          minZoom={0.15}
         >
           <Background />
           <Controls />
@@ -357,33 +366,35 @@ export default function FacultyMapClient(props: {
         ) : (
           <>
             <div style={{ fontSize: 16, fontWeight: 700 }}>{selected.name}</div>
-            <div style={{ color: "#666", marginBottom: 10 }}>{selected.department ?? "—"}</div>
+            <div style={{ color: "#666", marginBottom: 10 }}>{selected.department ?? "Unassigned"}</div>
 
             <div style={{ fontWeight: 600, marginTop: 10 }}>Partners (this cycle)</div>
             <ul style={{ marginTop: 6, paddingLeft: 18 }}>
               {partnerNames.length ? partnerNames.map((n) => <li key={n}>{n}</li>) : <li>None</li>}
             </ul>
 
-            <div style={{ fontWeight: 600, marginTop: 10 }}>Tags</div>
-            <pre
-              style={{
-                fontSize: 11,
-                background: "#fafafa",
-                padding: 8,
-                borderRadius: 8,
-                overflowX: "auto",
-              }}
-            >
-{JSON.stringify(
-  {
-    strengthTags: selected.strengthTags,
-    personalityTags: selected.personalityTags,
-    funTags: selected.funTags,
-  },
-  null,
-  2
-)}
-            </pre>
+            <div style={{ fontWeight: 600, marginTop: 14 }}>Strong in</div>
+            <ul style={{ marginTop: 6, paddingLeft: 18 }}>
+              {(selected.domains ?? []).length ? (
+                selected.domains!.map((d) => <li key={d}>{d}</li>)
+              ) : (
+                <li>Not recorded</li>
+              )}
+            </ul>
+
+            {selected.teachingStyle ? (
+              <>
+                <div style={{ fontWeight: 600, marginTop: 10 }}>Teaching style</div>
+                <div>{selected.teachingStyle}</div>
+              </>
+            ) : null}
+
+            {selected.archetype ? (
+              <>
+                <div style={{ fontWeight: 600, marginTop: 10 }}>Archetype</div>
+                <div>{selected.archetype}</div>
+              </>
+            ) : null}
           </>
         )}
       </aside>
