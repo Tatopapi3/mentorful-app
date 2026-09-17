@@ -956,3 +956,371 @@ h3 {
     grid-template-columns: 1fr;
   }
 }
+
+/* -------------------------------------------------------------- teacher */
+/* Teacher dashboard. Same palette and type as /admin and the report deck. */
+
+.tch {
+  max-width: 980px;
+  padding-top: 8px;
+  padding-bottom: 80px;
+}
+
+.tch-denied {
+  padding: 70px 28px 90px;
+  max-width: 620px;
+}
+
+.tch-denied h1 {
+  font-size: 29px;
+  margin-bottom: 12px;
+}
+
+.tch-denied p {
+  color: #6b6459;
+}
+
+.tch-head {
+  padding: 22px 0 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.tch-eyebrow {
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.tch-head h1 {
+  font-size: 31px;
+}
+
+.tch-top {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.tch-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 20px 22px 22px;
+  margin-bottom: 18px;
+}
+
+.tch-top .tch-card {
+  margin-bottom: 0;
+}
+
+.tch-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.tch-card-head h2 {
+  font-size: 19px;
+}
+
+.tch-card-head .mono {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tch-lede {
+  margin: -4px 0 16px;
+  font-size: 14px;
+  color: #6b6459;
+  max-width: 64ch;
+}
+
+.tch-empty {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 6px 0 0;
+}
+
+/* ------------------------------------------------------- profile card */
+
+.tch-ident h2 {
+  font-size: 22px;
+}
+
+.tch-dept {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 3px 0 0;
+}
+
+.tch-block {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.tch-block .mono {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 7px;
+}
+
+.tch-style {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tch-tagline {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 3px 0 0;
+}
+
+.tch-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tch-chips li {
+  background: var(--teal-bg);
+  color: var(--teal-dk);
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* The inspiration quote: no label, no quotation marks in the markup, just a
+   teal rule and the sentence. It should read as the person, not a field. */
+.tch-quote {
+  margin: 18px 0 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--teal);
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #4a443a;
+}
+
+/* ------------------------------------------------------ co-mentor cards */
+
+.tch-mentors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tch-mentor + .tch-mentor {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.tch-mentor-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tch-mentor-top b {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.tch-role {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.tch-insight {
+  margin: 8px 0 0;
+  font-size: 14.5px;
+  color: #4a443a;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------- log a convo */
+
+.tch-log {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  margin-bottom: 18px;
+}
+
+.tch-log > summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--teal-dk);
+  list-style: none;
+}
+
+.tch-log > summary::-webkit-details-marker {
+  display: none;
+}
+
+.tch-log > summary::before {
+  content: "+ ";
+  font-family: var(--font-mono), monospace;
+}
+
+.tch-log[open] > summary::before {
+  content: "– ";
+}
+
+.tch-form {
+  padding: 4px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tch-form label {
+  display: block;
+}
+
+.tch-form label .mono {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.tch-form textarea.field {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.tch-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tch-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.tch-fine {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 44ch;
+}
+
+.tch-error {
+  color: #b3261e;
+  font-size: 14px;
+  margin: 0;
+}
+
+.tch-ok {
+  color: var(--teal-dk);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* -------------------------------------------------------------- journal */
+
+.tch-logs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: entry;
+}
+
+.tch-entry + .tch-entry {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.tch-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.tch-chip {
+  background: var(--teal-bg);
+  color: var(--teal-dk);
+  border-radius: 3px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tch-entry-who {
+  font-size: 13.5px;
+  color: #6b6459;
+}
+
+.tch-entry-when {
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.tch-fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 8px 18px;
+}
+
+.tch-fields dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 4px;
+}
+
+.tch-fields dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #3c362c;
+}
+
+.tch-submit {
+  margin-top: 14px;
+}
+
+.tch-submit .btn {
+  padding: 8px 16px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 860px) {
+  .tch-top,
+  .tch-row {
+    grid-template-columns: 1fr;
+  }
+  .tch-fields {
+    grid-template-columns: 1fr;
+    gap: 3px 0;
+  }
+  .tch-fields dd {
+    margin-bottom: 8px;
+  }
+}
