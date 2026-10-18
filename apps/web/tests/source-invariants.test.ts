@@ -36,6 +36,40 @@ describe("Invariant: the service key stays out of pages and the browser", () => 
   });
 });
 
+describe("Invariant: the report is for the signed-in leader's own school, and never blends demo data", () => {
+  it("the report page requires a signed-in admin with a school", () => {
+    const page = stripped("src/app/report/page.tsx");
+    expect(page).toMatch(/getUser\(\)/);
+    expect(page).toMatch(/role !== "admin"/);
+    expect(page).toMatch(/redirect\("\/login"\)/);
+  });
+
+  it("the school comes from the reader's own profile, never from the URL or an environment variable", () => {
+    const page = stripped("src/app/report/page.tsx");
+    expect(page).toMatch(/me\.school_id/);
+    expect(page).not.toMatch(/searchParams|params\./);
+    expect(page).not.toMatch(/CULTURE_SCAN_SCHOOL_ID/);
+  });
+
+  it("the report engine only reads the given school's responses and excludes synthetic rows unless asked", () => {
+    const data = stripped("src/lib/report/data.ts");
+    expect(data).toMatch(/\.eq\("school_id", schoolId\)/);
+    expect(data).toMatch(/includeSynthetic \?\? false/);
+    expect(data).toMatch(/if \(!includeSynthetic\) q = q\.eq\("synthetic", false\)/);
+  });
+
+  it("only the public sample route asks for synthetic data, and it is the sandbox school", () => {
+    const callers = appFiles.filter((f) => /includeSynthetic:\s*true/.test(stripped(f)));
+    expect(callers).toEqual(["src/app/sample-report/page.tsx"]);
+    expect(stripped("src/app/sample-report/page.tsx")).toMatch(/CULTURE_SCAN_SCHOOL_ID/);
+  });
+
+  it("the landing page's report card points at the sample, not the real report", () => {
+    expect(read("src/app/page.tsx")).toMatch(/href: "\/sample-report"/);
+    expect(read("src/app/page.tsx")).not.toMatch(/href: "\/report"/);
+  });
+});
+
 describe("Invariant: the two axes never merge", () => {
   it("the dimension values and the domain values are textually disjoint, even ignoring case", () => {
     const dims = new Set<string>(DIMENSIONS.map((d) => d.toLowerCase()));
@@ -105,23 +139,6 @@ describe("Invariant: invitations don't read the auth table as the caller", () =>
 describe("Known gaps (expected to fail until fixed)", () => {
   it.fails("the code lists all five fixed conversation domains, including CELEBRATIONS", () => {
     expect([...CONCERN_DOMAINS]).toContain("CELEBRATIONS");
-  });
-
-  it.fails("the report page requires a signed-in leader", () => {
-    expect(stripped("src/app/report/page.tsx")).toMatch(/getUser\(\)/);
-  });
-
-  it.fails("the report only counts responses from the reader's own school", () => {
-    expect(stripped("src/lib/report/data.ts")).toMatch(/school_id/);
-  });
-
-  it.fails("the participation floor is at least 30 respondents", async () => {
-    const { MIN_RESPONDENTS } = await import("@/lib/report/data.ts");
-    expect(MIN_RESPONDENTS).toBeGreaterThanOrEqual(30);
-  });
-
-  it.fails("synthetic rows are excluded from the report", () => {
-    expect(stripped("src/lib/report/data.ts")).toMatch(/INCLUDE_SYNTHETIC\s*=\s*false/);
   });
 
   it.fails("the completion screen reads a real count, not an invented one", () => {

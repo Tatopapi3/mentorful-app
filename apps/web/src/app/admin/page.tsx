@@ -154,11 +154,18 @@ export default async function AdminDashboardPage() {
   const domainsLogged = Object.values(domainCounts).filter((n) => n > 0).length;
 
   // CTE = the Culture Scan's efficacy dimension. Server-only, aggregate-only.
-  const report = await loadReportStats();
-  const cte =
-    report.status === "ok" ? report.stats.dimensions.efficacy.mean : null;
-  const cteN = report.status === "ok" ? report.stats.n : null;
-  const cteSynthetic = report.status === "ok" ? report.includesSynthetic : false;
+  const { count: realFaculty } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("role", "teacher")
+    .eq("is_demo", false);
+  const report = await loadReportStats({ schoolId, faculty: realFaculty ?? 0 });
+  const hasStats = report.status === "ok" || report.status === "early-look";
+  const cte = hasStats ? report.stats.dimensions.efficacy.mean : null;
+  const cteN = hasStats ? report.stats.n : null;
+  const cteSynthetic = hasStats ? report.includesSynthetic : false;
+  const cteEarly = report.status === "early-look";
 
   // --- faculty map ---------------------------------------------------------
   const mapUsers = faculty.map((p) => ({
@@ -240,7 +247,7 @@ export default async function AdminDashboardPage() {
             note={
               cte === null
                 ? "no scan data"
-                : `efficacy · n=${cteN}${cteSynthetic ? " · demo" : ""}`
+                : `efficacy · n=${cteN}${cteEarly ? " · early look" : ""}${cteSynthetic ? " · demo" : ""}`
             }
           />
         </section>

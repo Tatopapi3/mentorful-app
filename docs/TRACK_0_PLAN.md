@@ -8,9 +8,10 @@ Run everything with `cd apps/web && npm test`.
 | File | What it checks | State |
 |---|---|---|
 | `tests/instrument.test.ts` | 26 items, split 6 / 9 / 6 / 5; reverse items at 5, 11, 21, 25; the frozen instrument hash | passes |
+| `tests/gates.test.ts` (on `track-1-report-gate`) | The three gates (60% of faculty, 25-respondent network floor, groups under 5) and the CTE headline | passes |
 | `tests/scoring.test.ts` | Dimension scores are means; a respondent missing a dimension is dropped and counted; correlation and partial-correlation matrices; R times its inverse is the identity; structural to efficacy is linked raw but not once the others are held constant | passes |
 | `tests/source-invariants.test.ts` | Service key read in one place only; never `NEXT_PUBLIC_`; the faculty map uses the session client; the two axes are disjoint and never share a table; `conversation_logs` has no admin or school read policy; `survey_responses` has no SELECT policy; invites don't read `auth.users` | passes |
-| `tests/source-invariants.test.ts`, "Known gaps" | The things that are wrong today, written as the correct behaviour with `it.fails` | 9 open gaps |
+| `tests/source-invariants.test.ts`, "Known gaps" | The things that are wrong today, written as the correct behaviour with `it.fails` | 9 open gaps on `track-0-invariant-tests`; 5 after `track-1-report-gate` |
 
 `it.fails` keeps the suite green while a gap is open, and turns it red the moment someone fixes the gap, which is the cue to
 delete the `.fails`. The list may only shrink. The nine open gaps:

@@ -13,7 +13,7 @@ import SiteHeader from "@/components/SiteHeader";
 
 const DEMOS = [
   { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
-  { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
+  { href: "/sample-report", title: "Scan report", blurb: "The six slides a school gets back, on sample data." },
   { href: "/admin/map", title: "Faculty map", blurb: "A staff network, drawn from data." },
   { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
 ];
