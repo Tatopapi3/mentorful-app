@@ -111,7 +111,8 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     pairings.push({ id: `pairing-req-${h}`, school_id: sid, cycle_id: cycle.id, host_id: teachers[h].id, visitor_id: teachers[v].id, status: "pending", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
   }
 
-  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved").map((p, i) => ({
+  // About one pair in five has logged nothing yet, and a third of the others also have a visit debrief.
+  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved").filter((_, i) => i % 5 !== 4).map((p, i) => ({
     id: `log-${String(i + 1).padStart(2, "0")}`,
     school_id: sid,
     cycle_id: cycle.id,
@@ -131,6 +132,10 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     created_at: `2025-10-${String((i % 27) + 1).padStart(2, "0")}T14:00:00Z`,
     is_visit_debrief: false,
   }));
+  for (let i = 0; i < conversation_logs.length; i += 3) {
+    const base = conversation_logs[i];
+    conversation_logs.push({ ...base, id: `${base.id}-debrief`, is_visit_debrief: true });
+  }
   // One draft for the preview teacher, so the "submit" step is visible.
   const mine = pairings.find((p) => p.host_id === me.id || p.visitor_id === me.id)!;
   conversation_logs.push({

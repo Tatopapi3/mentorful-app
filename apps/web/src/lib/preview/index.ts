@@ -36,6 +36,36 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
     user: { id: me.auth_user_id, email: me.email },
     rpc: {
       // Admins can't read conversation rows by design; they get a count.
+      participation_summary: (args: { p_cycle: string }) => {
+        const pr = tables.pairings.filter((p) => p.cycle_id === args.p_cycle && p.status === "approved");
+        const logs = tables.conversation_logs.filter((l) => l.cycle_id === args.p_cycle && l.status === "submitted");
+        const conv = (id: string) => logs.some((l) => l.pairing_id === id && !l.is_visit_debrief);
+        const deb = (id: string) => logs.some((l) => l.pairing_id === id && l.is_visit_debrief);
+        const teachers = tables.profiles.filter((p) => p.role === "teacher");
+        const activeIds = new Set(pr.filter((p) => conv(p.id) || deb(p.id)).flatMap((p) => [p.host_id, p.visitor_id]));
+        const byDept = new Map<string, { teachers: number; active: number }>();
+        for (const t of teachers) {
+          const d = t.department ?? "Unassigned";
+          const e = byDept.get(d) ?? { teachers: 0, active: 0 };
+          e.teachers++;
+          if (activeIds.has(t.id)) e.active++;
+          byDept.set(d, e);
+        }
+        return {
+          pairs: pr.length,
+          with_conversation: pr.filter((p) => conv(p.id)).length,
+          with_debrief: pr.filter((p) => deb(p.id)).length,
+          complete: pr.filter((p) => conv(p.id) && deb(p.id)).length,
+          teachers: teachers.length,
+          active_teachers: teachers.filter((t) => activeIds.has(t.id)).length,
+          by_department: [...byDept.entries()].filter(([, v]) => v.teachers >= 5).map(([department, v]) => ({ department, ...v })).sort((a, b) => a.department.localeCompare(b.department)),
+        };
+      },
+      quiet_pair_count: (args: { p_cycle: string; p_days: number }) => {
+        const since = Date.now() - (args.p_days ?? 30) * 86400000;
+        const pr = tables.pairings.filter((p) => p.cycle_id === args.p_cycle && p.status === "approved");
+        return pr.filter((p) => !tables.conversation_logs.some((l) => l.pairing_id === p.id && l.status === "submitted" && new Date(l.submitted_at).getTime() >= since)).length;
+      },
       conversation_log_count: (args: { p_cycle: string | null }) => tables.conversation_logs.filter((l) => l.status === "submitted" && (!args?.p_cycle || l.cycle_id === args.p_cycle)).length,
     },
   });
