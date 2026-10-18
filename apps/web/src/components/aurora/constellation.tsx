@@ -29,6 +29,7 @@ export function Constellation({
   drafts,
   skin = "aurora",
   base = "/admin/aurora",
+  draftLabel = "Draft round",
 }: {
   people: StarPerson[];
   pairs: StarLink[];
@@ -38,11 +39,14 @@ export function Constellation({
   skin?: "aurora" | "nick";
   /** Path prefix of the look this is shown in, so links stay inside it. */
   base?: "/admin" | "/admin/aurora";
+  /** What the dotted layer is called: "Draft round" on the pairing screen, "Suggested" where it shows suggestions. */
+  draftLabel?: string;
 }) {
   const P = PALETTE[skin];
   const [selected, setSelected] = useState<string | null>(requests[0]?.a ?? null);
   const [layers, setLayers] = useState({ pairs: true, requests: true, drafts: true });
   const [q, setQ] = useState("");
+  const [onlyLone, setOnlyLone] = useState(false);
 
   const { pos, galaxies } = useMemo(() => {
     const byDept = new Map<string, StarPerson[]>();
@@ -117,9 +121,14 @@ export function Constellation({
               disabled={k === "drafts" && drafts.length === 0}
               onClick={() => setLayers((v) => ({ ...v, [k]: !v[k] }))}
             >
-              {k === "pairs" ? `Pairs · ${pairs.length}` : k === "requests" ? `Requests · ${requests.length}` : `Draft round · ${drafts.length}`}
+              {k === "pairs" ? `Pairs · ${pairs.length}` : k === "requests" ? `Requests · ${requests.length}` : `${draftLabel} · ${drafts.length}`}
             </button>
           ))}
+        </div>
+        <div className="ev-tabs" role="group" aria-label="Highlight" style={{ margin: 0 }}>
+          <button type="button" className={onlyLone ? "on" : ""} aria-pressed={onlyLone} onClick={() => setOnlyLone((v) => !v)}>
+            Who needs a partner · {people.length - partnerOf.size}
+          </button>
         </div>
         <input type="search" className="ev-input" style={{ maxWidth: 240, padding: "8px 14px" }} placeholder="Find a colleague…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find a colleague" />
         <span className="ev-small" style={{ marginLeft: "auto" }}>
@@ -171,11 +180,11 @@ export function Constellation({
               if (!xy) return null;
               const paired = partnerOf.has(p.id);
               const isSel = p.id === selected;
-              const dim = term && !p.name.toLowerCase().includes(term);
+              const dim = (term && !p.name.toLowerCase().includes(term)) || (onlyLone && paired);
               return (
-                <g key={p.id} transform={`translate(${xy.x.toFixed(1)} ${xy.y.toFixed(1)})`} opacity={dim ? 0.18 : 1}>
+                <g key={p.id} transform={`translate(${xy.x.toFixed(1)} ${xy.y.toFixed(1)})`} opacity={dim ? 0.15 : 1}>
                   <circle r={14} fill="transparent" onClick={() => setSelected(p.id)} style={{ cursor: "pointer" }} />
-                  <circle r={isSel ? 7.5 : paired ? 5 : 3.6} fill={paired ? P.star : "none"} stroke={paired ? P.starRing : P.lone} strokeWidth={paired ? 1.4 : 1.2} strokeDasharray={paired ? undefined : "2 2"} className={paired ? "v3-star" : undefined} style={{ animationDelay: `${(idx % 9) * 0.45}s`, pointerEvents: "none" }} />
+                  <circle r={isSel ? 7.5 : paired ? 5 : onlyLone ? 6 : 3.6} fill={paired ? P.star : "none"} stroke={paired ? P.starRing : P.lone} strokeWidth={paired ? 1.4 : 1.2} strokeDasharray={paired ? undefined : "2 2"} className={paired ? "v3-star" : undefined} style={{ animationDelay: `${(idx % 9) * 0.45}s`, pointerEvents: "none" }} />
                   {isSel && <circle r={13} fill="none" stroke={P.sel} strokeWidth={2} style={{ pointerEvents: "none" }} />}
                   <title>{`${p.name} · ${p.dept}${p.grade ? ` · Grade ${p.grade}` : ""}`}</title>
                 </g>

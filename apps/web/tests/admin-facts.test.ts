@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { coverage, departmentMatrix, directions, gaps, progress, reach, suggestions } from "@/lib/admin/network";
 import { csvEscape, resultsCsv } from "@/lib/admin/csv";
 import { participationRates, quietLabel, type Participation } from "@/lib/admin/participation";
 
@@ -214,5 +215,67 @@ describe("results CSV", () => {
     expect(csv).toContain("pairs,Pairs that cross departments (%),50");
     expect(csv).toContain("participation,Pairs with a debrief (%),50");
     for (const p of people) expect(csv).not.toContain(`,${p.name},`);
+  });
+});
+
+describe("network reading", () => {
+  const dept = (d: string, n: number) => Array.from({ length: n }, (_, i) => ({ id: `${d}${i}`, name: `${d} ${i}`, dept: d }));
+  const school: AdminSnapshot = {
+    ...base,
+    people: [...dept("Math", 5), ...dept("ELA", 5), ...dept("Arts", 5), ...dept("PE", 2)],
+    pairs: [
+      { id: "1", a: "Math0", b: "ELA0", domain: null, tag: null },
+      { id: "2", a: "Math1", b: "ELA1", domain: null, tag: null },
+      { id: "3", a: "Math2", b: "Math3", domain: null, tag: null },
+    ],
+    requests: [],
+  };
+  const m = departmentMatrix(school);
+
+  it("count connections between departments and leave out the small ones", () => {
+    expect(m.depts).toEqual(["Arts", "ELA", "Math"]);
+    expect(m.omitted).toEqual(["PE"]);
+    expect(coverage(m)).toEqual({ connected: 1, possible: 3 });
+  });
+
+  it("list the department pairs that have no pair between them, and who is least connected", () => {
+    expect(gaps(m).map((g) => `${g.a}-${g.b}`).sort()).toEqual(["Arts-ELA", "Arts-Math"]);
+    expect(reach(m)[0]).toEqual({ dept: "Arts", connected: 0, possible: 2 });
+  });
+
+  it("suggest pairs among unpaired teachers that would close those gaps, using each person once", () => {
+    const s = suggestions(school, m);
+    expect(s.length).toBeGreaterThan(0);
+    const ids = s.flatMap((x) => [x.host.id, x.visitor.id]);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const x of s) {
+      expect(x.host.dept).not.toBe(x.visitor.dept);
+      expect(gaps(m).some((g) => (g.a === x.closes[0] && g.b === x.closes[1]) || (g.a === x.closes[1] && g.b === x.closes[0]))).toBe(true);
+    }
+  });
+
+  it("never suggest someone who is already paired or has a request waiting", () => {
+    const withReq = { ...school, requests: [{ id: "r", a: "Arts0", b: "Math4", domain: null, tag: null }] };
+    const ids = suggestions(withReq, departmentMatrix(withReq)).flatMap((x) => [x.host.id, x.visitor.id]);
+    expect(ids).not.toContain("Arts0");
+    expect(ids).not.toContain("Math0");
+  });
+
+  it("compare this cycle with the one before, and say whether it is progress", () => {
+    const before: AdminSnapshot = { ...school, pairs: [{ id: "x", a: "Math0", b: "Math1", domain: null, tag: null }] };
+    const rows = progress(school, before);
+    const cross = rows.find((r) => r.label === "Pairs that cross departments")!;
+    expect(cross.before).toBe("0%");
+    expect(cross.now).toBe("67%");
+    expect(cross.delta).toBe("up");
+    expect(cross.good).toBe(true);
+    expect(progress(school, null)).toEqual([]);
+  });
+
+  it("read the sky in plain language, starting with what to do", () => {
+    const d = directions(school, m, progress(school, null), null);
+    expect(d[0].severity).toBe("do");
+    expect(d.find((x) => x.id === "gaps")!.title).toBe("2 of 3 department connections don't exist yet");
+    expect(d.find((x) => x.id === "least")!.title).toBe("Arts is the least connected department");
   });
 });
