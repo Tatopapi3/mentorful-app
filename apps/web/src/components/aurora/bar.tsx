@@ -97,6 +97,7 @@ export function AtlasBar({
   items,
   actions,
   primary,
+  tools,
   displayName,
   roleLabel,
   schoolName,
@@ -105,6 +106,8 @@ export function AtlasBar({
   items: NavItem[];
   actions: QuickAction[];
   primary?: QuickAction;
+  /** Extra controls at the start of the tools row, for example the look switch. */
+  tools?: React.ReactNode;
   displayName: string;
   roleLabel: string;
   schoolName: string;
@@ -142,6 +145,7 @@ export function AtlasBar({
           ))}
         </nav>
         <div className="ev-tools">
+          {tools}
           {primary && (
             <Link href={primary.href} className="ev-btn primary sm ev-logbtn">
               {primary.label}

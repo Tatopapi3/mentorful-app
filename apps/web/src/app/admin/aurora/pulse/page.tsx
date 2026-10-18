@@ -15,7 +15,7 @@ export default async function PulsePage() {
   const admin = (await requireAdmin())!;
   const snap = await loadAdminSnapshot(admin);
   const facts = buildFacts(snap);
-  const actions = buildActions(facts).slice(0, 6);
+  const actions = buildActions(facts, "/admin/aurora").slice(0, 6);
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
 
@@ -71,7 +71,7 @@ export default async function PulsePage() {
               <p>Results appear once enough teachers respond, and nothing is guessed before then.</p>
             </>
           )}
-          <Link href="/admin/insights" className="ev-btn">Open Insights</Link>
+          <Link href="/admin/aurora/insights" className="ev-btn">Open Insights</Link>
         </section>
 
         <aside>
@@ -87,7 +87,7 @@ export default async function PulsePage() {
               <small>{d.eyebrow}</small>
               <strong style={{ display: "block", font: "600 16px var(--ev-display)", letterSpacing: "-0.02em", margin: "4px 0" }}>{d.title}</strong>
               <p className="ev-small">{d.line}</p>
-              <Link href="/admin/constellation" className="ev-btn primary sm">{d.cta}</Link>
+              <Link href="/admin/aurora/constellation" className="ev-btn primary sm">{d.cta}</Link>
             </div>
           ))}
         </aside>
@@ -113,12 +113,12 @@ export default async function PulsePage() {
         <section>
           <h3>What you can see</h3>
           <p>Who is paired, where pairs cross departments, and school-wide scan averages. Never an individual&apos;s answers.</p>
-          <Link href="/admin/constellation" className="ev-btn sm">Open the constellation</Link>
+          <Link href="/admin/aurora/constellation" className="ev-btn sm">Open the constellation</Link>
         </section>
         <section>
           <h3>What stays with teachers</h3>
           <p>What was said in a conversation. Leadership sees that conversations happened and how many, never their content.</p>
-          <Link href="/admin" className="ev-btn sm">Back to the overview</Link>
+          <Link href="/admin/aurora" className="ev-btn sm">Back to the overview</Link>
         </section>
         <section>
           <h3>What you can present</h3>

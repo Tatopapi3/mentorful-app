@@ -15,6 +15,7 @@ export function AuroraChrome({
   nav,
   actions,
   primary,
+  tools,
   children,
 }: {
   schoolName: string;
@@ -24,6 +25,7 @@ export function AuroraChrome({
   nav: NavItem[];
   actions: QuickAction[];
   primary?: QuickAction;
+  tools?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -34,7 +36,7 @@ export function AuroraChrome({
         <i />
         <i />
       </div>
-      <AtlasBar items={nav} actions={actions} primary={primary} displayName={displayName} roleLabel={roleLabel} schoolName={schoolName} initials={initialsOf(displayName)} />
+      <AtlasBar items={nav} actions={actions} primary={primary} tools={tools} displayName={displayName} roleLabel={roleLabel} schoolName={schoolName} initials={initialsOf(displayName)} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>{children}</div>
       <footer className="ev-foot">
         <span>{schoolName}</span>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AdminTabs from "@/components/nick/admin-tabs";
 import FacultyMapClient from "./FacultyMapClient";
 import {
   DOMAIN_LABEL,
@@ -160,6 +161,10 @@ export default async function AdminMapPage() {
 
   return (
     <main style={{ padding: 16, fontFamily: "system-ui" }}>
+      {/* Added: the leadership tabs. The map below is unchanged. */}
+      <div style={{ marginBottom: 14 }}>
+        <AdminTabs />
+      </div>
       <div
         style={{
           display: "flex",
