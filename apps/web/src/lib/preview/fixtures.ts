@@ -97,7 +97,8 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     const n = pairings.length + 1;
     pairings.push({ id: `pairing-${String(n).padStart(2, "0")}`, school_id: sid, cycle_id: cycle.id, host_id: host.id, visitor_id: visitor.id, status: "approved", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
   };
-  for (let i = 0; i < 50; i += 2) addPair(order[i], order[i + 1]);
+  // 22 disjoint pairs leave six teachers unpaired, so a randomized round has someone to pair.
+  for (let i = 0; i < 44; i += 2) addPair(order[i], order[i + 1]);
   const me = teachers[0];
   for (let k = 0; k < 7; k++) {
     const host = k === 0 ? teachers[1] : pick(teachers);
