@@ -29,6 +29,7 @@ describe.skipIf(!HAS_DB)("Invariant 3: survey answers are anonymous (survey_resp
   it.todo("no column in survey_responses, survey_items or surveys links a response to a person");
   it.todo("the stored scored_value must equal 7 - raw_value on reverse items (positions 5, 11, 21, 25), enforced in the database");
   it.todo("a response to a closed survey or an inactive item is rejected");
+  it.todo("a response's school_id must equal the school_id of its survey, so nobody can file answers against another school");
 });
 
 describe.skipIf(!HAS_DB)("Invariant 4: School A cannot see School B", () => {

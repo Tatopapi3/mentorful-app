@@ -27,7 +27,7 @@ delete the `.fails`. The list may only shrink. The nine open gaps:
 
 ## What waits for the database dump
 
-`tests/db/invariants.db.test.ts` holds 27 titled `it.todo` tests in eight groups, skipped unless `TEST_DATABASE_URL` is set.
+`tests/db/invariants.db.test.ts` holds 28 titled `it.todo` tests in eight groups, skipped unless `TEST_DATABASE_URL` is set.
 They cover the invariants that can only be proven against real policies: pair privacy, anonymous responses, School A / School B
 isolation, cell suppression, the profiles columns, claim on login, and demo flags.
 
