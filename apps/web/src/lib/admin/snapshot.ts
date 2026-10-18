@@ -65,3 +65,10 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
     quietPairs,
   };
 }
+
+/** The cycle before the one shown (cycles come newest first), for "this cycle against last". Null when there is none. */
+export async function loadPreviousSnapshot(admin: AdminContext, snap: AdminSnapshot): Promise<AdminSnapshot | null> {
+  const i = snap.cycles.findIndex((c) => c.id === snap.cycle?.id);
+  const prev = i >= 0 ? snap.cycles[i + 1] : undefined;
+  return prev ? loadAdminSnapshot(admin, { cycleId: prev.id }) : null;
+}
