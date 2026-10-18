@@ -28,6 +28,7 @@ export function Constellation({
   requests,
   drafts,
   skin = "aurora",
+  base = "/admin/aurora",
 }: {
   people: StarPerson[];
   pairs: StarLink[];
@@ -35,6 +36,8 @@ export function Constellation({
   drafts: StarLink[];
   /** "aurora" is the night-sky look; "nick" draws the same sky in the paper-and-teal palette of the existing pages. */
   skin?: "aurora" | "nick";
+  /** Path prefix of the look this is shown in, so links stay inside it. */
+  base?: "/admin" | "/admin/aurora";
 }) {
   const P = PALETTE[skin];
   const [selected, setSelected] = useState<string | null>(requests[0]?.a ?? null);
@@ -216,13 +219,13 @@ export function Constellation({
                     <p className="ev-small">
                       {byId.get(selRequest.a)?.name} asked to be paired with {byId.get(selRequest.b)?.name}. The colleague is never told.
                     </p>
-                    <Link href="/admin/aurora" className="ev-btn primary sm">Open the overview</Link>
+                    <Link href={`${base}/pairings`} className="ev-btn primary sm">Review the request</Link>
                   </>
                 ) : (
                   <>
                     <h3>No partner yet</h3>
                     <p className="ev-small">Include them in your next randomized round, or pair them by hand.</p>
-                    <Link href="/admin/aurora" className="ev-btn sm">Open the overview</Link>
+                    <Link href={`${base}/pairings`} className="ev-btn sm">Open pairing</Link>
                   </>
                 )}
               </div>

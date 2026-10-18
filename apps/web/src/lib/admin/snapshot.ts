@@ -13,13 +13,17 @@ const toPair = (p: Row): AdminPair => ({ id: p.id, a: p.host_id, b: p.visitor_id
  * pair-private, so leadership gets a count from the database function, never the rows. The scan comes from
  * the report engine as aggregates only.
  */
-export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext): Promise<AdminSnapshot> {
-  const [{ data: school }, { data: cycle }, { data: teachers }] = await Promise.all([
+export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, opts: { cycleId?: string | null } = {}): Promise<AdminSnapshot> {
+  const { data: allCycles } = await supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).order("ends_at", { ascending: false });
+  const cycles = (allCycles ?? []).map((c) => ({ id: c.id, name: c.name, status: c.status }));
+  // The cycle asked for, if it is one of this school's; otherwise the latest.
+  const chosen = (allCycles ?? []).find((c) => c.id === opts.cycleId) ?? (allCycles ?? [])[0] ?? null;
+  const [{ data: school }, { data: teachers }] = await Promise.all([
     supabase.from("schools").select("name, strategic_priority").eq("id", schoolId).maybeSingle(),
-    supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).order("ends_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("profiles").select("id, first_name, last_name, department").eq("school_id", schoolId).eq("role", "teacher").order("last_name"),
   ]);
 
+  const cycle = chosen;
   const approved = cycle
     ? await supabase.from("pairings").select("id, host_id, visitor_id, domain, strategic_tag").eq("school_id", schoolId).eq("cycle_id", cycle.id).eq("status", "approved")
     : { data: [] as Row[] };
@@ -43,7 +47,8 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext): P
 
   return {
     school: { name: school?.name ?? "Your school", priority: school?.strategic_priority ?? null },
-    cycle: cycle ? { name: cycle.name, status: cycle.status } : null,
+    cycle: cycle ? { id: cycle.id, name: cycle.name, status: cycle.status } : null,
+    cycles,
     people: (teachers ?? []).map((t) => ({
       id: t.id,
       name: [t.first_name, t.last_name].filter(Boolean).join(" ") || "Teacher",
