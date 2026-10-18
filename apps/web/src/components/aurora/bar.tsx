@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { signOut } from "@/lib/auth/actions";
 
-export type NavItem = { href: string; label: string; match?: string[] };
+export type NavItem = { href: string; label: string; match?: string[]; /** Active only on exactly this path, for a parent route like /admin. */ exact?: boolean };
 export type QuickAction = { href: string; label: string; hint?: string };
 
 const THEME_KEY = "mentorful-theme";
@@ -113,7 +113,7 @@ export function AtlasBar({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { theme, toggle } = useTheme();
-  const active = (item: NavItem) => (item.match ?? [item.href]).some((m) => pathname === m || pathname.startsWith(`${m}/`));
+  const active = (item: NavItem) => item.exact ? pathname === item.href : (item.match ?? [item.href]).some((m) => pathname === m || pathname.startsWith(`${m}/`));
   const palette = useMemo(() => [...items.map((n) => ({ href: n.href, label: n.label, hint: "Go to" })), ...actions], [items, actions]);
 
   useEffect(() => {

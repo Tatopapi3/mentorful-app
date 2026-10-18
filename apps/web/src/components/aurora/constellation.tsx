@@ -95,7 +95,7 @@ export function Constellation({
     <div className="v3-sky">
       <div className="v3-sky-controls">
         <div className="ev-tabs" role="group" aria-label="Layers" style={{ margin: 0 }}>
-          {(["pairs", "requests", "drafts"] as const).map((k) => (
+          {(drafts.length > 0 ? (["pairs", "requests", "drafts"] as const) : (["pairs", "requests"] as const)).map((k) => (
             <button
               key={k}
               type="button"
