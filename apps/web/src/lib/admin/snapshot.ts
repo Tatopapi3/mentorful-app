@@ -53,5 +53,6 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext): P
     requests: ((pending.data ?? []) as Row[]).map(toPair),
     conversations: typeof count === "number" ? count : 0,
     scan,
+    stats: report.status === "ok" ? report.stats : null,
   };
 }

@@ -3,7 +3,7 @@
  * Every sentence the Pulse and Insights pages print comes from a number computed here, so a suggestion can
  * always name the number behind it.
  */
-import { DIMENSIONS, DIMENSION_LABEL, type Dimension } from "@/lib/report/stats";
+import { DIMENSIONS, DIMENSION_LABEL, type Dimension, type ReportStats } from "@/lib/report/stats";
 
 export type AdminPerson = { id: string; name: string; dept: string };
 export type AdminPair = { id: string; a: string; b: string; domain: string | null; tag: string | null };
@@ -27,6 +27,8 @@ export type AdminSnapshot = {
   /** Total conversations logged, from the count function (leadership never reads the rows). */
   conversations: number;
   scan: ScanSummary | null;
+  /** The full report aggregates (for the network and the findings), when a scan has results. */
+  stats?: ReportStats | null;
 };
 
 export type Facts = {
@@ -120,3 +122,36 @@ export function headlineSentence(f: Facts): string {
 }
 
 export const dimensionName = (d: Dimension) => DIMENSION_LABEL[d];
+
+/** The smallest department we draw. Under this a department is left out so no one is identifiable. */
+export const MIN_DEPARTMENT_SIZE = 5;
+
+export type DepartmentLink = { a: string; b: string; count: number };
+
+/**
+ * How many pairs connect each two departments. Pairs inside one department are counted separately, and
+ * departments with fewer than MIN_DEPARTMENT_SIZE teachers are left out of both.
+ */
+export function departmentConnections(s: AdminSnapshot): { links: DepartmentLink[]; within: number; omitted: string[] } {
+  const size = new Map<string, number>();
+  for (const p of s.people) size.set(p.dept, (size.get(p.dept) ?? 0) + 1);
+  const shown = (d: string) => (size.get(d) ?? 0) >= MIN_DEPARTMENT_SIZE;
+  const dept = new Map(s.people.map((p) => [p.id, p.dept]));
+  const counts = new Map<string, number>();
+  let within = 0;
+  for (const p of s.pairs) {
+    const da = dept.get(p.a);
+    const db = dept.get(p.b);
+    if (!da || !db || !shown(da) || !shown(db)) continue;
+    if (da === db) {
+      within++;
+      continue;
+    }
+    const [x, y] = da < db ? [da, db] : [db, da];
+    counts.set(`${x}|${y}`, (counts.get(`${x}|${y}`) ?? 0) + 1);
+  }
+  const links = [...counts.entries()]
+    .map(([k, count]) => ({ a: k.split("|")[0], b: k.split("|")[1], count }))
+    .sort((l, r) => r.count - l.count || l.a.localeCompare(r.a));
+  return { links, within, omitted: [...size.entries()].filter(([, n]) => n < MIN_DEPARTMENT_SIZE).map(([d]) => d).sort() };
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
-import { buildFacts, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
 
 const people = [
   { id: "a", name: "A", dept: "Math" },
@@ -109,5 +109,31 @@ describe("actions", () => {
     const sev = buildActions(buildFacts({ ...base, scan, requests: [{ id: "r", a: "e", b: "f", domain: null, tag: null }] })).map((a) => a.severity);
     const rank = { do: 0, watch: 1, good: 2 } as const;
     expect(sev).toEqual([...sev].sort((x, y) => rank[x] - rank[y]));
+  });
+});
+
+describe("department connections", () => {
+  const big = (dept: string, n: number, start: number) => Array.from({ length: n }, (_, i) => ({ id: `${dept}${start + i}`, name: `${dept}${i}`, dept }));
+  const school: AdminSnapshot = {
+    ...base,
+    people: [...big("Math", 5, 0), ...big("ELA", 5, 0), ...big("Arts", 2, 0)],
+    pairs: [
+      { id: "1", a: "Math0", b: "ELA0", domain: null, tag: null },
+      { id: "2", a: "Math1", b: "ELA1", domain: null, tag: null },
+      { id: "3", a: "Math2", b: "Math3", domain: null, tag: null },
+      { id: "4", a: "Math4", b: "Arts0", domain: null, tag: null }, // Arts has 2 teachers: left out
+    ],
+  };
+
+  it("count pairs between each two departments and inside one", () => {
+    const c = departmentConnections(school);
+    expect(c.links).toEqual([{ a: "ELA", b: "Math", count: 2 }]);
+    expect(c.within).toBe(1);
+  });
+
+  it("leave out departments with fewer than 5 teachers, and say which", () => {
+    const c = departmentConnections(school);
+    expect(c.omitted).toEqual(["Arts"]);
+    expect(c.links.some((l) => l.a === "Arts" || l.b === "Arts")).toBe(false);
   });
 });
