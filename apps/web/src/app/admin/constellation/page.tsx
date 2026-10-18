@@ -21,7 +21,7 @@ export default async function ConstellationPage() {
         <Metric label="Awaiting" value={String(facts.unpaired)} note="teachers without a partner" />
       </section>
       <section className="adm-card">
-        <Constellation skin="nick" people={snap.people.map((p) => ({ id: p.id, name: p.name, dept: p.dept, grade: null }))} pairs={snap.pairs.map((p) => ({ a: p.a, b: p.b }))} requests={snap.requests.map((p) => ({ a: p.a, b: p.b }))} drafts={[]} />
+        <Constellation skin="nick" base="/admin" people={snap.people.map((p) => ({ id: p.id, name: p.name, dept: p.dept, grade: null }))} pairs={snap.pairs.map((p) => ({ a: p.a, b: p.b }))} requests={snap.requests.map((p) => ({ a: p.a, b: p.b }))} drafts={[]} />
       </section>
       <p className="adm-note">Position is a navigation aid only. Distance and brightness do not measure influence, performance, or relationship quality.</p>
     </NickPage>

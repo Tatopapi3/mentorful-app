@@ -12,7 +12,8 @@ const people = [
 ];
 const base: AdminSnapshot = {
   school: { name: "S", priority: null },
-  cycle: { name: "Fall", status: "active" },
+  cycle: { id: "c1", name: "Fall", status: "active" },
+  cycles: [{ id: "c1", name: "Fall", status: "active" }],
   people,
   pairs: [
     { id: "p1", a: "a", b: "b", domain: "CLASSROOM", tag: null }, // crosses departments
@@ -107,8 +108,8 @@ describe("actions", () => {
 
   it("keep every link inside the look it was asked for", () => {
     const withData = { ...base, scan, requests: [{ id: "r", a: "e", b: "f", domain: null, tag: null }] };
-    for (const a of buildActions(buildFacts(withData), "/admin")) expect(a.href).toMatch(/^\/admin\/(constellation|insights)$/);
-    for (const a of buildActions(buildFacts(withData), "/admin/aurora")) expect(a.href).toMatch(/^\/admin\/aurora\/(constellation|insights)$/);
+    for (const a of buildActions(buildFacts(withData), "/admin")) expect(a.href).toMatch(/^\/admin\/(constellation|insights|pairings)$/);
+    for (const a of buildActions(buildFacts(withData), "/admin/aurora")) expect(a.href).toMatch(/^\/admin\/aurora\/(constellation|insights|pairings)$/);
   });
 
   it("put what to do before what to watch before what is going well", () => {

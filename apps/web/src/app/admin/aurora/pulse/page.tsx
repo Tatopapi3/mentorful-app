@@ -25,10 +25,10 @@ export default async function PulsePage() {
       eyebrow: "Pairing request",
       title: `${nameOf.get(r.a) ?? "A teacher"} → ${nameOf.get(r.b) ?? "a colleague"}`,
       line: "Proposed by a teacher. It stays pending until you decide.",
-      cta: "See it",
+      cta: "Review it",
     })),
     ...(facts.unpaired > 0
-      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Open the constellation" }]
+      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Draft a round" }]
       : []),
   ];
 
@@ -87,7 +87,7 @@ export default async function PulsePage() {
               <small>{d.eyebrow}</small>
               <strong style={{ display: "block", font: "600 16px var(--ev-display)", letterSpacing: "-0.02em", margin: "4px 0" }}>{d.title}</strong>
               <p className="ev-small">{d.line}</p>
-              <Link href="/admin/aurora/constellation" className="ev-btn primary sm">{d.cta}</Link>
+              <Link href="/admin/aurora/pairings" className="ev-btn primary sm">{d.cta}</Link>
             </div>
           ))}
         </aside>
@@ -118,7 +118,7 @@ export default async function PulsePage() {
         <section>
           <h3>What stays with teachers</h3>
           <p>What was said in a conversation. Leadership sees that conversations happened and how many, never their content.</p>
-          <Link href="/admin/aurora" className="ev-btn sm">Back to the overview</Link>
+          <Link href="/admin/aurora/overview" className="ev-btn sm">Open the overview</Link>
         </section>
         <section>
           <h3>What you can present</h3>

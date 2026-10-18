@@ -63,7 +63,7 @@ export default async function PulsePage() {
                 <b>{w.title}</b>
                 <span className="adm-why">{w.line}</span>
               </div>
-              <Link href="/admin/constellation" className="nk-btn">See it</Link>
+              <Link href="/admin/pairings" className="nk-btn">Review</Link>
             </div>
           ))}
         </section>

@@ -46,3 +46,13 @@
 .nk-sky .ev-avatar { background: var(--teal-bg); color: var(--teal-dk); }
 .nk-sky h3 { font-family: var(--font-serif), Georgia, serif; color: var(--ink); letter-spacing: 0; }
 .nk-sky a { color: var(--teal-dk); }
+
+.nk-btn.nk-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+.nk-btn.nk-primary:hover { background: var(--teal-dk); }
+button.nk-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; }
+
+@media print {
+  .nk-tabs, .site-header, .nk-noprint { display: none !important; }
+  .adm { padding-top: 0; }
+  .adm-card { break-inside: avoid; }
+}

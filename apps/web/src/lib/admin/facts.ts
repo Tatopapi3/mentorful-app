@@ -18,7 +18,9 @@ export type ScanSummary = {
 
 export type AdminSnapshot = {
   school: { name: string; priority: string | null };
-  cycle: { name: string; status: string } | null;
+  cycle: { id: string; name: string; status: string } | null;
+  /** Every cycle of the school, newest first, for the cycle switcher. */
+  cycles: { id: string; name: string; status: string }[];
   people: AdminPerson[];
   /** Approved pairs this cycle. */
   pairs: AdminPair[];

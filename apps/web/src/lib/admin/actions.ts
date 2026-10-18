@@ -39,8 +39,8 @@ export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[]
       severity: "do",
       title: `Decide on ${f.pendingRequests} pairing ${plural(f.pendingRequests, "request", "requests")}`,
       detail: "Teachers proposed these pairs. They stay pending until you approve them, and the colleague is never told what you decide.",
-      href: `${base}/constellation`,
-      cta: "See them",
+      href: `${base}/pairings`,
+      cta: "Review them",
     });
   }
 
@@ -50,8 +50,8 @@ export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[]
       severity: "do",
       title: `Pair the ${f.unpaired} unpaired ${plural(f.unpaired, "teacher", "teachers")}`,
       detail: `${f.paired} of ${f.faculty} teachers have a partner. Pairs that mix departments connect people who rarely talk.`,
-      href: `${base}/constellation`,
-      cta: "Open the constellation",
+      href: `${base}/pairings`,
+      cta: "Draft a round",
     });
   }
 

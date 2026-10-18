@@ -322,3 +322,9 @@
 .v3-add-menu a { padding: 11px 14px; border-radius: 12px; color: var(--ev-ink); text-decoration: none; font-size: 14px; }
 .v3-add-menu a:hover { background: var(--ev-soft); }
 .ev-logbtn { white-space: nowrap; }
+
+@media print {
+  .ev-topbar, .ev-aurora, .ev-foot, .ev-noprint { display: none !important; }
+  .ev { background: #fff; }
+  .ev-panel, .ev-feature { break-inside: avoid; box-shadow: none; }
+}

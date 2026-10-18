@@ -6,8 +6,9 @@ import { SwitchLook } from "@/components/aurora/switch-look";
 import "./nick-admin.css";
 
 const TABS = [
-  { href: "/admin", label: "Overview", exact: true },
   { href: "/admin/pulse", label: "Pulse" },
+  { href: "/admin/pairings", label: "Pairing" },
+  { href: "/admin/overview", label: "Overview" },
   { href: "/admin/constellation", label: "Constellation" },
   { href: "/admin/insights", label: "Insights" },
   { href: "/admin/map", label: "Faculty map" },
@@ -19,7 +20,7 @@ export default function AdminTabs() {
   return (
     <nav className="nk-tabs" aria-label="Leadership views">
       {TABS.map((t) => (
-        <Link key={t.href} href={t.href} aria-current={(t.exact ? pathname === t.href : pathname === t.href || pathname.startsWith(`${t.href}/`)) ? "page" : undefined}>
+        <Link key={t.href} href={t.href} aria-current={pathname === t.href || pathname.startsWith(`${t.href}/`) ? "page" : undefined}>
           {t.label}
         </Link>
       ))}

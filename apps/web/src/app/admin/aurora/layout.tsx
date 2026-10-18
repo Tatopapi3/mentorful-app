@@ -3,20 +3,25 @@ import { SwitchLook } from "@/components/aurora/switch-look";
 import { requireAdmin } from "@/lib/admin/require";
 
 const NAV = [
-  { href: "/admin/aurora", label: "Overview", exact: true },
   { href: "/admin/aurora/pulse", label: "Pulse" },
+  { href: "/admin/aurora/pairings", label: "Pairing" },
+  { href: "/admin/aurora/overview", label: "Overview" },
   { href: "/admin/aurora/constellation", label: "Constellation" },
   { href: "/admin/aurora/insights", label: "Insights" },
   { href: "/admin/aurora/map", label: "Faculty map" },
 ];
 
 const ACTIONS = [
-  { href: "/admin/aurora", label: "Open the overview", hint: "Overview" },
   { href: "/admin/aurora/pulse", label: "See where the program stands", hint: "Pulse" },
+  { href: "/admin/aurora/pairings", label: "Review pairing requests", hint: "Pairing" },
+  { href: "/admin/aurora/pairings", label: "Draft a randomized pairing round", hint: "Pairing" },
+  { href: "/admin/aurora/overview", label: "Open the overview", hint: "Overview" },
   { href: "/admin/aurora/constellation", label: "See the faculty as a constellation", hint: "Constellation" },
   { href: "/admin/aurora/insights", label: "Read the insights", hint: "Insights" },
   { href: "/admin/aurora/map", label: "Open the faculty map", hint: "Faculty map" },
-  { href: "/admin", label: "Switch to Nick’s look", hint: "Look" },
+  { href: "/admin/aurora/summary", label: "Open the board summary", hint: "Present" },
+  { href: "/admin/aurora/privacy", label: "What leadership can and can't see", hint: "Trust" },
+  { href: "/admin/pulse", label: "Switch to Nick’s look", hint: "Look" },
 ];
 
 // The whole leadership area in the Aurora look. Overview and Faculty map show everything the existing
