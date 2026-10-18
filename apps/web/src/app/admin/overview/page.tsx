@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminTabs from "@/components/nick/admin-tabs";
+import { CycleSwitcher } from "@/components/admin/kit";
 import SiteHeader from "@/components/SiteHeader";
 import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
 import { loadReportStats } from "@/lib/report/data";
@@ -62,7 +63,8 @@ function ranked(counts: Record<string, number>) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const cycleParam = (await searchParams).cycle;
   const supabase = await createClient();
   const {
     data: { user },
@@ -106,13 +108,16 @@ export default async function AdminDashboardPage() {
   const [{ data: school }, { data: cycle }, { data: people }, { data: logs }] =
     await Promise.all([
       supabase.from("schools").select("name, strategic_priority").eq("id", schoolId).maybeSingle(),
-      supabase
-        .from("cycles")
-        .select("id, name, status, ends_at")
-        .eq("school_id", schoolId)
-        .order("ends_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      // Latest cycle, or the one chosen with ?cycle= (added with the cycle switcher).
+      typeof cycleParam === "string"
+        ? supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).eq("id", cycleParam).maybeSingle()
+        : supabase
+            .from("cycles")
+            .select("id, name, status, ends_at")
+            .eq("school_id", schoolId)
+            .order("ends_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
       supabase
         .from("profiles")
         .select("id, first_name, last_name, department, teaching_style, archetype_id, strength_tags")
@@ -132,6 +137,7 @@ export default async function AdminDashboardPage() {
         .eq("status", "approved")
     : { data: [] as Pair[] };
 
+  const { data: allCycles } = await supabase.from("cycles").select("id, name, status").eq("school_id", schoolId).order("ends_at", { ascending: false });
   const faculty = (people ?? []) as Row[];
   const pairs = (pairings ?? []) as Pair[];
   const byId = new Map(faculty.map((p) => [p.id, p]));
@@ -222,6 +228,8 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
         </header>
+
+        <CycleSwitcher skin="nick" cycles={allCycles ?? []} selectedId={cycle?.id ?? null} path="/admin/overview" />
 
         {/* ---------------------------------------------------- metric strip */}
         <section className="adm-metrics" aria-label="Summary">

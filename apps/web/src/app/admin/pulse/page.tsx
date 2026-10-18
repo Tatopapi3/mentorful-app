@@ -1,3 +1,4 @@
+import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import NickDimensionBars from "@/components/nick/dimension-bars";
 import { Metric, NickDenied, NickPage } from "@/components/nick/page";
@@ -12,10 +13,12 @@ const SEVERITY = { do: "Do this", watch: "Keep an eye on", good: "Going well" } 
 
 // Pulse in Nick's look: where the program stands in one sentence, the numbers, the decisions waiting, and what
 // to do next. Every suggestion names the number behind it.
-export default async function PulsePage() {
+export default async function PulsePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const admin = await requireAdmin();
   if (!admin) return <NickDenied />;
-  const snap = await loadAdminSnapshot(admin);
+  const params = await searchParams;
+  const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
+  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, "/admin").slice(0, 6);
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
@@ -33,6 +36,7 @@ export default async function PulsePage() {
       title={(facts.pairedPct ?? 0) >= 60 ? "Connection is growing" : "Where connection stands"}
       sub={<>{headlineSentence(facts)}{snap.school.priority ? ` · ${snap.school.priority}` : ""}</>}
     >
+      <CycleSwitcher skin="nick" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/pulse" />
       <section className="adm-metrics" aria-label="Summary">
         <Metric label="Took the scan" value={pctText(facts.scan?.completionPct ?? null)} note={scan ? `${scan.n} of ${facts.faculty} teachers` : "no results yet"} />
         <Metric label="Have a partner" value={pctText(facts.pairedPct)} note={`${facts.pairCount} pairs`} />
@@ -86,6 +90,12 @@ export default async function PulsePage() {
           </div>
         ))}
       </section>
+
+      <p style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Link href="/admin/summary" className="nk-btn">Board summary</Link>
+        <Link href="/admin/privacy" className="nk-btn">What leadership can and can’t see</Link>
+        {snap.scan && <Link href="/admin/export/results.csv" className="nk-btn">Download results (CSV)</Link>}
+      </p>
 
       <p className="adm-note">Leadership sees that conversations happened and how many, never what was said. Survey answers are anonymous and shown only as school-wide averages.</p>
     </NickPage>

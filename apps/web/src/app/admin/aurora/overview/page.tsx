@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CycleSwitcher } from "@/components/admin/kit";
 import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
 import { fullName, loadOverviewDetail, ranked } from "@/lib/admin/detail";
 import { requireAdmin } from "@/lib/admin/require";
@@ -38,9 +39,10 @@ function Bars({ rows, suffix }: { rows: [string, number][]; suffix?: string }) {
 // The leadership overview in the Aurora look. It shows everything the existing overview shows, from the same
 // reads: the numbers, the faculty network, what pairs work on, strengths, departments, teaching styles and
 // every co-mentor pair.
-export default async function AuroraOverviewPage() {
+export default async function AuroraOverviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const admin = (await requireAdmin())!;
-  const d = await loadOverviewDetail(admin);
+  const cycleParam = (await searchParams).cycle;
+  const d = await loadOverviewDetail(admin, { cycleId: typeof cycleParam === "string" ? cycleParam : null });
   const domainsLogged = Object.values(d.domainCounts).filter((n) => n > 0).length;
   const maxStyle = d.faculty.length;
 
@@ -52,6 +54,8 @@ export default async function AuroraOverviewPage() {
         {d.cycle ? `${d.cycle.name} · ${d.cycle.status}` : "No cycle found"}
         {d.school.priority ? ` · ${d.school.priority}` : ""}
       </p>
+
+      <CycleSwitcher skin="aurora" cycles={d.cycles} selectedId={d.cycle?.id ?? null} path="/admin/aurora/overview" />
 
       <section aria-label="Summary" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14, margin: "22px 0" }}>
         <Stat label="Conversations" value={String(d.conversationCount)} note="logged, content stays private" />

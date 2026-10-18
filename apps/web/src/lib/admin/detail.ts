@@ -21,10 +21,11 @@ export const ranked = (counts: Record<string, number>) => Object.entries(counts)
  * same things. It reads exactly what Nick's /admin page reads, on the same session client, with the same
  * filters (demo faculty only, approved pairs of the latest cycle). Nothing here is new data.
  */
-export async function loadOverviewDetail({ supabase, schoolId }: AdminContext) {
-  const [{ data: school }, { data: cycle }, { data: people }] = await Promise.all([
+export async function loadOverviewDetail({ supabase, schoolId }: AdminContext, opts: { cycleId?: string | null } = {}) {
+  const { data: allCycles } = await supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).order("ends_at", { ascending: false });
+  const cycle = (allCycles ?? []).find((c) => c.id === opts.cycleId) ?? (allCycles ?? [])[0] ?? null;
+  const [{ data: school }, { data: people }] = await Promise.all([
     supabase.from("schools").select("name, strategic_priority").eq("id", schoolId).maybeSingle(),
-    supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).order("ends_at", { ascending: false }).limit(1).maybeSingle(),
     supabase
       .from("profiles")
       .select("id, first_name, last_name, department, teaching_style, archetype_id, strength_tags")
@@ -58,7 +59,8 @@ export async function loadOverviewDetail({ supabase, schoolId }: AdminContext) {
 
   return {
     school: { name: school?.name ?? "School", priority: school?.strategic_priority ?? null },
-    cycle: cycle ? { name: cycle.name, status: cycle.status } : null,
+    cycle: cycle ? { id: cycle.id, name: cycle.name, status: cycle.status } : null,
+    cycles: (allCycles ?? []).map((c) => ({ id: c.id, name: c.name, status: c.status })),
     faculty,
     pairs,
     byId: new Map(faculty.map((p) => [p.id, p])),

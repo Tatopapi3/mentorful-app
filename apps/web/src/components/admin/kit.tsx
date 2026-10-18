@@ -128,3 +128,72 @@ export function CycleSwitcher({ skin, cycles, selectedId, path }: { skin: Skin; 
     </div>
   );
 }
+
+export function StatGrid({ skin, items }: { skin: Skin; items: { label: string; value: string; note: string }[] }) {
+  if (skin === "nick") {
+    return (
+      <section className="adm-metrics" style={{ gridTemplateColumns: `repeat(${Math.min(items.length, 5)}, 1fr)` }}>
+        {items.map((i) => (
+          <div key={i.label} className="adm-metric">
+            <span className="mono">{i.label}</span>
+            <b>{i.value}</b>
+            <span className="adm-metric-note">{i.note}</span>
+          </div>
+        ))}
+      </section>
+    );
+  }
+  return (
+    <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14, margin: "6px 0 18px" }}>
+      {items.map((i) => (
+        <div key={i.label} className="ev-panel" style={{ padding: "16px 18px" }}>
+          <small style={{ textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10.5 }}>{i.label}</small>
+          <strong style={{ display: "block", font: "600 28px var(--ev-display)", letterSpacing: "-0.04em", margin: "4px 0 2px" }}>{i.value}</strong>
+          <small>{i.note}</small>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+export function BarList({ skin, rows, max, suffix }: { skin: Skin; rows: { label: string; value: number }[]; max?: number; suffix?: string }) {
+  const top = max ?? Math.max(1, ...rows.map((r) => r.value));
+  if (skin === "nick") {
+    return (
+      <ul className="adm-bars">
+        {rows.map((r) => (
+          <li key={r.label} className="adm-bar">
+            <div className="adm-bar-top">
+              <span>{r.label}</span>
+              <span className="mono">
+                {r.value}
+                {suffix ?? ""}
+              </span>
+            </div>
+            <div className="adm-track">
+              <i style={{ width: `${Math.round((r.value / top) * 100)}%` }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <div>
+      {rows.map((r) => (
+        <div key={r.label} style={{ margin: "12px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+            <span>{r.label}</span>
+            <strong style={{ fontWeight: 600 }}>
+              {r.value}
+              {suffix ?? ""}
+            </strong>
+          </div>
+          <div style={{ height: 10, borderRadius: 999, background: "var(--ev-soft)", marginTop: 6 }}>
+            <div style={{ width: `${Math.round((r.value / top) * 100)}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#5eead4,#818cf8)" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

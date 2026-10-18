@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { csvEscape, resultsCsv } from "@/lib/admin/csv";
 import { participationRates, quietLabel, type Participation } from "@/lib/admin/participation";
 
 const people = [
@@ -192,5 +193,26 @@ describe("participation", () => {
     const a = buildActions(buildFacts({ ...base, participation: { ...p, with_conversation: 5 } })).find((x) => x.id === "conversations");
     expect(a!.title).toBe("50% of pairs have logged a conversation, below the 70% target");
     expect(buildActions(buildFacts({ ...base, participation: p })).some((x) => x.id === "conversations")).toBe(false);
+  });
+});
+
+describe("results CSV", () => {
+  it("escapes commas, quotes and newlines", () => {
+    expect(csvEscape("plain")).toBe("plain");
+    expect(csvEscape("a,b")).toBe('"a,b"');
+    expect(csvEscape('say "hi"')).toBe('"say ""hi"""');
+    expect(csvEscape("two\nlines")).toBe('"two\nlines"');
+    expect(csvEscape(null)).toBe("");
+  });
+
+  it("holds aggregates only: averages, pair counts and rates, with no names", () => {
+    const snap = { ...base, scan, participation: { pairs: 2, with_conversation: 2, with_debrief: 1, complete: 1, teachers: 6, active_teachers: 4, by_department: [] } };
+    const csv = resultsCsv(snap, buildFacts(snap));
+    expect(csv.split("\n")[0]).toBe("section,metric,value");
+    expect(csv).toContain("culture scan,Respondents,4");
+    expect(csv).toContain("dimension average,Structural,3.00");
+    expect(csv).toContain("pairs,Pairs that cross departments (%),50");
+    expect(csv).toContain("participation,Pairs with a debrief (%),50");
+    for (const p of people) expect(csv).not.toContain(`,${p.name},`);
   });
 });

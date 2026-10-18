@@ -1,3 +1,5 @@
+import { CycleSwitcher } from "@/components/admin/kit";
+import ParticipationPanel from "@/components/admin/participation-panel";
 import Link from "next/link";
 import NetworkSlide from "@/app/report/slides/NetworkSlide";
 import NickDimensionBars from "@/components/nick/dimension-bars";
@@ -17,10 +19,12 @@ const SEVERITY = { do: "Do this", watch: "Keep an eye on", good: "Going well" } 
 
 // Insights in Nick's look: what the Culture Scan and the pairs show, school-wide, and where to head. Survey answers
 // carry no department, so nothing here is broken down by group.
-export default async function InsightsPage() {
+export default async function InsightsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const admin = await requireAdmin();
   if (!admin) return <NickDenied />;
-  const snap = await loadAdminSnapshot(admin);
+  const params = await searchParams;
+  const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
+  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, "/admin").filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);
@@ -33,6 +37,7 @@ export default async function InsightsPage() {
 
   return (
     <NickPage eyebrow={`Insights · ${snap.cycle?.name ?? "No cycle"}`} title="What it shows, and where to head" sub="School-wide patterns from the Culture Scan and from who is paired. Groups are never shown, and no individual’s answers can be traced.">
+      <CycleSwitcher skin="nick" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/insights" />
       {!scan && (
         <section className="adm-card">
           <h2>No Culture Scan results yet</h2>
@@ -69,11 +74,13 @@ export default async function InsightsPage() {
               <p className="nk-lead">{findings.gap.finding.sentence}</p>
               <h3 style={{ fontFamily: "var(--font-serif), Georgia, serif", margin: "16px 0 4px" }}>{findings.weakest.finding.title}</h3>
               <p className="nk-lead">{findings.weakest.finding.sentence}</p>
-              <Link href="/report" className="nk-btn">Open the six-slide report</Link>
+              <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link href="/report" className="nk-btn">Open the six-slide report</Link><Link href="/admin/export/results.csv" className="nk-btn">Download results (CSV)</Link><Link href="/admin/summary" className="nk-btn">Board summary</Link></span>
             </section>
           )}
         </>
       )}
+
+      <ParticipationPanel skin="nick" snap={snap} />
 
       <div className="nk-two">
         <section className="adm-card">
