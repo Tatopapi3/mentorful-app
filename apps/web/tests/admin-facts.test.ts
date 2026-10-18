@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { participationRates, quietLabel, type Participation } from "@/lib/admin/participation";
 
 const people = [
   { id: "a", name: "A", dept: "Math" },
@@ -142,5 +143,54 @@ describe("department connections", () => {
     const c = departmentConnections(school);
     expect(c.omitted).toEqual(["Arts"]);
     expect(c.links.some((l) => l.a === "Arts" || l.b === "Arts")).toBe(false);
+  });
+});
+
+describe("participation", () => {
+  const p: Participation = {
+    pairs: 10,
+    with_conversation: 8,
+    with_debrief: 5,
+    complete: 4,
+    teachers: 20,
+    active_teachers: 15,
+    by_department: [
+      { department: "Math", teachers: 8, active: 4 },
+      { department: "ELA", teachers: 7, active: 7 },
+    ],
+  };
+
+  it("turn counts into rates, and order departments by participation", () => {
+    const r = participationRates(p);
+    expect(r.conversationPct).toBe(80);
+    expect(r.debriefPct).toBe(50);
+    expect(r.completePct).toBe(40);
+    expect(r.activePct).toBe(75);
+    expect(r.departments.map((d) => [d.department, d.pct])).toEqual([["ELA", 100], ["Math", 50]]);
+  });
+
+  it("never divide by zero", () => {
+    const r = participationRates({ ...p, pairs: 0, teachers: 0, by_department: [] });
+    expect(r.conversationPct).toBeNull();
+    expect(r.activePct).toBeNull();
+  });
+
+  it("hide a small count of quiet pairs", () => {
+    expect(quietLabel(3)).toBe("fewer than 5");
+    expect(quietLabel(5)).toBe("5");
+    expect(quietLabel(12)).toBe("12");
+  });
+
+  it("only raise the quiet-pairs action at 5 or more, and name the number", () => {
+    const some = buildActions(buildFacts({ ...base, quietPairs: 7 })).find((a) => a.id === "quiet");
+    expect(some!.title).toBe("7 pairs haven't logged a conversation in 30 days");
+    expect(buildActions(buildFacts({ ...base, quietPairs: 3 })).some((a) => a.id === "quiet")).toBe(false);
+    expect(buildActions(buildFacts({ ...base, quietPairs: null })).some((a) => a.id === "quiet")).toBe(false);
+  });
+
+  it("flag a low share of pairs with a conversation against the 70% target", () => {
+    const a = buildActions(buildFacts({ ...base, participation: { ...p, with_conversation: 5 } })).find((x) => x.id === "conversations");
+    expect(a!.title).toBe("50% of pairs have logged a conversation, below the 70% target");
+    expect(buildActions(buildFacts({ ...base, participation: p })).some((x) => x.id === "conversations")).toBe(false);
   });
 });

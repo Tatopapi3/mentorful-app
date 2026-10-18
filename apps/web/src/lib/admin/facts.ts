@@ -4,6 +4,7 @@
  * always name the number behind it.
  */
 import { DIMENSIONS, DIMENSION_LABEL, type Dimension, type ReportStats } from "@/lib/report/stats";
+import type { Participation } from "./participation";
 
 export type AdminPerson = { id: string; name: string; dept: string };
 export type AdminPair = { id: string; a: string; b: string; domain: string | null; tag: string | null };
@@ -31,6 +32,10 @@ export type AdminSnapshot = {
   scan: ScanSummary | null;
   /** The full report aggregates (for the network and the findings), when a scan has results. */
   stats?: ReportStats | null;
+  /** Participation counts from the database function, or null when it is not available. */
+  participation?: Participation | null;
+  /** Approved pairs with no conversation in the last 30 days, or null when unknown. */
+  quietPairs?: number | null;
 };
 
 export type Facts = {
@@ -46,6 +51,8 @@ export type Facts = {
   conversationsPerPair: number | null;
   domainCounts: Record<string, number>;
   topDomain: { domain: string; count: number } | null;
+  quietPairs: number | null;
+  conversationRatePct: number | null;
   scan:
     | null
     | {
@@ -109,6 +116,8 @@ export function buildFacts(s: AdminSnapshot): Facts {
     conversationsPerPair: s.pairs.length > 0 ? Math.round((s.conversations / s.pairs.length) * 10) / 10 : null,
     domainCounts,
     topDomain: top ? { domain: top[0], count: top[1] } : null,
+    quietPairs: s.quietPairs ?? null,
+    conversationRatePct: s.participation ? pct(s.participation.with_conversation, s.participation.pairs) : null,
     scan,
   };
 }
