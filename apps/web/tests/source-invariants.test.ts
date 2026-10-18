@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONCERN_DOMAINS } from "@/lib/domains.ts";
+import { CONCERN_DOMAINS, DOMAIN_LABEL, PLC_FOR_DOMAIN, STRENGTH_DOMAINS, TAG_TO_DOMAIN } from "@/lib/domains.ts";
 import { DIMENSIONS } from "@/lib/report/stats.ts";
 import { read, sqlCode, stripTsComments, walk } from "./helpers";
 
@@ -42,9 +42,22 @@ describe("Invariant: the two axes never merge", () => {
     for (const d of CONCERN_DOMAINS) expect(dims.has(d.toLowerCase())).toBe(false);
   });
 
-  it("the domains the code lists are all among the five fixed conversation domains", () => {
-    const fixed = ["CLASSROOM", "PLANNING", "COMMUNICATION", "ASSESSMENT", "CELEBRATIONS"];
-    for (const d of CONCERN_DOMAINS) expect(fixed).toContain(d);
+  it("the code lists exactly the five fixed conversation domains, in enum order", () => {
+    expect([...CONCERN_DOMAINS]).toEqual(["CLASSROOM", "PLANNING", "COMMUNICATION", "ASSESSMENT", "CELEBRATIONS"]);
+  });
+
+  it("every domain has a label and a PLC it routes to", () => {
+    for (const d of CONCERN_DOMAINS) {
+      expect(DOMAIN_LABEL[d]).toBeTruthy();
+      expect(PLC_FOR_DOMAIN[d]).toBeTruthy();
+    }
+    expect(PLC_FOR_DOMAIN.ASSESSMENT).toBe("Data Dive");
+  });
+
+  it("strength tags resolve only to the four domains that have tags, never to CELEBRATIONS", () => {
+    for (const d of Object.values(TAG_TO_DOMAIN)) expect(STRENGTH_DOMAINS as readonly string[]).toContain(d);
+    expect([...STRENGTH_DOMAINS]).not.toContain("CELEBRATIONS");
+    for (const d of STRENGTH_DOMAINS) expect([...CONCERN_DOMAINS]).toContain(d);
   });
 
   it("no migration builds a shared lookup table that could hold both axes", () => {
@@ -103,10 +116,6 @@ describe("Invariant: invitations don't read the auth table as the caller", () =>
 // it, which is the cue to delete the `.fails`. This list may only shrink.
 // ---------------------------------------------------------------------------------------------
 describe("Known gaps (expected to fail until fixed)", () => {
-  it.fails("the code lists all five fixed conversation domains, including CELEBRATIONS", () => {
-    expect([...CONCERN_DOMAINS]).toContain("CELEBRATIONS");
-  });
-
   it.fails("the report page requires a signed-in leader", () => {
     expect(stripped("src/app/report/page.tsx")).toMatch(/getUser\(\)/);
   });

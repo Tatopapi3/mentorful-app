@@ -5,6 +5,7 @@ import FacultyMapClient from "./map/FacultyMapClient";
 import { loadReportStats } from "@/lib/report/data";
 import {
   CONCERN_DOMAINS,
+  STRENGTH_DOMAINS,
   DOMAIN_LABEL,
   ARCHETYPE_LABEL,
   TEACHING_STYLE,
@@ -186,7 +187,7 @@ export default async function AdminDashboardPage() {
   // Set membership: a teacher strong in two domains is counted in both, so
   // these deliberately sum to more than the headcount.
   const strengthCounts: Record<string, number> = {};
-  for (const d of CONCERN_DOMAINS) strengthCounts[d] = 0;
+  for (const d of STRENGTH_DOMAINS) strengthCounts[d] = 0;
   for (const p of faculty) for (const d of domainsForTags(p.strength_tags)) strengthCounts[d]++;
 
   const styleCounts: Record<string, number> = {};
@@ -196,7 +197,7 @@ export default async function AdminDashboardPage() {
   }
 
   const maxDomain = Math.max(1, ...CONCERN_DOMAINS.map((d) => domainCounts[d]));
-  const maxStrength = Math.max(1, ...CONCERN_DOMAINS.map((d) => strengthCounts[d]));
+  const maxStrength = Math.max(1, ...STRENGTH_DOMAINS.map((d) => strengthCounts[d]));
   const maxDept = Math.max(1, ...Object.values(deptCounts));
 
   return (
@@ -231,8 +232,8 @@ export default async function AdminDashboardPage() {
           <Metric label="Visits" value={String(pairs.length)} note="one per pair" />
           <Metric
             label="Domains logged"
-            value={`${domainsLogged}/4`}
-            note="of the four domains"
+            value={`${domainsLogged}/${CONCERN_DOMAINS.length}`}
+            note={`of the ${CONCERN_DOMAINS.length} domains`}
           />
           <Metric
             label="CTE score"
@@ -288,7 +289,7 @@ export default async function AdminDashboardPage() {
               <span className="mono adm-count">set membership</span>
             </div>
             <ul className="adm-bars">
-              {CONCERN_DOMAINS.map((d) => (
+              {STRENGTH_DOMAINS.map((d) => (
                 <Bar
                   key={d}
                   label={DOMAIN_LABEL[d]}

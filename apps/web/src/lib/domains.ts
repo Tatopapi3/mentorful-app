@@ -15,16 +15,41 @@
  * a bar length or sorts teachers "by strength" would be inventing a magnitude.
  */
 
+/**
+ * The five fixed conversation domains, in the order of the database enum `concern_domain`. A conversation
+ * is tagged with one of these, and nothing else may be typed in.
+ */
 export const CONCERN_DOMAINS = [
   "CLASSROOM",
   "PLANNING",
   "COMMUNICATION",
   "ASSESSMENT",
+  "CELEBRATIONS",
 ] as const;
 
 export type ConcernDomain = (typeof CONCERN_DOMAINS)[number];
 
-/** Display copy. CELEBRATIONS exists in the DB enum but has no data yet. */
+/**
+ * The four domains a teacher's strength tags resolve to. CELEBRATIONS is a conversation domain with no
+ * strength tags behind it, so strength rollups use this list and not CONCERN_DOMAINS.
+ */
+export const STRENGTH_DOMAINS = ["CLASSROOM", "PLANNING", "COMMUNICATION", "ASSESSMENT"] as const;
+
+export type StrengthDomain = (typeof STRENGTH_DOMAINS)[number];
+
+/**
+ * Which professional learning community a domain routes to. Conversation domains add up to faculty
+ * priorities, and each priority points at an existing PLC type. Track 2 (one PLC tool) is Data Dive.
+ */
+export const PLC_FOR_DOMAIN: Record<ConcernDomain, string> = {
+  CLASSROOM: "Clinic",
+  PLANNING: "Toolbox",
+  COMMUNICATION: "Task Force",
+  ASSESSMENT: "Data Dive",
+  CELEBRATIONS: "Celebrations",
+};
+
+/** Display copy. */
 export const DOMAIN_LABEL: Record<string, string> = {
   CLASSROOM: "Classroom Culture",
   PLANNING: "Lesson Planning",
@@ -38,7 +63,7 @@ export const DOMAIN_LABEL: Record<string, string> = {
  * scripts/013_demo_enrichment.sql, which derives `teaching_style` from the
  * same mapping — keep the two in step.
  */
-export const TAG_TO_DOMAIN: Record<string, ConcernDomain> = {
+export const TAG_TO_DOMAIN: Record<string, StrengthDomain> = {
   "Classroom Presence": "CLASSROOM",
   "Discussion Craft": "CLASSROOM",
   "Clear Explanations": "CLASSROOM",
@@ -65,14 +90,14 @@ export const TAG_TO_DOMAIN: Record<string, ConcernDomain> = {
  * Unknown tags are dropped rather than guessed at — a tag that is not in the
  * lookup is a data problem, and silently bucketing it would hide that.
  */
-export function domainsForTags(tags: unknown): ConcernDomain[] {
+export function domainsForTags(tags: unknown): StrengthDomain[] {
   if (!Array.isArray(tags)) return [];
-  const found = new Set<ConcernDomain>();
+  const found = new Set<StrengthDomain>();
   for (const t of tags) {
     const d = TAG_TO_DOMAIN[String(t)];
     if (d) found.add(d);
   }
-  return CONCERN_DOMAINS.filter((d) => found.has(d));
+  return STRENGTH_DOMAINS.filter((d) => found.has(d));
 }
 
 /* -------------------------------------------------------------- archetypes */
