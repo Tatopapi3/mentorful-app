@@ -9,6 +9,7 @@
  * synthetic dataset specifically: flip the numbers and the wording follows.
  */
 
+import { NEGLIGIBLE_PARTIAL } from "./networkStyle.ts";
 import {
   DIMENSIONS,
   DIMENSION_LABEL,
@@ -22,7 +23,7 @@ import {
 const CAPABILITY_DIMENSIONS: Dimension[] = ["relational", "cognitive", "efficacy"];
 
 /** A partial correlation at or below this reads as "no direct connection". */
-const NEGLIGIBLE_EDGE = 0.15;
+const NEGLIGIBLE_EDGE = NEGLIGIBLE_PARTIAL;
 /** A raw correlation at or above this reads as "looks connected". */
 const VISIBLE_RAW = 0.2;
 

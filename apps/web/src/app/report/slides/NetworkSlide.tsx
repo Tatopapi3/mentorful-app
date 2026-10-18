@@ -2,7 +2,8 @@ import SlideShell from "./SlideShell";
 import { PANEL_COPY, SLIDE_COUNT } from "@/lib/report/deck";
 import { DIMENSIONS, DIMENSION_LABEL, type Dimension, type ReportStats } from "@/lib/report/stats";
 import { fmtR, fmtScale } from "@/lib/report/findings";
-import { T, type Pt, quadPoint, shiftToward, textWidth } from "@/lib/report/svg";
+import { T, type Pt, quadPoint, shiftToward, textWidth, wrapText } from "@/lib/report/svg";
+import { NEGLIGIBLE_PARTIAL, isNegligible, nodeRadius, samplingCaveat } from "@/lib/report/networkStyle";
 
 /**
  * Slide 3 — the four-node partial-correlation network.
@@ -12,12 +13,11 @@ import { T, type Pt, quadPoint, shiftToward, textWidth } from "@/lib/report/svg"
  * a report must render identically every time, and with four nodes the K4
  * shows all six edges without occlusion.
  *
- * thickness → |partial| · color → sign (blue ↔ red) · gray → below threshold,
- * where the sign isn't meaningful. Every edge also carries its printed value,
+ * thickness → |partial| · color → sign (blue ↔ red) · dashed gray → below the threshold,
+ * where the sign isn't meaningful · node size → the dimension's mean. Every edge also carries its printed value,
  * so nothing depends on color alone.
  */
 
-const NEGLIGIBLE = 0.15;
 
 export default function NetworkSlide({
   stats,
@@ -45,9 +45,10 @@ export default function NetworkSlide({
         const graphW = area.w - 340;
         const cx = area.x + graphW / 2;
         const cy = area.y + area.h / 2;
-        const r = 52;
+        const radii = Object.fromEntries(DIMENSIONS.map((d) => [d, nodeRadius(stats.dimensions[d].mean)])) as Record<Dimension, number>;
+        const rMax = Math.max(...Object.values(radii));
         const halfW = Math.min(300, graphW / 2 - 90);
-        const halfH = Math.max(70, Math.min(124, area.h / 2 - r - 16));
+        const halfH = Math.max(70, Math.min(124, area.h / 2 - rMax - 16));
 
         const POS: Record<Dimension, Pt> = {
           structural: { x: cx - halfW, y: cy - halfH },
@@ -74,8 +75,8 @@ export default function NetworkSlide({
               const bow = i === 0 ? 54 : -54;
               c = { x: mid.x + (-dy / len) * bow, y: mid.y + (dx / len) * bow };
             }
-            const start = shiftToward(p0, c, r);
-            const end = shiftToward(p2, c, r);
+            const start = shiftToward(p0, c, radii[a]);
+            const end = shiftToward(p2, c, radii[b]);
             edges.push({
               key: `${a}-${b}`,
               value,
@@ -87,12 +88,12 @@ export default function NetworkSlide({
           }
         }
 
-        const hasNegative = edges.some((e) => e.value <= -NEGLIGIBLE);
-        const hasNegligible = edges.some((e) => Math.abs(e.value) < NEGLIGIBLE);
-        const legend = [
+        const hasNegative = edges.some((e) => e.value <= -NEGLIGIBLE_PARTIAL);
+        const hasNegligible = edges.some((e) => isNegligible(e.value));
+        const legend: { color: string; text: string; dashed?: boolean }[] = [
           { color: T.series, text: "Positive tie" },
           ...(hasNegative ? [{ color: T.negative, text: "Negative tie" }] : []),
-          ...(hasNegligible ? [{ color: T.baseline, text: `No direct tie (|r| < ${NEGLIGIBLE})` }] : []),
+          ...(hasNegligible ? [{ color: T.baseline, text: `No direct tie (|r| < ${NEGLIGIBLE_PARTIAL})`, dashed: true }] : []),
         ];
         const legendX = area.x + area.w - 300;
         const legendTop = cy - (legend.length * 42) / 2;
@@ -105,13 +106,14 @@ export default function NetworkSlide({
                 d={`M ${e.start.x} ${e.start.y} Q ${e.c.x} ${e.c.y} ${e.end.x} ${e.end.y}`}
                 fill="none"
                 stroke={
-                  Math.abs(e.value) < NEGLIGIBLE
+                  isNegligible(e.value)
                     ? T.baseline
                     : e.value > 0
                       ? T.series
                       : T.negative
                 }
-                strokeWidth={Math.abs(e.value) < NEGLIGIBLE ? 2.5 : 3 + Math.abs(e.value) * 16}
+                strokeWidth={isNegligible(e.value) ? 2.5 : 3 + Math.abs(e.value) * 16}
+                strokeDasharray={isNegligible(e.value) ? "10 8" : undefined}
                 strokeLinecap="round"
               />
             ))}
@@ -149,7 +151,7 @@ export default function NetworkSlide({
               const p = POS[d];
               return (
                 <g key={d}>
-                  <circle cx={p.x} cy={p.y} r={r} fill={T.surface} stroke={T.series} strokeWidth={4} />
+                  <circle cx={p.x} cy={p.y} r={radii[d]} fill={T.surface} stroke={T.series} strokeWidth={4} />
                   <text
                     x={p.x}
                     y={p.y - 4}
@@ -182,6 +184,7 @@ export default function NetworkSlide({
                   y2={legendTop + i * 42}
                   stroke={item.color}
                   strokeWidth={5}
+                  strokeDasharray={item.dashed ? "8 6" : undefined}
                   strokeLinecap="round"
                 />
                 <text
@@ -200,8 +203,13 @@ export default function NetworkSlide({
               fontSize={15}
               fill={T.muted}
             >
-              Line thickness = strength
+              Line thickness = strength · node size = average
             </text>
+            {wrapText(samplingCaveat(stats.n), 300, 15).map((line, i) => (
+              <text key={`cav-${i}`} x={legendX} y={legendTop + legend.length * 42 + 42 + i * 20} fontSize={15} fill={T.muted}>
+                {line}
+              </text>
+            ))}
           </g>
         );
       }}
