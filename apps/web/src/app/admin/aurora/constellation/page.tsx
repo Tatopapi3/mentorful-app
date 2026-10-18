@@ -1,3 +1,4 @@
+import { CycleSwitcher } from "@/components/admin/kit";
 import { Constellation } from "@/components/aurora/constellation";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
@@ -6,9 +7,11 @@ import { buildFacts } from "@/lib/admin/facts";
 export const dynamic = "force-dynamic";
 
 // The faculty as a sky: every teacher a star, every pair an arc, bright where a pair crosses departments.
-export default async function ConstellationPage() {
+export default async function ConstellationPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const admin = (await requireAdmin())!;
-  const snap = await loadAdminSnapshot(admin);
+  const params = await searchParams;
+  const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
+  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
 
   const people = snap.people.map((p) => ({ id: p.id, name: p.name, dept: p.dept, grade: null }));
@@ -32,6 +35,7 @@ export default async function ConstellationPage() {
         </div>
       </div>
 
+      <CycleSwitcher skin="aurora" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/aurora/constellation" />
       <div style={{ marginTop: 22 }}>
         <Constellation people={people} pairs={pairs} requests={requests} drafts={[]} />
       </div>

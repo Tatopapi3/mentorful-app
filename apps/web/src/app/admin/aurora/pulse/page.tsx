@@ -1,3 +1,4 @@
+import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { Ring } from "@/components/aurora/ring";
@@ -11,9 +12,11 @@ export const dynamic = "force-dynamic";
 
 // Pulse: the whole program in one glance. A sentence that says where things stand, four rings, the decisions
 // waiting for you, and what to do next. Every suggestion names the number behind it.
-export default async function PulsePage() {
+export default async function PulsePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const admin = (await requireAdmin())!;
-  const snap = await loadAdminSnapshot(admin);
+  const params = await searchParams;
+  const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
+  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, "/admin/aurora").slice(0, 6);
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
@@ -45,6 +48,7 @@ export default async function PulsePage() {
       <p className="ev-lead">{headlineSentence(facts)}</p>
       {snap.school.priority && <p className="ev-small">Strategic priority: {snap.school.priority}</p>}
 
+      <CycleSwitcher skin="aurora" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/aurora/pulse" />
       <div className="v3-rings" style={{ marginTop: 18 }}>
         <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? `${scan.n} of ${facts.faculty}` : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />
@@ -118,12 +122,12 @@ export default async function PulsePage() {
         <section>
           <h3>What stays with teachers</h3>
           <p>What was said in a conversation. Leadership sees that conversations happened and how many, never their content.</p>
-          <Link href="/admin/aurora/overview" className="ev-btn sm">Open the overview</Link>
+          <Link href="/admin/aurora/privacy" className="ev-btn sm">What you can and can’t see</Link>
         </section>
         <section>
           <h3>What you can present</h3>
           <p>The six-slide Culture Scan report, with its source and sample size intact.</p>
-          <Link href="/report" className="ev-btn sm">Open the report</Link>
+          <Link href="/admin/aurora/summary" className="ev-btn sm">Open the board summary</Link>
         </section>
       </div>
     </main>
