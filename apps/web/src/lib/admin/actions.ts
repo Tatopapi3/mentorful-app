@@ -4,6 +4,7 @@
  */
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { DIMENSION_LABEL } from "@/lib/report/stats";
+import { quietLabel } from "./participation";
 import type { Facts } from "./facts";
 
 export type Severity = "do" | "watch" | "good";
@@ -20,6 +21,7 @@ export const PLC_FOR_DOMAIN: Record<string, string> = {
 
 export const TARGET_COMPLETION_PCT = 80;
 export const TARGET_CROSS_PCT = 50;
+export const TARGET_CONVERSATION_PCT = 70;
 export const GAP_NOTABLE = 0.5;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
@@ -104,6 +106,28 @@ export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[]
       severity: "watch",
       title: `Pairs work most on ${DOMAIN_LABEL[f.topDomain.domain] ?? f.topDomain.domain}`,
       detail: `${f.topDomain.count} of ${f.pairCount} pairs chose it.${plc ? ` Conversation domains route to PLCs: a ${plc} would meet an existing need.` : ""}`,
+      href: `${base}/insights`,
+      cta: "Open Insights",
+    });
+  }
+
+  if (f.quietPairs !== null && f.quietPairs >= 5) {
+    out.push({
+      id: "quiet",
+      severity: "watch",
+      title: `${quietLabel(f.quietPairs)} pairs haven't logged a conversation in 30 days`,
+      detail: `${f.quietPairs} of ${f.pairCount} approved pairs. You see a number, never which pairs. A gentle reminder to everyone is kinder than singling anyone out.`,
+      href: `${base}/insights`,
+      cta: "Open Insights",
+    });
+  }
+
+  if (f.conversationRatePct !== null && f.conversationRatePct < TARGET_CONVERSATION_PCT) {
+    out.push({
+      id: "conversations",
+      severity: "watch",
+      title: `${f.conversationRatePct}% of pairs have logged a conversation, below the ${TARGET_CONVERSATION_PCT}% target`,
+      detail: "Pairs that talk early tend to keep talking. Nudge the whole faculty, not individual pairs.",
       href: `${base}/insights`,
       cta: "Open Insights",
     });

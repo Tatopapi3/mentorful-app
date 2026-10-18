@@ -1,5 +1,6 @@
 import { loadReportStats } from "@/lib/report/data";
 import { DIMENSIONS, type Dimension } from "@/lib/report/stats";
+import { loadParticipation } from "./participation";
 import type { AdminContext } from "./require";
 import type { AdminPair, AdminSnapshot, ScanSummary } from "./facts";
 
@@ -33,6 +34,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
 
   const { data: count } = await supabase.rpc("conversation_log_count", { p_cycle: cycle?.id ?? null });
 
+  const { participation, quietPairs } = await loadParticipation({ supabase, schoolId } as AdminContext, cycle?.id ?? null);
   const report = await loadReportStats();
   let scan: ScanSummary | null = null;
   if (report.status === "ok") {
@@ -59,5 +61,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
     conversations: typeof count === "number" ? count : 0,
     scan,
     stats: report.status === "ok" ? report.stats : null,
+    participation,
+    quietPairs,
   };
 }
