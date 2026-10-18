@@ -19,7 +19,7 @@ describe("network drawing rules", () => {
     expect(nodeRadius(3.5)).toBeLessThan(nodeRadius(6));
     expect(nodeRadius(-4)).toBe(nodeRadius(1));
     expect(nodeRadius(99)).toBe(nodeRadius(6));
-    expect(nodeRadius(1)).toBeGreaterThanOrEqual(46);
+    expect(nodeRadius(1)).toBeGreaterThanOrEqual(42);
   });
 
   it("quotes about ±0.14 at 50 respondents, and a wider band with fewer", () => {

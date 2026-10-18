@@ -8,8 +8,8 @@ export const NEGLIGIBLE_PARTIAL = 0.1;
 
 export const isNegligible = (partial: number) => Math.abs(partial) < NEGLIGIBLE_PARTIAL;
 
-const R_MIN = 46;
-const R_MAX = 66;
+const R_MIN = 42;
+const R_MAX = 74;
 const SCALE_MIN = 1;
 const SCALE_MAX = 6;
 
