@@ -64,6 +64,7 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
   const school: Row = { id: schoolId || IDS.school, name: "Mentorful Sandbox", strategic_priority: "Strengthen cross-department collaboration" };
   const sid = school.id;
   const cycle: Row = { id: IDS.cycle, school_id: sid, name: "Fall 2025", status: "complete", ends_at: "2025-12-20", starts_at: "2025-09-02" };
+  const spring: Row = { id: "cycle-spring-2025", school_id: sid, name: "Spring 2025", status: "complete", ends_at: "2025-06-10", starts_at: "2025-01-20" };
 
   const profiles: Row[] = [
     { id: IDS.admin, auth_user_id: IDS.authAdmin, school_id: sid, role: "admin", first_name: "Preview", last_name: "Admin", email: "admin@preview.test", department: null, is_demo: false, strength_tags: [], teaching_style: null, archetype_id: null, inspiration: null },
@@ -106,13 +107,18 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     if (host.id !== visitor.id) addPair(host, visitor);
   }
 
+  // An earlier cycle with a dozen pairs, so the cycle switcher has something to switch to.
+  for (let k = 0; k < 12; k++) {
+    pairings.push({ id: `pairing-sp-${k}`, school_id: sid, cycle_id: spring.id, host_id: teachers[k].id, visitor_id: teachers[(k + 13) % 50].id, status: "approved", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
+  }
+
   // Three pairs teachers have asked for, still waiting for the admin.
   for (const [h, v] of [[3, 17], [8, 29], [21, 40]]) {
     pairings.push({ id: `pairing-req-${h}`, school_id: sid, cycle_id: cycle.id, host_id: teachers[h].id, visitor_id: teachers[v].id, status: "pending", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
   }
 
   // About one pair in five has logged nothing yet, and a third of the others also have a visit debrief.
-  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved").filter((_, i) => i % 5 !== 4).map((p, i) => ({
+  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved" && p.cycle_id === cycle.id).filter((_, i) => i % 5 !== 4).map((p, i) => ({
     id: `log-${String(i + 1).padStart(2, "0")}`,
     school_id: sid,
     cycle_id: cycle.id,
@@ -177,7 +183,7 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
 
   return {
     schools: [school],
-    cycles: [cycle],
+    cycles: [cycle, spring],
     profiles,
     pairings,
     conversation_logs,
