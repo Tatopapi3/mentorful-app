@@ -24,7 +24,13 @@ export const GAP_NOTABLE = 0.5;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
-export function buildActions(f: Facts): AdminAction[] {
+/**
+ * The leadership views come in two looks: Nick's (under /admin) and Aurora (under /admin/aurora). Links
+ * stay inside the look you are in, so `base` is the path prefix of the current look.
+ */
+export type LookBase = "/admin" | "/admin/aurora";
+
+export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[] {
   const out: AdminAction[] = [];
 
   if (f.pendingRequests > 0) {
@@ -33,7 +39,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "do",
       title: `Decide on ${f.pendingRequests} pairing ${plural(f.pendingRequests, "request", "requests")}`,
       detail: "Teachers proposed these pairs. They stay pending until you approve them, and the colleague is never told what you decide.",
-      href: "/admin/constellation",
+      href: `${base}/constellation`,
       cta: "See them",
     });
   }
@@ -44,7 +50,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "do",
       title: `Pair the ${f.unpaired} unpaired ${plural(f.unpaired, "teacher", "teachers")}`,
       detail: `${f.paired} of ${f.faculty} teachers have a partner. Pairs that mix departments connect people who rarely talk.`,
-      href: "/admin/constellation",
+      href: `${base}/constellation`,
       cta: "Open the constellation",
     });
   }
@@ -58,7 +64,7 @@ export function buildActions(f: Facts): AdminAction[] {
         severity: "watch",
         title: `Scan completion is ${f.scan.completionPct}%, below the ${TARGET_COMPLETION_PCT}% target`,
         detail: `${f.faculty - f.scan.n} ${plural(f.faculty - f.scan.n, "teacher hasn't", "teachers haven't")} responded. Responses are anonymous, so follow up with the whole faculty.`,
-        href: "/admin/insights",
+        href: `${base}/insights`,
         cta: "Open Insights",
       });
     }
@@ -67,7 +73,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "do",
       title: `Start with ${DIMENSION_LABEL[w.dimension]}`,
       detail: `${DIMENSION_LABEL[w.dimension]} is the weakest dimension at ${w.mean.toFixed(1)} of 6, ${(top.mean - w.mean).toFixed(1)} points below ${DIMENSION_LABEL[top.dimension]}. It is the lowest-cost place to intervene.`,
-      href: "/admin/insights",
+      href: `${base}/insights`,
       cta: "Open Insights",
     });
     if (f.scan.gap >= GAP_NOTABLE) {
@@ -76,7 +82,7 @@ export function buildActions(f: Facts): AdminAction[] {
         severity: "watch",
         title: `Efficacy runs ${f.scan.gap.toFixed(1)} points ahead of Structural`,
         detail: "Staff believe in what they can do together, but the structures meant to carry that belief are not keeping up. That belief is resting on goodwill.",
-        href: "/admin/insights",
+        href: `${base}/insights`,
         cta: "Open Insights",
       });
     }
@@ -86,7 +92,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "watch",
       title: "No Culture Scan results yet",
       detail: "Results appear once enough teachers respond. Nothing is guessed before then.",
-      href: "/admin/insights",
+      href: `${base}/insights`,
       cta: "Open Insights",
     });
   }
@@ -98,7 +104,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "watch",
       title: `Pairs work most on ${DOMAIN_LABEL[f.topDomain.domain] ?? f.topDomain.domain}`,
       detail: `${f.topDomain.count} of ${f.pairCount} pairs chose it.${plc ? ` Conversation domains route to PLCs: a ${plc} would meet an existing need.` : ""}`,
-      href: "/admin/insights",
+      href: `${base}/insights`,
       cta: "Open Insights",
     });
   }
@@ -109,7 +115,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "good",
       title: `${f.crossPct}% of pairs cross departments`,
       detail: `${f.crossPairs} of ${f.pairCount} pairs connect people from different departments. That is the point of the program.`,
-      href: "/admin/constellation",
+      href: `${base}/constellation`,
       cta: "Open the constellation",
     });
   }
@@ -119,7 +125,7 @@ export function buildActions(f: Facts): AdminAction[] {
       severity: "good",
       title: `${DIMENSION_LABEL[f.scan.strongest.dimension]} is the strongest dimension`,
       detail: `${f.scan.strongest.mean.toFixed(1)} of 6 across ${f.scan.n} ${plural(f.scan.n, "respondent", "respondents")}. Name it, and protect the routines that produce it.`,
-      href: "/admin/insights",
+      href: `${base}/insights`,
       cta: "Open Insights",
     });
   }

@@ -20,7 +20,7 @@ export default async function InsightsPage() {
   const admin = (await requireAdmin())!;
   const snap = await loadAdminSnapshot(admin);
   const facts = buildFacts(snap);
-  const actions = buildActions(facts).filter((a) => a.severity !== "good").slice(0, 4);
+  const actions = buildActions(facts, "/admin/aurora").filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);
   const findings = snap.stats ? buildFindings(snap.stats) : null;
   const scan = snap.scan;
@@ -123,7 +123,7 @@ export default async function InsightsPage() {
             {conn.within > 0 ? `${conn.within} stay inside one department. ` : ""}
             {conn.omitted.length > 0 ? `Left out because they have under 5 teachers: ${conn.omitted.join(", ")}.` : ""}
           </p>
-          <Link href="/admin/constellation" className="ev-btn sm">Open the constellation</Link>
+          <Link href="/admin/aurora/constellation" className="ev-btn sm">Open the constellation</Link>
         </section>
       </div>
 
@@ -141,7 +141,7 @@ export default async function InsightsPage() {
             {a.href !== "/admin/insights" && <Link href={a.href} className="ev-btn sm">{a.cta}</Link>}
           </div>
         ))}
-        <p style={{ marginTop: 14 }}><Link href="/admin/pulse">See everything on Pulse →</Link></p>
+        <p style={{ marginTop: 14 }}><Link href="/admin/aurora/pulse">See everything on Pulse →</Link></p>
       </section>
     </main>
   );

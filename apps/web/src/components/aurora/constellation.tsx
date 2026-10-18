@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import "@/app/aurora.css";
 
 export type StarPerson = { id: string; name: string; dept: string; grade: string | null };
 export type StarLink = { a: string; b: string };
+
+const PALETTE = {
+  aurora: { arcA: "#14b8a6", arcB: "#6366f1", halo: "#7c83ff", haloOp: 0.2, request: "#f59e0b", draft: "#ec4899", star: "#818cf8", starRing: "#fff", lone: "#8b8aa8", sel: "#14b8a6" },
+  nick: { arcA: "#00897b", arcB: "#16283c", halo: "#00897b", haloOp: 0.1, request: "#c8500a", draft: "#c8500a", star: "#00897b", starRing: "#faf7f2", lone: "#8b8377", sel: "#16283c" },
+} as const;
 
 const W = 1000;
 const H = 600;
@@ -21,12 +27,16 @@ export function Constellation({
   pairs,
   requests,
   drafts,
+  skin = "aurora",
 }: {
   people: StarPerson[];
   pairs: StarLink[];
   requests: StarLink[];
   drafts: StarLink[];
+  /** "aurora" is the night-sky look; "nick" draws the same sky in the paper-and-teal palette of the existing pages. */
+  skin?: "aurora" | "nick";
 }) {
+  const P = PALETTE[skin];
   const [selected, setSelected] = useState<string | null>(requests[0]?.a ?? null);
   const [layers, setLayers] = useState({ pairs: true, requests: true, drafts: true });
   const [q, setQ] = useState("");
@@ -92,7 +102,7 @@ export function Constellation({
   const selFocusIds = new Set<string>(selected ? [selected, partnerOf.get(selected) ?? "", ...(selRequest ? [selRequest.a, selRequest.b] : [])] : []);
 
   return (
-    <div className="v3-sky">
+    <div className={skin === "nick" ? "v3-sky nk-sky" : "v3-sky"}>
       <div className="v3-sky-controls">
         <div className="ev-tabs" role="group" aria-label="Layers" style={{ margin: 0 }}>
           {(drafts.length > 0 ? (["pairs", "requests", "drafts"] as const) : (["pairs", "requests"] as const)).map((k) => (
@@ -119,12 +129,12 @@ export function Constellation({
           <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Faculty constellation" className="v3-sky-svg">
             <defs>
               <linearGradient id="v3-arc" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#14b8a6" />
-                <stop offset="1" stopColor="#6366f1" />
+                <stop offset="0" stopColor={P.arcA} />
+                <stop offset="1" stopColor={P.arcB} />
               </linearGradient>
               <radialGradient id="v3-halo">
-                <stop offset="0" stopColor="#7c83ff" stopOpacity="0.2" />
-                <stop offset="1" stopColor="#7c83ff" stopOpacity="0" />
+                <stop offset="0" stopColor={P.halo} stopOpacity={P.haloOp} />
+                <stop offset="1" stopColor={P.halo} stopOpacity="0" />
               </radialGradient>
             </defs>
             {galaxies.map((g) => (
@@ -146,12 +156,12 @@ export function Constellation({
             {layers.requests &&
               requests.map((l) => {
                 const d = arc(l.a, l.b);
-                return d ? <path key={`r${l.a}${l.b}`} d={d} fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 6" className="v3-arc-flow" /> : null;
+                return d ? <path key={`r${l.a}${l.b}`} d={d} fill="none" stroke={P.request} strokeWidth={2} strokeDasharray="5 6" className="v3-arc-flow" /> : null;
               })}
             {layers.drafts &&
               drafts.map((l) => {
                 const d = arc(l.a, l.b);
-                return d ? <path key={`d${l.a}${l.b}`} d={d} fill="none" stroke="#ec4899" strokeWidth={2} strokeDasharray="2 5" strokeLinecap="round" className="v3-arc-flow" /> : null;
+                return d ? <path key={`d${l.a}${l.b}`} d={d} fill="none" stroke={P.draft} strokeWidth={2} strokeDasharray="2 5" strokeLinecap="round" className="v3-arc-flow" /> : null;
               })}
             {people.map((p, idx) => {
               const xy = pos.get(p.id);
@@ -162,18 +172,18 @@ export function Constellation({
               return (
                 <g key={p.id} transform={`translate(${xy.x.toFixed(1)} ${xy.y.toFixed(1)})`} opacity={dim ? 0.18 : 1}>
                   <circle r={14} fill="transparent" onClick={() => setSelected(p.id)} style={{ cursor: "pointer" }} />
-                  <circle r={isSel ? 7.5 : paired ? 5 : 3.6} fill={paired ? "#818cf8" : "none"} stroke={paired ? "#fff" : "#8b8aa8"} strokeWidth={paired ? 1.4 : 1.2} strokeDasharray={paired ? undefined : "2 2"} className={paired ? "v3-star" : undefined} style={{ animationDelay: `${(idx % 9) * 0.45}s`, pointerEvents: "none" }} />
-                  {isSel && <circle r={13} fill="none" stroke="#14b8a6" strokeWidth={2} style={{ pointerEvents: "none" }} />}
+                  <circle r={isSel ? 7.5 : paired ? 5 : 3.6} fill={paired ? P.star : "none"} stroke={paired ? P.starRing : P.lone} strokeWidth={paired ? 1.4 : 1.2} strokeDasharray={paired ? undefined : "2 2"} className={paired ? "v3-star" : undefined} style={{ animationDelay: `${(idx % 9) * 0.45}s`, pointerEvents: "none" }} />
+                  {isSel && <circle r={13} fill="none" stroke={P.sel} strokeWidth={2} style={{ pointerEvents: "none" }} />}
                   <title>{`${p.name} · ${p.dept}${p.grade ? ` · Grade ${p.grade}` : ""}`}</title>
                 </g>
               );
             })}
           </svg>
           <div className="v3-legend">
-            <span><i style={{ background: "#818cf8" }} />Paired</span>
-            <span><i style={{ border: "1px dashed #8b8aa8" }} />Awaiting a partner</span>
-            <span><i style={{ background: "linear-gradient(90deg,#14b8a6,#6366f1)", height: 3, borderRadius: 2 }} />Pair (bright = crosses departments)</span>
-            <span><i style={{ borderTop: "2px dashed #f59e0b", height: 0, borderRadius: 0 }} />Request</span>
+            <span><i style={{ background: P.star }} />Paired</span>
+            <span><i style={{ border: `1px dashed ${P.lone}` }} />Awaiting a partner</span>
+            <span><i style={{ background: `linear-gradient(90deg,${P.arcA},${P.arcB})`, height: 3, borderRadius: 2 }} />Pair (bright = crosses departments)</span>
+            <span><i style={{ borderTop: `2px dashed ${P.request}`, height: 0, borderRadius: 0 }} />Request</span>
           </div>
         </div>
 
@@ -206,13 +216,13 @@ export function Constellation({
                     <p className="ev-small">
                       {byId.get(selRequest.a)?.name} asked to be paired with {byId.get(selRequest.b)?.name}. The colleague is never told.
                     </p>
-                    <Link href="/admin" className="ev-btn primary sm">Open the overview</Link>
+                    <Link href="/admin/aurora" className="ev-btn primary sm">Open the overview</Link>
                   </>
                 ) : (
                   <>
                     <h3>No partner yet</h3>
                     <p className="ev-small">Include them in your next randomized round, or pair them by hand.</p>
-                    <Link href="/admin" className="ev-btn sm">Open the overview</Link>
+                    <Link href="/admin/aurora" className="ev-btn sm">Open the overview</Link>
                   </>
                 )}
               </div>

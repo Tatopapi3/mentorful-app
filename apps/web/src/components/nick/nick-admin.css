@@ -1,0 +1,48 @@
+/* The leadership tabs in Nick's look. Uses his tokens (--paper, --card, --teal, --ink, fonts) so these pages
+   match /admin exactly. Everything is prefixed nk- so nothing else is affected. */
+
+.nk-tabs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 14px 0 0; border-bottom: 1px solid var(--line); }
+.nk-tabs a { font-family: var(--font-mono), monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.nk-tabs a:hover { color: var(--ink); }
+.nk-tabs a[aria-current="page"] { color: var(--teal-dk); border-bottom-color: var(--teal); }
+.nk-tabs .nk-spacer { flex: 1; }
+.nk-switch { font-family: var(--font-mono), monospace; font-size: 12px; letter-spacing: 0.04em; color: var(--teal-dk); border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; text-decoration: none; background: var(--card); white-space: nowrap; }
+.nk-switch:hover { border-color: var(--teal); }
+
+.nk-chip { display: inline-block; font-size: 11.5px; font-weight: 600; border-radius: 3px; padding: 2px 8px; background: var(--teal-bg); color: var(--teal-dk); }
+.nk-chip.nk-do { background: var(--amber-bg); color: var(--amber); }
+
+.nk-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.nk-row:first-of-type { border-top: 0; }
+.nk-row b { display: block; font-family: var(--font-serif), Georgia, serif; font-size: 16px; font-weight: 600; margin: 6px 0 2px; }
+.nk-row .adm-why { display: block; max-width: 70ch; }
+.nk-btn { font-family: var(--font-sans), sans-serif; font-size: 13px; font-weight: 600; color: var(--teal-dk); border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; text-decoration: none; background: var(--card); white-space: nowrap; }
+.nk-btn:hover { border-color: var(--teal); }
+.nk-lead { font-size: 15px; color: #6b6459; max-width: 70ch; margin: 0 0 14px; }
+.nk-dim { display: grid; grid-template-columns: 150px 1fr 92px; gap: 12px; align-items: center; font-size: 14px; margin: 12px 0; }
+.nk-dim small { display: block; color: var(--muted); font-size: 12px; }
+.nk-dim .adm-track { position: relative; }
+.nk-dim .nk-band { position: absolute; top: -3px; bottom: -3px; border: 2px solid var(--navy); border-top: 0; border-bottom: 0; border-radius: 2px; opacity: 0.5; }
+.nk-dim b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.nk-dim b small { display: inline; }
+.nk-two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1040px) { .nk-two { grid-template-columns: 1fr; } .nk-dim { grid-template-columns: 110px 1fr 80px; } }
+
+/* the constellation drawn in Nick's palette: same markup, paper instead of night sky */
+.nk-sky { --ev-bg: var(--paper); --ev-ink: var(--ink); --ev-muted: var(--muted); --ev-line: var(--line); --ev-panel: var(--card); --ev-panel-solid: var(--card); --ev-soft: var(--paper-2); --ev-teal: var(--teal); --ev-teal-deep: var(--teal-dk); --ev-grad: var(--teal); --ev-grad-soft: var(--teal-bg); --ev-on-grad: #fff; --ev-navy: var(--navy); --ev-on-navy: #fff; --ev-amber: var(--amber); --ev-amber-soft: var(--amber-bg); --ev-shadow: none; --ev-display: var(--font-serif), Georgia, serif; --ev-serif: var(--font-serif), Georgia, serif; --ev-sans: var(--font-sans), system-ui, sans-serif; --ev-ring: rgba(0, 137, 123, 0.3); font-family: var(--font-sans), system-ui, sans-serif; font-size: 14.5px; color: var(--ink); }
+.nk-sky .v3-sky-stage { background: #fbf9f4; border: 1px solid var(--line); border-radius: 5px; box-shadow: none; }
+.nk-sky .v3-sky-label { fill: var(--ink); font-family: var(--font-sans), sans-serif; }
+.nk-sky .v3-legend { border-top: 1px solid var(--line); color: var(--muted); }
+.nk-sky .v3-arc-cross { filter: none; }
+.nk-sky .ev-decision { background: var(--card); border: 1px solid var(--line); border-radius: 5px; box-shadow: none; }
+.nk-sky .ev-btn { border-radius: 4px; background: var(--card); border: 1px solid var(--line); color: var(--teal-dk); box-shadow: none; }
+.nk-sky .ev-btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+.nk-sky .ev-tabs { background: var(--card); border: 1px solid var(--line); border-radius: 5px; box-shadow: none; padding: 3px; }
+.nk-sky .ev-tabs button { border-radius: 3px; background: transparent; color: var(--muted); box-shadow: none; }
+.nk-sky .ev-tabs button.on { background: var(--teal-bg); color: var(--teal-dk); }
+.nk-sky .ev-input { border-radius: 4px; background: var(--card); border: 1px solid var(--line); box-shadow: none; }
+.nk-sky .ev-badge { background: var(--teal-bg); color: var(--teal-dk); border-radius: 3px; }
+.nk-sky .ev-badge.amber { background: var(--amber-bg); color: var(--amber); }
+.nk-sky .ev-avatar { background: var(--teal-bg); color: var(--teal-dk); }
+.nk-sky h3 { font-family: var(--font-serif), Georgia, serif; color: var(--ink); letter-spacing: 0; }
+.nk-sky a { color: var(--teal-dk); }

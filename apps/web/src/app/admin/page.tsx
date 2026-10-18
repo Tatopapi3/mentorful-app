@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AdminTabs from "@/components/nick/admin-tabs";
 import SiteHeader from "@/components/SiteHeader";
 import FacultyMapClient from "./map/FacultyMapClient";
 import { loadReportStats } from "@/lib/report/data";
@@ -203,7 +204,9 @@ export default async function AdminDashboardPage() {
     <>
       <SiteHeader />
       <main className="wrap adm">
-        <header className="adm-head">
+        {/* Added: the leadership tabs. Everything below is unchanged. */}
+        <AdminTabs />
+        <header className="adm-head" style={{ marginTop: 22 }}>
           <div>
             <p className="mono adm-eyebrow">Leadership dashboard</p>
             <h1>{school?.name ?? "School"}</h1>
@@ -218,13 +221,6 @@ export default async function AdminDashboardPage() {
               {school?.strategic_priority ? <> · {school.strategic_priority}</> : null}
             </p>
           </div>
-          {/* Added alongside everything below, which is unchanged: the Aurora leadership views. */}
-          <nav aria-label="More views" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", fontSize: 14 }}>
-            <span style={{ opacity: 0.7 }}>More views:</span>
-            <a href="/admin/pulse">Pulse</a>
-            <a href="/admin/constellation">Constellation</a>
-            <a href="/admin/insights">Insights</a>
-          </nav>
         </header>
 
         {/* ---------------------------------------------------- metric strip */}
