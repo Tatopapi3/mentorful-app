@@ -105,7 +105,12 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     if (host.id !== visitor.id) addPair(host, visitor);
   }
 
-  const conversation_logs: Row[] = pairings.map((p, i) => ({
+  // Three pairs teachers have asked for, still waiting for the admin.
+  for (const [h, v] of [[3, 17], [8, 29], [21, 40]]) {
+    pairings.push({ id: `pairing-req-${h}`, school_id: sid, cycle_id: cycle.id, host_id: teachers[h].id, visitor_id: teachers[v].id, status: "pending", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
+  }
+
+  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved").map((p, i) => ({
     id: `log-${String(i + 1).padStart(2, "0")}`,
     school_id: sid,
     cycle_id: cycle.id,
