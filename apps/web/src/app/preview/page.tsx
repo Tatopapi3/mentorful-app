@@ -23,10 +23,15 @@ export default function PreviewHub() {
         <li><Link href="/survey">The Culture Scan survey</Link> (26 questions; answers are discarded)</li>
         <li><Link href="/report">The six-slide report</Link> (on the synthetic respondents)</li>
       </ul>
-      <h2>As the school admin</h2>
+      <h2>As the school admin: Nick&apos;s look</h2>
       <ul>
-        <li><a href="/preview/as/admin?next=/admin">Leadership dashboard</a></li>
-        <li><a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
+        <li><a href="/preview/as/admin?next=/admin">Overview</a> (his leadership dashboard, unchanged)</li>
+        <li><a href="/preview/as/admin?next=/admin/pulse">Pulse</a> · <a href="/preview/as/admin?next=/admin/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
+      </ul>
+      <h2>As the school admin: Aurora look</h2>
+      <ul>
+        <li><a href="/preview/as/admin?next=/admin/aurora">Overview</a></li>
+        <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
       </ul>
       <h2>As a teacher</h2>
       <ul>
