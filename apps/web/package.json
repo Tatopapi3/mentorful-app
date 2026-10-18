@@ -14,7 +14,8 @@
     "items": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-culture-scan-items.ts",
     "items:dry": "npm run items -- --dry-run",
     "items:verify": "npm run items -- --verify",
-    "preview": "PREVIEW_MOCK=1 NEXT_PUBLIC_PREVIEW_MOCK=1 NEXT_PUBLIC_SUPABASE_URL=https://preview.invalid NEXT_PUBLIC_SUPABASE_ANON_KEY=preview NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID=preview-survey NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID=school-sandbox SUPABASE_SERVICE_ROLE_KEY=preview next dev -p 3200"
+    "preview": "PREVIEW_MOCK=1 NEXT_PUBLIC_PREVIEW_MOCK=1 NEXT_PUBLIC_SUPABASE_URL=https://preview.invalid NEXT_PUBLIC_SUPABASE_ANON_KEY=preview NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID=preview-survey NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID=school-sandbox SUPABASE_SERVICE_ROLE_KEY=preview next dev -p 3200",
+    "test": "vitest run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -34,6 +35,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

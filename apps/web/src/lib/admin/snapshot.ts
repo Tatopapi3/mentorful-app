@@ -1,0 +1,57 @@
+import { loadReportStats } from "@/lib/report/data";
+import { DIMENSIONS, type Dimension } from "@/lib/report/stats";
+import type { AdminContext } from "./require";
+import type { AdminPair, AdminSnapshot, ScanSummary } from "./facts";
+
+type Row = { id: string; host_id: string; visitor_id: string; domain: string | null; strategic_tag: string | null };
+
+const toPair = (p: Row): AdminPair => ({ id: p.id, a: p.host_id, b: p.visitor_id, domain: p.domain, tag: p.strategic_tag });
+
+/**
+ * Everything the Aurora leadership views need, read the way the existing leadership dashboard reads it:
+ * on the signed-in admin's session, so row-level security scopes it to their school. Conversations are
+ * pair-private, so leadership gets a count from the database function, never the rows. The scan comes from
+ * the report engine as aggregates only.
+ */
+export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext): Promise<AdminSnapshot> {
+  const [{ data: school }, { data: cycle }, { data: teachers }] = await Promise.all([
+    supabase.from("schools").select("name, strategic_priority").eq("id", schoolId).maybeSingle(),
+    supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).order("ends_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("profiles").select("id, first_name, last_name, department").eq("school_id", schoolId).eq("role", "teacher").order("last_name"),
+  ]);
+
+  const approved = cycle
+    ? await supabase.from("pairings").select("id, host_id, visitor_id, domain, strategic_tag").eq("school_id", schoolId).eq("cycle_id", cycle.id).eq("status", "approved")
+    : { data: [] as Row[] };
+  const pending = cycle
+    ? await supabase.from("pairings").select("id, host_id, visitor_id, domain, strategic_tag").eq("school_id", schoolId).eq("cycle_id", cycle.id).eq("status", "pending")
+    : { data: [] as Row[] };
+
+  const { data: count } = await supabase.rpc("conversation_log_count", { p_cycle: cycle?.id ?? null });
+
+  const report = await loadReportStats();
+  let scan: ScanSummary | null = null;
+  if (report.status === "ok") {
+    const means = {} as Record<Dimension, number>;
+    const ci = {} as Record<Dimension, number>;
+    for (const d of DIMENSIONS) {
+      means[d] = report.stats.dimensions[d].mean;
+      ci[d] = report.stats.dimensions[d].ciHalfWidth;
+    }
+    scan = { n: report.stats.n, means, ci, includesSynthetic: report.includesSynthetic };
+  }
+
+  return {
+    school: { name: school?.name ?? "Your school", priority: school?.strategic_priority ?? null },
+    cycle: cycle ? { name: cycle.name, status: cycle.status } : null,
+    people: (teachers ?? []).map((t) => ({
+      id: t.id,
+      name: [t.first_name, t.last_name].filter(Boolean).join(" ") || "Teacher",
+      dept: t.department ?? "No department",
+    })),
+    pairs: ((approved.data ?? []) as Row[]).map(toPair),
+    requests: ((pending.data ?? []) as Row[]).map(toPair),
+    conversations: typeof count === "number" ? count : 0,
+    scan,
+  };
+}
