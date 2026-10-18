@@ -2,7 +2,7 @@ import { AuroraChrome } from "@/components/aurora/chrome";
 import { requireAdmin } from "@/lib/admin/require";
 
 const NAV = [
-  { href: "/admin", label: "Overview" },
+  { href: "/admin", label: "Overview", exact: true },
   { href: "/admin/pulse", label: "Pulse" },
   { href: "/admin/constellation", label: "Constellation" },
   { href: "/admin/insights", label: "Insights" },
