@@ -138,7 +138,7 @@ export default async function InsightsPage() {
               <strong style={{ display: "block", fontWeight: 600, margin: "8px 0 2px" }}>{a.title}</strong>
               <small>{a.detail}</small>
             </div>
-            <Link href={a.href} className="ev-btn sm">{a.cta}</Link>
+            {a.href !== "/admin/insights" && <Link href={a.href} className="ev-btn sm">{a.cta}</Link>}
           </div>
         ))}
         <p style={{ marginTop: 14 }}><Link href="/admin/pulse">See everything on Pulse →</Link></p>

@@ -218,6 +218,13 @@ export default async function AdminDashboardPage() {
               {school?.strategic_priority ? <> · {school.strategic_priority}</> : null}
             </p>
           </div>
+          {/* Added alongside everything below, which is unchanged: the Aurora leadership views. */}
+          <nav aria-label="More views" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", fontSize: 14 }}>
+            <span style={{ opacity: 0.7 }}>More views:</span>
+            <a href="/admin/pulse">Pulse</a>
+            <a href="/admin/constellation">Constellation</a>
+            <a href="/admin/insights">Insights</a>
+          </nav>
         </header>
 
         {/* ---------------------------------------------------- metric strip */}
