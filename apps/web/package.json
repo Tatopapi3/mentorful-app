@@ -13,7 +13,8 @@
     "synthetic:stats": "npm run synthetic -- --stats-only",
     "items": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-culture-scan-items.ts",
     "items:dry": "npm run items -- --dry-run",
-    "items:verify": "npm run items -- --verify"
+    "items:verify": "npm run items -- --verify",
+    "test": "vitest run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -33,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
