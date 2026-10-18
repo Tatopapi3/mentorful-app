@@ -54,5 +54,5 @@ export default async function ReportPage() {
     .eq("is_demo", false);
 
   const load = await loadReportStats({ schoolId: me.school_id, faculty: count ?? 0 });
-  return <ReportBody load={load} />;
+  return <ReportBody load={load} exportHref="/report/export/pptx" />;
 }

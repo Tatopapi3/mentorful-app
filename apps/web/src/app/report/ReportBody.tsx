@@ -20,7 +20,7 @@ import SiteHeader from "@/components/SiteHeader";
  */
 const page: React.CSSProperties = { maxWidth: 1120, margin: "40px auto", padding: 24 };
 
-export default function ReportBody({ load }: { load: ReportLoad }) {
+export default function ReportBody({ load, exportHref }: { load: ReportLoad; exportHref?: string }) {
   if (load.status === "misconfigured") {
     return (
       <>
@@ -188,8 +188,13 @@ export default function ReportBody({ load }: { load: ReportLoad }) {
           </div>
         )}
 
-        <div style={{ margin: "24px 0" }}>
+        <div style={{ margin: "24px 0", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <DeckToolbar count={SLIDE_COUNT} />
+          {exportHref && (
+            <a href={exportHref} style={{ fontSize: 14 }}>
+              Download PowerPoint (to edit)
+            </a>
+          )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
