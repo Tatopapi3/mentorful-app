@@ -16,6 +16,20 @@ this schema, not code to copy.
 | 6 | `track-1-matching` | Pairings are proposed and approved, with no engine | none yet |
 | 7 | `track-1-admin-dashboard` | CTE headline, gates, network rules, PowerPoint and PDF | none yet |
 
+## Status (Oct 18, before the dump)
+
+Each branch is off `track-0-invariant-tests` unless noted, pushed to the private repo, with tests passing. None has been run against
+a real database. Merge order: Track 0, then the rest.
+
+| Branch | State |
+|---|---|
+| `track-1-report-gate` | Built. Admin-only, school-scoped, gates, CTE headline, sample route. Check the headcount query and `is_demo` against the dump |
+| `track-1-domains` | Built. Five domains, PLC routing, strength rollups kept at four |
+| `track-1-matching` | Pure engine built (randomized, cross-department, host and visitor). Database side (exclusions, avoid requests) waits for the dump |
+| `track-1-network-rules` | Built, off `track-1-report-gate`. Dashed under 0.1, node size by mean, sampling caveat |
+| `track-1-pptx-export` | Built, off `track-1-network-rules`. Six-slide editable deck. Not yet opened in PowerPoint or Keynote |
+| survey tenancy, profiles view, claim on login | Need the dump |
+
 ## 1. Report gate (`src/app/report/page.tsx`, `src/lib/report/data.ts`)
 - Add the `getUser()` check and a leader check, like `/admin/page.tsx` already does. Pass the leader's `school_id` into
   `loadReportStats(schoolId)` and filter `survey_responses` on it (the column already exists: the survey insert sets it).
