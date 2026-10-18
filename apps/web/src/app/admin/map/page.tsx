@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AdminTabs from "@/components/nick/admin-tabs";
+import SiteHeader from "@/components/SiteHeader";
 import FacultyMapClient from "./FacultyMapClient";
 import {
   DOMAIN_LABEL,
@@ -160,32 +161,24 @@ export default async function AdminMapPage() {
   const { schoolName, cycleName, users, edges } = result;
 
   return (
-    <main style={{ padding: 16, fontFamily: "system-ui" }}>
-      {/* Added: the leadership tabs. The map below is unchanged. */}
-      <div style={{ marginBottom: 14 }}>
+    <>
+      <SiteHeader />
+      <main className="wrap adm">
+        {/* Added: the leadership tabs and the same page frame as the other tabs. The map itself is unchanged. */}
         <AdminTabs />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          marginBottom: 12,
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Faculty Map</h1>
-          <div style={{ color: "#666", fontSize: 12, marginTop: 4 }}>
-            School: {schoolName} {cycleName ? `| Cycle: ${cycleName}` : "| No cycle found"}
+        <header className="adm-head" style={{ marginTop: 22 }}>
+          <p className="mono adm-eyebrow">Faculty map</p>
+          <h1>{schoolName}</h1>
+          <p className="adm-sub">
+            {cycleName ? `Cycle: ${cycleName}` : "No cycle found"} · Nodes: {users.length} | Edges: {edges.length}
+          </p>
+        </header>
+        <section className="adm-card adm-map-card">
+          <div className="adm-map">
+            <FacultyMapClient users={users} edges={edges} />
           </div>
-        </div>
-
-        <div style={{ color: "#666", fontSize: 12 }}>
-          Nodes: {users.length} | Edges: {edges.length}
-        </div>
-      </div>
-
-      <FacultyMapClient users={users} edges={edges} />
-    </main>
+        </section>
+      </main>
+    </>
   );
 }
