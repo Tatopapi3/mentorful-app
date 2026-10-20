@@ -89,3 +89,9 @@
 
 /* the sky stays a night sky: one dark jewel on the paper */
 .ev-blend .v3-sky-stage { border-radius: 16px; box-shadow: 0 24px 50px -28px rgba(22, 40, 60, 0.6); }
+
+/* the dark cards take Nick's navy instead of Aurora's violet */
+.ev-blend .ev-feature { background: radial-gradient(120% 140% at 0% 0%, #24445f 0%, #16283c 55%, #0b1622 100%); border-radius: 16px; }
+.ev-blend .ev-feature h2 { font-family: var(--ev-display); }
+.ev-blend .ev-feature .ev-btn { color: #16283c; }
+.ev-blend .v3-sky-stage { background: radial-gradient(90% 120% at 20% 0%, #25356f 0%, #15233f 50%, #0a1424 100%); }
