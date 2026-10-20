@@ -33,6 +33,11 @@ export default function PreviewHub() {
         <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/aurora/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/aurora/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
         <li><a href="/preview/as/admin?next=/admin/aurora/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/aurora/privacy">Trust page</a></li>
       </ul>
+      <h2>As the school admin: Blend look</h2>
+      <ul>
+        <li><a href="/preview/as/admin?next=/admin/blend/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/blend/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/blend/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/blend/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/blend/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/blend/map">Faculty map</a></li>
+        <li><a href="/preview/as/admin?next=/admin/blend/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/blend/privacy">Trust page</a></li>
+      </ul>
       <h2>As a teacher</h2>
       <ul>
         <li><a href="/preview/as/teacher?next=/dashboard">Teacher dashboard</a> (Linda Johnson: two pairings, one draft conversation to submit)</li>
