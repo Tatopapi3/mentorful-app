@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { lookBase, lookOf } from "@/lib/admin/look";
 import { CycleSwitcher } from "@/components/admin/kit";
 import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
 import { fullName, loadOverviewDetail, ranked } from "@/lib/admin/detail";
@@ -39,7 +40,9 @@ function Bars({ rows, suffix }: { rows: [string, number][]; suffix?: string }) {
 // The leadership overview in the Aurora look. It shows everything the existing overview shows, from the same
 // reads: the numbers, the faculty network, what pairs work on, strengths, departments, teaching styles and
 // every co-mentor pair.
-export default async function AuroraOverviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function AuroraOverviewPage({ params: routeParams, searchParams }: { params: Promise<{ look: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const look = await lookOf(routeParams);
+  const base = lookBase(look);
   const admin = (await requireAdmin())!;
   const cycleParam = (await searchParams).cycle;
   const d = await loadOverviewDetail(admin, { cycleId: typeof cycleParam === "string" ? cycleParam : null });
@@ -55,7 +58,7 @@ export default async function AuroraOverviewPage({ searchParams }: { searchParam
         {d.school.priority ? ` · ${d.school.priority}` : ""}
       </p>
 
-      <CycleSwitcher skin="aurora" cycles={d.cycles} selectedId={d.cycle?.id ?? null} path="/admin/aurora/overview" />
+      <CycleSwitcher skin={look} cycles={d.cycles} selectedId={d.cycle?.id ?? null} path={`${base}/overview`} />
 
       <section aria-label="Summary" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14, margin: "22px 0" }}>
         <Stat label="Conversations" value={String(d.conversationCount)} note="logged, content stays private" />
@@ -73,7 +76,7 @@ export default async function AuroraOverviewPage({ searchParams }: { searchParam
         <div style={{ height: 560, marginTop: 14, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line)", background: "#fff" }}>
           <FacultyMapClient users={d.mapUsers} edges={d.mapEdges} />
         </div>
-        <p className="ev-small" style={{ marginTop: 10 }}>Want it full size? <Link href="/admin/aurora/map">Open the faculty map</Link>.</p>
+        <p className="ev-small" style={{ marginTop: 10 }}>Want it full size? <Link href={`${base}/map`}>Open the faculty map</Link>.</p>
       </section>
 
       <div className="ev-lead-grid" style={{ marginTop: 22, alignItems: "start", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>

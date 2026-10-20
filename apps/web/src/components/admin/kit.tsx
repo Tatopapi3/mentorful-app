@@ -6,8 +6,9 @@ import { NickPage } from "@/components/nick/page";
  * A few building blocks that draw the same content in either look. Each page is written once and passes its
  * skin; the leadership views come in Nick's look (under /admin) and the Aurora look (under /admin/aurora).
  */
-export type Skin = "nick" | "aurora";
-export const basePath = (skin: Skin) => (skin === "nick" ? "/admin" : "/admin/aurora");
+export type Skin = "nick" | "aurora" | "blend";
+/** Aurora and blend share one set of markup (everything that is not Nick's); blend only changes its theme. */
+export const basePath = (skin: Skin) => (skin === "nick" ? "/admin" : skin === "blend" ? "/admin/blend" : "/admin/aurora");
 
 export function AdminFrame({ skin, eyebrow, title, sub, children }: { skin: Skin; eyebrow: string; title: string; sub?: ReactNode; children: ReactNode }) {
   if (skin === "nick") return <NickPage eyebrow={eyebrow} title={title} sub={sub}>{children}</NickPage>;

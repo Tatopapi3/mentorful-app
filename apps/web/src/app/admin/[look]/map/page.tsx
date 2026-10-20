@@ -1,12 +1,14 @@
 import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
 import { loadOverviewDetail } from "@/lib/admin/detail";
+import { lookOf } from "@/lib/admin/look";
 import { requireAdmin } from "@/lib/admin/require";
 
 export const dynamic = "force-dynamic";
 
 // The interactive faculty map, full size, in the Aurora look. The map itself is Nick's component: the same
 // four layouts and the same click-for-details panel.
-export default async function AuroraMapPage() {
+export default async function AuroraMapPage({ params }: { params: Promise<{ look: string }> }) {
+  await lookOf(params);
   const admin = (await requireAdmin())!;
   const d = await loadOverviewDetail(admin);
   return (

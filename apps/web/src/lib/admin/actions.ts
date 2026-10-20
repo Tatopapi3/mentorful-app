@@ -30,7 +30,7 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
  * The leadership views come in two looks: Nick's (under /admin) and Aurora (under /admin/aurora). Links
  * stay inside the look you are in, so `base` is the path prefix of the current look.
  */
-export type LookBase = "/admin" | "/admin/aurora";
+export type LookBase = "/admin" | "/admin/aurora" | "/admin/blend";
 
 export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[] {
   const out: AdminAction[] = [];
