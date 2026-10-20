@@ -1,4 +1,5 @@
 import { ConstellationGuide } from "@/components/admin/constellation-guide";
+import { lookBase, lookOf } from "@/lib/admin/look";
 import { CycleSwitcher } from "@/components/admin/kit";
 import { Constellation } from "@/components/aurora/constellation";
 import { requireAdmin } from "@/lib/admin/require";
@@ -9,7 +10,9 @@ import { buildFacts } from "@/lib/admin/facts";
 export const dynamic = "force-dynamic";
 
 // The faculty as a sky: every teacher a star, every pair an arc, bright where a pair crosses departments.
-export default async function ConstellationPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function ConstellationPage({ params: routeParams, searchParams }: { params: Promise<{ look: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const look = await lookOf(routeParams);
+  const base = lookBase(look);
   const admin = (await requireAdmin())!;
   const params = await searchParams;
   const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
@@ -39,12 +42,12 @@ export default async function ConstellationPage({ searchParams }: { searchParams
         </div>
       </div>
 
-      <CycleSwitcher skin="aurora" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/aurora/constellation" />
-      <ConstellationGuide skin="aurora" snap={snap} prev={prev} part="top" />
+      <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/constellation`} />
+      <ConstellationGuide skin={look} snap={snap} prev={prev} part="top" />
       <div style={{ marginTop: 22 }}>
-        <Constellation people={people} pairs={pairs} requests={requests} drafts={drafts} draftLabel="Suggested" />
+        <Constellation base={base} people={people} pairs={pairs} requests={requests} drafts={drafts} draftLabel="Suggested" />
       </div>
-      <ConstellationGuide skin="aurora" snap={snap} prev={prev} part="bottom" />
+      <ConstellationGuide skin={look} snap={snap} prev={prev} part="bottom" />
       <p className="ev-small" style={{ marginTop: 18 }}>
         Position is a navigation aid only. Distance and brightness do not measure influence, performance, or relationship quality.
       </p>

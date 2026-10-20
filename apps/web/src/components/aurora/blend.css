@@ -1,0 +1,91 @@
+/*
+ * The blend look: Aurora's layout (floating pill bar, command palette, night-sky constellation, dark mode) in
+ * Nick's paper, ink and serif. Paper and hairlines carry the page; the teal-to-indigo gradient is kept for the
+ * few places that should glow: the accent word in a headline, the bars, the primary button and the sky.
+ * Everything is scoped to .ev-blend, so Aurora itself is untouched.
+ */
+.ev.ev-blend {
+  --ev-bg: #f8f5ef;
+  --ev-ink: #1e2a33;
+  --ev-muted: #697079;
+  --ev-line: rgba(30, 42, 51, 0.12);
+  --ev-panel: #fffefb;
+  --ev-panel-solid: #fffefb;
+  --ev-soft: rgba(0, 137, 123, 0.08);
+  --ev-teal: #00796b;
+  --ev-teal-deep: #4a55c8;
+  --ev-grad: linear-gradient(135deg, #0a9a8a 0%, #4a55c8 100%);
+  --ev-grad-soft: linear-gradient(135deg, rgba(10, 154, 138, 0.12), rgba(74, 85, 200, 0.1));
+  --ev-navy: #16283c;
+  --ev-on-navy: #f6f3ec;
+  --ev-amber: #b4500c;
+  --ev-amber-soft: rgba(200, 80, 10, 0.1);
+  --ev-shadow: 0 1px 0 rgba(30, 42, 51, 0.04), 0 14px 30px -18px rgba(22, 40, 60, 0.28);
+  --ev-display: var(--font-blend-serif), var(--font-serif), Georgia, serif;
+  --ev-serif: var(--font-blend-serif), var(--font-serif), Georgia, serif;
+  --ev-sans: var(--font-sans), system-ui, sans-serif;
+  --ev-mono: var(--font-mono), ui-monospace, monospace;
+  --ev-ring: rgba(74, 85, 200, 0.32);
+}
+.ev.ev-blend[data-theme="dark"] {
+  --ev-bg: #0e1b29;
+  --ev-ink: #f1eee6;
+  --ev-muted: #a3aeb8;
+  --ev-line: rgba(241, 238, 230, 0.13);
+  --ev-panel: #15283a;
+  --ev-panel-solid: #15283a;
+  --ev-soft: rgba(94, 212, 196, 0.1);
+  --ev-teal: #5ed4c4;
+  --ev-teal-deep: #a3abff;
+  --ev-grad-soft: linear-gradient(135deg, rgba(94, 212, 196, 0.14), rgba(163, 171, 255, 0.14));
+  --ev-navy: #0b1622;
+  --ev-amber: #f0a56b;
+  --ev-amber-soft: rgba(240, 165, 107, 0.14);
+  --ev-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 18px 38px -20px rgba(0, 0, 0, 0.7);
+  --ev-ring: rgba(163, 171, 255, 0.45);
+}
+
+/* the glow behind the page: a soft wash at the top only, so the paper stays paper */
+.ev-blend .ev-aurora i { filter: blur(110px); opacity: 0.34; }
+.ev-blend .ev-aurora i:nth-child(1) { background: #7fd8cb; }
+.ev-blend .ev-aurora i:nth-child(2) { background: #b7bff5; }
+.ev-blend .ev-aurora i:nth-child(3) { display: none; }
+.ev-blend[data-theme="dark"] .ev-aurora i { opacity: 0.16; }
+
+/* type: Lora for headings, a mono eyebrow, Public Sans for reading */
+.ev-blend h1, .ev-blend h2, .ev-blend h3 { font-weight: 600; letter-spacing: -0.015em; line-height: 1.16; }
+.ev-blend h1 { font-size: clamp(32px, 4.2vw, 50px); letter-spacing: -0.02em; }
+.ev-blend h1 em, .ev-blend h2 em, .ev-blend .ev-em { font-weight: 500; letter-spacing: 0; }
+.ev-blend .ev-eyebrow { font-family: var(--ev-mono); font-weight: 500; letter-spacing: 0.16em; }
+.ev-blend .ev-eyebrow::before { width: 22px; height: 1.5px; }
+.ev-blend .ev-numbers strong { font-family: var(--ev-display); font-weight: 600; letter-spacing: -0.02em; }
+.ev-blend .ev-lead { font-size: 17px; }
+
+/* the bar: Aurora's floating pill, in paper; the current tab is navy like Nick's ink-on-paper tabs */
+.ev-blend .ev-topbar { background: color-mix(in srgb, var(--ev-panel-solid) 86%, transparent); box-shadow: var(--ev-shadow); }
+.ev-blend .ev-brand { font-family: var(--ev-display); font-weight: 600; letter-spacing: -0.02em; font-size: 21px; }
+.ev-blend .ev-brand .mark { border-radius: 7px; box-shadow: none; }
+.ev-blend .ev-nav a { font-family: var(--ev-sans); border-radius: 999px; }
+.ev-blend .ev-nav a[aria-current="page"] { background: var(--ev-navy); color: var(--ev-on-navy); box-shadow: none; }
+.ev-blend[data-theme="dark"] .ev-nav a[aria-current="page"] { background: var(--ev-soft); color: var(--ev-ink); box-shadow: inset 0 0 0 1px var(--ev-line); }
+
+/* cards: solid paper, a hairline, a quieter radius than Aurora's and a rounder one than Nick's */
+.ev-blend .ev-panel, .ev-blend .ev-decision, .ev-blend .ev-aside section, .ev-blend .ev-notebook, .ev-blend .ev-empty { border-radius: 14px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.ev-blend .ev-decision { padding: 24px; }
+.ev-blend .ev-panel { padding: 24px 26px; }
+.ev-blend .ev-table { border-radius: 12px; }
+.ev-blend .ev-menu, .ev-blend .ev-palette { border-radius: 14px; }
+.ev-blend .ev-palette input { font-family: var(--ev-sans); }
+
+/* controls: gentle rectangles, the gradient only on the primary action */
+.ev-blend .ev-btn { border-radius: 10px; font-family: var(--ev-sans); font-weight: 600; }
+.ev-blend .ev-btn.primary { box-shadow: 0 8px 18px -10px rgba(74, 85, 200, 0.7); }
+.ev-blend .ev-btn:hover { transform: none; box-shadow: var(--ev-shadow); }
+.ev-blend .ev-badge { border-radius: 6px; font-family: var(--ev-mono); font-weight: 500; letter-spacing: 0.02em; }
+.ev-blend .ev-tabs { border-radius: 10px; }
+.ev-blend .ev-tabs a, .ev-blend .ev-tabs button { border-radius: 7px; }
+.ev-blend .ev-input, .ev-blend .ev-field input, .ev-blend .ev-field select, .ev-blend .ev-field textarea { border-radius: 10px; }
+.ev-blend .ev-foot { font-family: var(--ev-mono); font-size: 11px; letter-spacing: 0.04em; }
+
+/* the sky stays a night sky: one dark jewel on the paper */
+.ev-blend .v3-sky-stage { border-radius: 16px; box-shadow: 0 24px 50px -28px rgba(22, 40, 60, 0.6); }

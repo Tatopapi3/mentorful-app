@@ -38,7 +38,7 @@ export function Constellation({
   /** "aurora" is the night-sky look; "nick" draws the same sky in the paper-and-teal palette of the existing pages. */
   skin?: "aurora" | "nick";
   /** Path prefix of the look this is shown in, so links stay inside it. */
-  base?: "/admin" | "/admin/aurora";
+  base?: "/admin" | "/admin/aurora" | "/admin/blend";
   /** What the dotted layer is called: "Draft round" on the pairing screen, "Suggested" where it shows suggestions. */
   draftLabel?: string;
 }) {

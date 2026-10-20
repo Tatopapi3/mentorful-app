@@ -1,3 +1,4 @@
+import { lookBase, lookOf } from "@/lib/admin/look";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import Link from "next/link";
@@ -18,13 +19,15 @@ const REPRESENTATIVE_SHARE = 0.6;
 
 // Insights: what the Culture Scan and the pairs show, school-wide, and what direction that points in. Survey
 // answers are anonymous and carry no department, so nothing here is broken down by group.
-export default async function InsightsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function InsightsPage({ params: routeParams, searchParams }: { params: Promise<{ look: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const look = await lookOf(routeParams);
+  const base = lookBase(look);
   const admin = (await requireAdmin())!;
   const params = await searchParams;
   const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
-  const actions = buildActions(facts, "/admin/aurora").filter((a) => a.severity !== "good").slice(0, 4);
+  const actions = buildActions(facts, base).filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);
   const findings = snap.stats ? buildFindings(snap.stats) : null;
   const scan = snap.scan;
@@ -42,7 +45,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       </h1>
       <p className="ev-lead">School-wide patterns from the Culture Scan and from who is paired. Groups are never shown, and no individual&apos;s answers can be traced.</p>
 
-      <CycleSwitcher skin="aurora" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/aurora/insights" />
+      <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/insights`} />
       {!scan && (
         <div className="ev-empty" style={{ marginTop: 20 }}>
           <strong>No Culture Scan results yet.</strong>
@@ -82,13 +85,13 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
               <p className="ev-muted" style={{ maxWidth: 760 }}>{findings.gap.finding.sentence}</p>
               <h3>{findings.weakest.finding.title}</h3>
               <p className="ev-muted" style={{ maxWidth: 760 }}>{findings.weakest.finding.sentence}</p>
-              <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link href="/report" className="ev-btn sm">Open the six-slide report</Link><a href="/admin/export/results.csv" className="ev-btn sm">Download results (CSV)</a><Link href="/admin/aurora/summary" className="ev-btn sm">Board summary</Link></span>
+              <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Link href="/report" className="ev-btn sm">Open the six-slide report</Link><a href="/admin/export/results.csv" className="ev-btn sm">Download results (CSV)</a><Link href={`${base}/summary`} className="ev-btn sm">Board summary</Link></span>
             </section>
           )}
         </>
       )}
 
-      <ParticipationPanel skin="aurora" snap={snap} />
+      <ParticipationPanel skin={look} snap={snap} />
 
       <div className="ev-lead-grid" style={{ marginTop: 22, alignItems: "start" }}>
         <section className="ev-panel">
@@ -130,7 +133,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             {conn.within > 0 ? `${conn.within} stay inside one department. ` : ""}
             {conn.omitted.length > 0 ? `Left out because they have under 5 teachers: ${conn.omitted.join(", ")}.` : ""}
           </p>
-          <Link href="/admin/aurora/constellation" className="ev-btn sm">Open the constellation</Link>
+          <Link href={`${base}/constellation`} className="ev-btn sm">Open the constellation</Link>
         </section>
       </div>
 
@@ -148,7 +151,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             {a.href !== "/admin/insights" && <Link href={a.href} className="ev-btn sm">{a.cta}</Link>}
           </div>
         ))}
-        <p style={{ marginTop: 14 }}><Link href="/admin/aurora/pulse">See everything on Pulse →</Link></p>
+        <p style={{ marginTop: 14 }}><Link href={`${base}/pulse`}>See everything on Pulse →</Link></p>
       </section>
     </main>
   );

@@ -1,0 +1,12 @@
+/* the three-way look switch: the same control, drawn in each look's own tokens */
+.looks { display: inline-flex; padding: 3px; gap: 2px; white-space: nowrap; flex: none; }
+.looks a { text-decoration: none; padding: 5px 11px; font-size: 12px; line-height: 1.2; }
+.looks-ev { border: 1px solid var(--ev-line); background: var(--ev-panel-solid); border-radius: 999px; }
+.looks-ev a { color: var(--ev-muted); border-radius: 999px; font-weight: 500; }
+.looks-ev a:hover { color: var(--ev-ink); }
+.looks-ev a[aria-current="true"] { background: var(--ev-soft); color: var(--ev-ink); font-weight: 600; }
+.ev .looks-ev a[aria-current="true"] { color: var(--ev-ink); }
+.looks-nick { border: 1px solid var(--line); background: var(--card); border-radius: 4px; }
+.looks-nick a { font-family: var(--font-mono), monospace; letter-spacing: 0.04em; color: var(--muted); border-radius: 3px; }
+.looks-nick a:hover { color: var(--teal-dk); }
+.looks-nick a[aria-current="true"] { background: var(--teal-bg); color: var(--teal-dk); }
