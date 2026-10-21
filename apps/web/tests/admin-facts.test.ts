@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { activitySentence, buildActivity, cycleTrend, monthLabel, trendSentence } from "@/lib/admin/trends";
 import { coverage, departmentMatrix, directions, gaps, progress, reach, suggestions } from "@/lib/admin/network";
 import { csvEscape, resultsCsv } from "@/lib/admin/csv";
 import { participationRates, quietLabel, type Participation } from "@/lib/admin/participation";
@@ -277,5 +278,45 @@ describe("network reading", () => {
     expect(d[0].severity).toBe("do");
     expect(d.find((x) => x.id === "gaps")!.title).toBe("2 of 3 department connections don't exist yet");
     expect(d.find((x) => x.id === "least")!.title).toBe("Arts is the least connected department");
+  });
+});
+
+describe("trends", () => {
+  const people = [...Array.from({ length: 5 }, (_, i) => ({ id: `M${i}`, name: `M${i}`, dept: "Math" })), ...Array.from({ length: 5 }, (_, i) => ({ id: `E${i}`, name: `E${i}`, dept: "ELA" }))];
+  const pair = (id: string, a: string, b: string) => ({ id, a, b, domain: null, tag: null });
+  const rows = cycleTrend(people, [{ id: "c1", name: "Spring" }, { id: "c2", name: "Fall" }], {
+    c1: [pair("1", "M0", "M1")],
+    c2: [pair("2", "M0", "E0"), pair("3", "M1", "E1"), pair("4", "M2", "M3")],
+  });
+
+  it("work out each cycle's numbers, oldest first", () => {
+    expect(rows.map((r) => [r.name, r.pairs, r.partneredPct, r.crossPct, r.connections])).toEqual([["Spring", 1, 20, 0, 0], ["Fall", 3, 60, 67, 1]]);
+    expect(rows[1].possible).toBe(1);
+  });
+
+  it("say what moved, and say so plainly when there is only one cycle", () => {
+    expect(trendSentence(rows)).toBe("Between Spring and Fall, teachers with a partner went from 20% to 60%, connected department pairs went from 0 to 1 of 1, pairs across departments went from 0% to 67%.");
+    expect(trendSentence(rows.slice(0, 1))).toContain("one cycle so far");
+  });
+
+  const raw = {
+    months: [{ month: "2025-11", n: 9 }, { month: "2025-10", n: 12 }, { month: "2025-12", n: 3 }],
+    heat: [{ department: "Math", month: "2025-10", n: 7 }, { department: "Math", month: "2025-11", n: 2 }, { department: "ELA", month: "2025-10", n: 5 }],
+  };
+
+  it("sort months, label them, and hide any count under 5 even if the database let one through", () => {
+    const a = buildActivity(raw);
+    expect(a.months).toEqual(["2025-10", "2025-11", "2025-12"]);
+    expect(a.totals.map((t) => t.n)).toEqual([12, 9, null]);
+    expect(a.cell("Math", "2025-10")).toBe(7);
+    expect(a.cell("Math", "2025-11")).toBeNull();
+    expect(a.cell("ELA", "2025-12")).toBeNull();
+    expect(a.departments).toEqual(["ELA", "Math"]);
+    expect(monthLabel("2025-10")).toBe("Oct 2025");
+  });
+
+  it("describe the busiest month from the numbers that are shown", () => {
+    expect(activitySentence(buildActivity(raw))).toBe("21 conversations are counted in the months shown. Oct 2025 was the busiest, with 12.");
+    expect(activitySentence(buildActivity({ months: [{ month: "2025-10", n: 3 }], heat: [] }))).toBeNull();
   });
 });
