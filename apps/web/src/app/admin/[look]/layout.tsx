@@ -1,6 +1,7 @@
 import { AuroraChrome } from "@/components/aurora/chrome";
 import { SwitchLook } from "@/components/aurora/switch-look";
 import { lookBase, lookOf } from "@/lib/admin/look";
+import { lookEnabled } from "@/lib/admin/looks";
 import { requireAdmin } from "@/lib/admin/require";
 
 // The whole leadership area in the Aurora layout, in two themes: Aurora itself and the blend of Aurora with Nick's
@@ -30,8 +31,9 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/map`, label: "Open the faculty map", hint: "Faculty map" },
     { href: `${base}/summary`, label: "Open the board summary", hint: "Present" },
     { href: `${base}/privacy`, label: "What leadership can and can't see", hint: "Trust" },
-    { href: "/admin/pulse", label: "Switch to Nick’s look", hint: "Look" },
-    { href: look === "aurora" ? "/admin/blend/pulse" : "/admin/aurora/pulse", label: look === "aurora" ? "Switch to the blend look" : "Switch to the Aurora look", hint: "Look" },
+    ...(lookEnabled("nick") ? [{ href: "/admin/pulse", label: "Switch to Nick’s look", hint: "Look" }] : []),
+    ...(look === "blend" && lookEnabled("aurora") ? [{ href: "/admin/aurora/pulse", label: "Switch to the Aurora look", hint: "Look" }] : []),
+    ...(look === "aurora" && lookEnabled("blend") ? [{ href: "/admin/blend/pulse", label: "Switch to the blend look", hint: "Look" }] : []),
   ];
   const admin = await requireAdmin();
   if (!admin) {
