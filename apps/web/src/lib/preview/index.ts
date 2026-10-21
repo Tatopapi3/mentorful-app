@@ -66,6 +66,29 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
         const pr = tables.pairings.filter((p) => p.cycle_id === args.p_cycle && p.status === "approved");
         return pr.filter((p) => !tables.conversation_logs.some((l) => l.pairing_id === p.id && l.status === "submitted" && new Date(l.submitted_at).getTime() >= since)).length;
       },
+      conversation_activity: (args: { p_cycle: string }) => {
+        const MIN = 5;
+        const pr = new Map(tables.pairings.map((p) => [p.id, p]));
+        const prof = new Map(tables.profiles.map((p) => [p.id, p]));
+        const logs = tables.conversation_logs.filter((l) => l.cycle_id === args.p_cycle && l.status === "submitted" && !l.is_visit_debrief && l.submitted_at);
+        const size = new Map<string, number>();
+        for (const t of tables.profiles.filter((p) => p.role === "teacher")) size.set(t.department ?? "Unassigned", (size.get(t.department ?? "Unassigned") ?? 0) + 1);
+        const months = new Map<string, number>();
+        const heat = new Map<string, number>();
+        for (const l of logs) {
+          const month = String(l.submitted_at).slice(0, 7);
+          months.set(month, (months.get(month) ?? 0) + 1);
+          const p = pr.get(l.pairing_id);
+          if (!p) continue;
+          const depts = new Set([p.host_id, p.visitor_id].map((id) => prof.get(id)?.department ?? "Unassigned"));
+          for (const d of depts) if ((size.get(d) ?? 0) >= MIN) heat.set(`${d}|${month}`, (heat.get(`${d}|${month}`) ?? 0) + 1);
+        }
+        const hide = (n: number) => (n >= MIN ? n : null);
+        return {
+          months: [...months.entries()].sort().map(([month, n]) => ({ month, n: hide(n) })),
+          heat: [...heat.entries()].sort().map(([k, n]) => ({ department: k.split("|")[0], month: k.split("|")[1], n: hide(n) })),
+        };
+      },
       conversation_log_count: (args: { p_cycle: string | null }) => tables.conversation_logs.filter((l) => l.status === "submitted" && (!args?.p_cycle || l.cycle_id === args.p_cycle)).length,
     },
   });

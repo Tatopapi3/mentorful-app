@@ -25,17 +25,17 @@ export default function PreviewHub() {
       </ul>
       <h2>As the school admin: Nick&apos;s look</h2>
       <ul>
-        <li><a href="/preview/as/admin?next=/admin/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/overview">Overview</a> (his leadership dashboard, unchanged) · <a href="/preview/as/admin?next=/admin/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
+        <li><a href="/preview/as/admin?next=/admin/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/overview">Overview</a> (his leadership dashboard, unchanged) · <a href="/preview/as/admin?next=/admin/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
         <li><a href="/preview/as/admin?next=/admin/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/privacy">Trust page</a></li>
       </ul>
       <h2>As the school admin: Aurora look</h2>
       <ul>
-        <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/aurora/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/aurora/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
+        <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/aurora/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/aurora/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
         <li><a href="/preview/as/admin?next=/admin/aurora/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/aurora/privacy">Trust page</a></li>
       </ul>
       <h2>As the school admin: Blend look</h2>
       <ul>
-        <li><a href="/preview/as/admin?next=/admin/blend/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/blend/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/blend/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/blend/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/blend/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/blend/map">Faculty map</a></li>
+        <li><a href="/preview/as/admin?next=/admin/blend/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/blend/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/blend/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/blend/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/blend/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/blend/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/blend/map">Faculty map</a></li>
         <li><a href="/preview/as/admin?next=/admin/blend/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/blend/privacy">Trust page</a></li>
       </ul>
       <h2>As a teacher</h2>
