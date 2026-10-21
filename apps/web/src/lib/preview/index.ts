@@ -43,7 +43,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
       participation_summary: (args: { p_cycle: string }) => {
         const pr = tables.pairings.filter((p) => p.cycle_id === args.p_cycle && p.status === "approved");
         const logs = tables.conversation_logs.filter((l) => l.cycle_id === args.p_cycle && l.status === "submitted");
-        const conv = (id: string) => logs.some((l) => l.pairing_id === id && !l.is_visit_debrief);
+        const conv = (id: string) => logs.some((l) => l.pairing_id === id);
         const deb = (id: string) => logs.some((l) => l.pairing_id === id && l.is_visit_debrief);
         const teachers = tables.profiles.filter((p) => p.role === "teacher");
         const activeIds = new Set(pr.filter((p) => conv(p.id) || deb(p.id)).flatMap((p) => [p.host_id, p.visitor_id]));
@@ -59,7 +59,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
           pairs: pr.length,
           with_conversation: pr.filter((p) => conv(p.id)).length,
           with_debrief: pr.filter((p) => deb(p.id)).length,
-          complete: pr.filter((p) => conv(p.id) && deb(p.id)).length,
+          complete: pr.filter((p) => logs.some((l) => l.pairing_id === p.id && !l.is_visit_debrief) && deb(p.id)).length,
           teachers: teachers.length,
           active_teachers: teachers.filter((t) => activeIds.has(t.id)).length,
           by_department: [...byDept.entries()].filter(([, v]) => v.teachers >= 5).map(([department, v]) => ({ department, ...v })).sort((a, b) => a.department.localeCompare(b.department)),
@@ -74,7 +74,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
         const MIN = 5;
         const pr = new Map(tables.pairings.map((p) => [p.id, p]));
         const prof = new Map(tables.profiles.map((p) => [p.id, p]));
-        const logs = tables.conversation_logs.filter((l) => l.cycle_id === args.p_cycle && l.status === "submitted" && !l.is_visit_debrief && l.submitted_at);
+        const logs = tables.conversation_logs.filter((l) => l.cycle_id === args.p_cycle && l.status === "submitted" && l.submitted_at);
         const size = new Map<string, number>();
         for (const t of tables.profiles.filter((p) => p.role === "teacher")) size.set(t.department ?? "Unassigned", (size.get(t.department ?? "Unassigned") ?? 0) + 1);
         const months = new Map<string, number>();
