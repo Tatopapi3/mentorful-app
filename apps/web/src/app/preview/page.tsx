@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { previewEnabled } from "@/lib/preview";
+import { lookEnabled } from "@/lib/admin/looks";
 
 export const dynamic = "force-dynamic";
 
@@ -23,21 +24,33 @@ export default function PreviewHub() {
         <li><Link href="/survey">The Culture Scan survey</Link> (26 questions; answers are discarded)</li>
         <li><Link href="/report">The six-slide report</Link> (on the synthetic respondents)</li>
       </ul>
-      <h2>As the school admin: Nick&apos;s look</h2>
-      <ul>
-        <li><a href="/preview/as/admin?next=/admin/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/overview">Overview</a> (his leadership dashboard, unchanged) · <a href="/preview/as/admin?next=/admin/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
-        <li><a href="/preview/as/admin?next=/admin/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/privacy">Trust page</a></li>
-      </ul>
-      <h2>As the school admin: Aurora look</h2>
-      <ul>
-        <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/aurora/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/aurora/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
-        <li><a href="/preview/as/admin?next=/admin/aurora/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/aurora/privacy">Trust page</a></li>
-      </ul>
-      <h2>As the school admin: Blend look</h2>
-      <ul>
-        <li><a href="/preview/as/admin?next=/admin/blend/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/blend/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/blend/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/blend/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/blend/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/blend/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/blend/map">Faculty map</a></li>
-        <li><a href="/preview/as/admin?next=/admin/blend/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/blend/privacy">Trust page</a></li>
-      </ul>
+      {lookEnabled("nick") && (
+        <>
+          <h2>As the school admin: Nick&apos;s look</h2>
+          <ul>
+            <li><a href="/preview/as/admin?next=/admin/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/overview">Overview</a> (his leadership dashboard, unchanged) · <a href="/preview/as/admin?next=/admin/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/map">Faculty map</a></li>
+            <li><a href="/preview/as/admin?next=/admin/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/privacy">Trust page</a></li>
+          </ul>
+        </>
+      )}
+      {lookEnabled("aurora") && (
+        <>
+          <h2>As the school admin: Aurora look</h2>
+          <ul>
+            <li><a href="/preview/as/admin?next=/admin/aurora/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/aurora/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/aurora/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/aurora/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/aurora/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/aurora/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/aurora/map">Faculty map</a></li>
+            <li><a href="/preview/as/admin?next=/admin/aurora/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/aurora/privacy">Trust page</a></li>
+          </ul>
+        </>
+      )}
+      {lookEnabled("blend") && (
+        <>
+          <h2>{lookEnabled("nick") || lookEnabled("aurora") ? "As the school admin: Blend look" : "As the school admin"}</h2>
+          <ul>
+            <li><a href="/preview/as/admin?next=/admin/blend/pulse">Pulse</a> (landing page) · <a href="/preview/as/admin?next=/admin/blend/pairings">Pairing</a> · <a href="/preview/as/admin?next=/admin/blend/overview">Overview</a> · <a href="/preview/as/admin?next=/admin/blend/constellation">Constellation</a> · <a href="/preview/as/admin?next=/admin/blend/insights">Insights</a> · <a href="/preview/as/admin?next=/admin/blend/trends">Trends</a> · <a href="/preview/as/admin?next=/admin/blend/map">Faculty map</a></li>
+            <li><a href="/preview/as/admin?next=/admin/blend/summary">Board summary</a> · <a href="/preview/as/admin?next=/admin/blend/privacy">Trust page</a></li>
+          </ul>
+        </>
+      )}
       <h2>As a teacher</h2>
       <ul>
         <li><a href="/preview/as/teacher?next=/dashboard">Teacher dashboard</a> (Linda Johnson: two pairings, one draft conversation to submit)</li>
