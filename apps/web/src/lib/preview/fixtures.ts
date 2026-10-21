@@ -107,9 +107,9 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     if (host.id !== visitor.id) addPair(host, visitor);
   }
 
-  // An earlier cycle with a dozen pairs, so the cycle switcher has something to switch to.
+  // An earlier cycle with a dozen pairs, a third of them inside one department, so the cycle switcher has something to switch to.
   for (let k = 0; k < 12; k++) {
-    pairings.push({ id: `pairing-sp-${k}`, school_id: sid, cycle_id: spring.id, host_id: teachers[k].id, visitor_id: teachers[(k + 13) % 50].id, status: "approved", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
+    pairings.push({ id: `pairing-sp-${k}`, school_id: sid, cycle_id: spring.id, host_id: teachers[k].id, visitor_id: teachers[(k + (k % 3 === 0 ? 7 : 13)) % 50].id, status: "approved", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
   }
 
   // Three pairs teachers have asked for, still waiting for the admin.
