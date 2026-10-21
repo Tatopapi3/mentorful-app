@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { headlineTitle } from "@/lib/admin/network";
 import { activitySentence, buildActivity, cycleTrend, monthLabel, trendSentence } from "@/lib/admin/trends";
 import { coverage, departmentMatrix, directions, gaps, progress, reach, suggestions } from "@/lib/admin/network";
 import { csvEscape, resultsCsv } from "@/lib/admin/csv";
@@ -318,5 +319,16 @@ describe("trends", () => {
   it("describe the busiest month from the numbers that are shown", () => {
     expect(activitySentence(buildActivity(raw))).toBe("21 conversations are counted in the months shown. Oct 2025 was the busiest, with 12.");
     expect(activitySentence(buildActivity({ months: [{ month: "2025-10", n: 3 }], heat: [] }))).toBeNull();
+  });
+});
+
+describe("pulse headline", () => {
+  const row = (delta: "up" | "down" | "same") => ({ label: "x", now: "1", before: "0", delta, good: delta !== "down" });
+  it("claim a direction only when there is an earlier cycle and the numbers back it", () => {
+    expect(headlineTitle([])).toEqual({ lead: "Where connection", em: "stands." });
+    expect(headlineTitle([row("up"), row("same")]).em).toBe("growing.");
+    expect(headlineTitle([row("down"), row("same")]).em).toBe("slipped.");
+    expect(headlineTitle([row("up"), row("down")]).em).toBe("shifting.");
+    expect(headlineTitle([row("same"), row("same")]).em).toBe("holding steady.");
   });
 });

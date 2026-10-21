@@ -113,6 +113,20 @@ export function progress(now: AdminSnapshot, before: AdminSnapshot | null): Prog
   });
 }
 
+/**
+ * The words at the top of Pulse. They say "growing" only when something rose since the last cycle and nothing fell,
+ * and they say nothing about direction when there is no earlier cycle to compare with.
+ */
+export function headlineTitle(prog: Progress[]): { lead: string; em: string } {
+  if (prog.length === 0) return { lead: "Where connection", em: "stands." };
+  const up = prog.some((p) => p.delta === "up");
+  const down = prog.some((p) => p.delta === "down");
+  if (up && !down) return { lead: "Connection is", em: "growing." };
+  if (down && !up) return { lead: "Connection has", em: "slipped." };
+  if (up && down) return { lead: "Connection is", em: "shifting." };
+  return { lead: "Connection is", em: "holding steady." };
+}
+
 export type Direction = { id: string; severity: "do" | "watch" | "good"; title: string; detail: string };
 
 /** The plain-language reading of the sky: where to look first, and why. */

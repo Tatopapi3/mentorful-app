@@ -7,7 +7,8 @@ import { SeverityTag } from "@/components/aurora/severity";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
-import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import { headlineTitle, progress } from "@/lib/admin/network";
+import { loadAdminSnapshot, loadPreviousSnapshot } from "@/lib/admin/snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, base).slice(0, 6);
+  const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
 
@@ -42,11 +44,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
     <main className="ev-main ev-wide">
       <p className="ev-eyebrow">Pulse · {snap.cycle ? `${snap.cycle.name} · ${snap.cycle.status}` : "No cycle yet"}</p>
       <h1>
-        {(facts.pairedPct ?? 0) >= 60 ? (
-          <>Connection is <em>growing.</em></>
-        ) : (
-          <>Here is where connection <em>stands.</em></>
-        )}
+        {headline.lead} <em>{headline.em}</em>
       </h1>
       <p className="ev-lead">{headlineSentence(facts)}</p>
       {snap.school.priority && <p className="ev-small">Strategic priority: {snap.school.priority}</p>}
