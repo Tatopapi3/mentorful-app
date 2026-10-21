@@ -1,18 +1,16 @@
 -- 015_participation_summary.sql
 --
--- DRAFT, NOT APPLIED. Written before the database dump arrived, from the table and column names in
--- apps/web/CLAUDE.md and the queries in the app. Check every column against the real schema (pg_attribute,
--- pg_constraint, pg_policies) before applying, as CLAUDE.md insists, and replace anything that differs.
--- Assumed: pairings(id, school_id, cycle_id, host_id, visitor_id, status), conversation_logs(pairing_id,
--- school_id, cycle_id, status, submitted_at, is_visit_debrief), profiles(id, school_id, role, department).
+-- Written before the database dump arrived, then checked against mentorful_handoff.sql (Oct 20): every column used here
+-- exists with the type assumed (pairings, conversation_logs incl. is_visit_debrief, submitted_at and logged_by, profiles
+-- incl. department). Apply it with scripts/restore-handoff.sh after the dump is restored.
 --
 -- Why this exists: conversation_logs is pair-private (011). A school admin reads zero rows by design, so the
 -- leadership views can only get COUNTS, and only through SECURITY DEFINER functions like concern_domain_counts.
 -- These two return counts and rates and never rows, and they hide any department smaller than MIN_CELL.
 --
--- Terms. "Conversation" is a submitted log that is not a visit debrief; "debrief" is a submitted visit debrief;
--- "complete" is a pair with both. Hosted and visited are not split out until the schema says which log belongs
--- to which side.
+-- Terms. A pair "has talked" when it has any submitted log (a visit debrief is a log too; in Nick's demo data every
+-- log is a debrief). "Debrief" is a submitted visit debrief. "Complete" is a pair with both a plain log and a debrief.
+-- conversation_logs.logged_by says who wrote each log, so a hosted/visited split is possible later.
 
 begin;
 
@@ -48,7 +46,8 @@ begin
   ),
   lg as (
     select pairing_id,
-           bool_or(not coalesce(is_visit_debrief, false)) as conv,
+           bool_or(true)                                  as conv,
+           bool_or(not coalesce(is_visit_debrief, false)) as plain,
            bool_or(coalesce(is_visit_debrief, false))     as deb
       from public.conversation_logs
      where school_id = v_school and cycle_id = p_cycle and status = 'submitted'
@@ -57,7 +56,7 @@ begin
   select count(*),
          count(*) filter (where lg.conv),
          count(*) filter (where lg.deb),
-         count(*) filter (where lg.conv and lg.deb)
+         count(*) filter (where lg.plain and lg.deb)
     into v_pairs, v_conv, v_deb, v_complete
     from pr left join lg on lg.pairing_id = pr.id;
 

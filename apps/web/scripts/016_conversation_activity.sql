@@ -1,16 +1,15 @@
 -- 016_conversation_activity.sql
 --
--- DRAFT, NOT APPLIED. Written before the database dump arrived. Same caution as 015: check every column against the
--- real schema before applying. Assumed: pairings(id, school_id, cycle_id, host_id, visitor_id, status),
--- conversation_logs(id, pairing_id, school_id, cycle_id, status, submitted_at, is_visit_debrief),
--- profiles(id, school_id, role, department).
+-- Written before the database dump arrived, then checked against mentorful_handoff.sql (Oct 20): every column used here
+-- exists with the type assumed. Apply it with scripts/restore-handoff.sh after the dump is restored.
 --
 -- Why: conversation_logs is pair-private (011), so a school admin reads zero rows by design. The Trends page needs
 -- conversations by month and by department, so this returns COUNTS and never rows, and it hides any number under
 -- MIN_CELL and any department under MIN_CELL teachers, the same floor the other functions use.
 --
 -- A conversation is counted under the department of each partner in its pair (once, if both are in the same
--- department), so "activity in Math" means conversations a Math teacher took part in. Visit debriefs are not counted.
+-- department), so "activity in Math" means conversations a Math teacher took part in. Every submitted log counts, a visit
+-- debrief included (in Nick's demo data every log is a debrief, and all are dated March 2026).
 
 begin;
 
@@ -34,39 +33,38 @@ begin
     return null;
   end if;
 
-  create temporary table if not exists _ca_logs (id uuid, host_id uuid, visitor_id uuid, month text) on commit drop;
-  truncate _ca_logs;
-  insert into _ca_logs
-    select cl.id, pr.host_id, pr.visitor_id, to_char(date_trunc('month', cl.submitted_at), 'YYYY-MM')
+  -- One CTE feeds both aggregates; nothing is written, so the function can stay STABLE.
+  with logs as (
+    select cl.id, pr.host_id, pr.visitor_id, to_char(date_trunc('month', cl.submitted_at), 'YYYY-MM') as month
       from public.conversation_logs cl
       join public.pairings pr on pr.id = cl.pairing_id
      where cl.school_id = v_school and cl.cycle_id = p_cycle and cl.status = 'submitted'
-       and not coalesce(cl.is_visit_debrief, false) and cl.submitted_at is not null;
-
-  select coalesce(jsonb_agg(jsonb_build_object('month', m.month, 'n', case when m.n >= MIN_CELL then m.n end) order by m.month), '[]'::jsonb)
-    into v_months
-    from (select month, count(*)::int as n from _ca_logs group by month) m;
-
-  select coalesce(jsonb_agg(jsonb_build_object('department', h.department, 'month', h.month, 'n', case when h.n >= MIN_CELL then h.n end) order by h.department, h.month), '[]'::jsonb)
-    into v_heat
-    from (
-      select cd.department, cd.month, count(*)::int as n
-        from (
-          select l.id, l.month, d.department
-            from _ca_logs l
-            cross join lateral (
-              select distinct coalesce(p.department, 'Unassigned') as department
-                from public.profiles p
-               where p.id in (l.host_id, l.visitor_id)
-            ) d
-        ) cd
-       where cd.department in (
-         select coalesce(p.department, 'Unassigned') from public.profiles p
-          where p.school_id = v_school and p.role = 'teacher'
-          group by coalesce(p.department, 'Unassigned') having count(*) >= MIN_CELL
-       )
-       group by cd.department, cd.month
-    ) h;
+       and cl.submitted_at is not null
+  ),
+  big as (
+    select coalesce(p.department, 'Unassigned') as department
+      from public.profiles p
+     where p.school_id = v_school and p.role = 'teacher'
+     group by coalesce(p.department, 'Unassigned')
+    having count(*) >= MIN_CELL
+  ),
+  by_month as (
+    select month, count(*)::int as n from logs group by month
+  ),
+  by_dept as (
+    select d.department, l.month, count(*)::int as n
+      from logs l
+      cross join lateral (
+        select distinct coalesce(p.department, 'Unassigned') as department
+          from public.profiles p
+         where p.id in (l.host_id, l.visitor_id)
+      ) d
+     where d.department in (select department from big)
+     group by d.department, l.month
+  )
+  select coalesce((select jsonb_agg(jsonb_build_object('month', m.month, 'n', case when m.n >= MIN_CELL then m.n end) order by m.month) from by_month m), '[]'::jsonb),
+         coalesce((select jsonb_agg(jsonb_build_object('department', h.department, 'month', h.month, 'n', case when h.n >= MIN_CELL then h.n end) order by h.department, h.month) from by_dept h), '[]'::jsonb)
+    into v_months, v_heat;
 
   return jsonb_build_object('months', v_months, 'heat', v_heat);
 end $$;
