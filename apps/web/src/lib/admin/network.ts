@@ -17,7 +17,7 @@ export type DeptMatrix = {
 
 const key = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
-export function departmentMatrix(s: AdminSnapshot): DeptMatrix {
+export function departmentMatrix(s: Pick<AdminSnapshot, "people" | "pairs">): DeptMatrix {
   const size: Record<string, number> = {};
   for (const p of s.people) size[p.dept] = (size[p.dept] ?? 0) + 1;
   const depts = Object.keys(size).filter((d) => size[d] >= MIN_DEPARTMENT_SIZE).sort();
