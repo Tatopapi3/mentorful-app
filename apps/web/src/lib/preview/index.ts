@@ -11,7 +11,11 @@ import { createMockClient, type Row, type Tables, type Visibility } from "./mock
 
 export type PreviewRole = "admin" | "teacher";
 
-export const previewEnabled = () => process.env.PREVIEW_MOCK === "1" && process.env.NODE_ENV !== "production" && process.env.VERCEL_ENV !== "production";
+// Preview mode refuses to run in a production build, so it can never reach a real school by accident. The one exception
+// is the demo deployment, which sets PREVIEW_DEPLOY=1 on its own Vercel project (never anywhere else), runs on made-up
+// data only, and is closed to anyone without the access key (see src/proxy.ts).
+export const previewEnabled = () =>
+  process.env.PREVIEW_MOCK === "1" && (process.env.PREVIEW_DEPLOY === "1" || (process.env.NODE_ENV !== "production" && process.env.VERCEL_ENV !== "production"));
 
 const g = globalThis as unknown as { __previewTables?: Tables };
 
