@@ -12,7 +12,7 @@ export default function PreviewHub() {
   return (
     <main style={{ maxWidth: 860, margin: "40px auto", padding: 24, fontFamily: "system-ui, sans-serif" }}>
       <div style={{ ...box, background: "#fdf3dc", borderColor: "#fab219" }}>
-        <strong>Preview mode.</strong> These are Nick&apos;s real pages running on made-up data (50 invented teachers, 32 pairings, 32
+        <strong>Preview mode.</strong> These are Nick&apos;s real pages running on made-up data (50 invented teachers, 32 pairings, about 70
         conversations, 50 synthetic survey respondents). There is no database, nothing is saved, and nothing you do here reaches Nick&apos;s app.
       </div>
       <h1>Every page in the app</h1>
