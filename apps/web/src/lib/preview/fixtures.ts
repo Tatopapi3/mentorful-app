@@ -117,9 +117,10 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     pairings.push({ id: `pairing-req-${h}`, school_id: sid, cycle_id: cycle.id, host_id: teachers[h].id, visitor_id: teachers[v].id, status: "pending", domain: pick(DOMAIN_KEYS), strategic_tag: pick(STRATEGIC) });
   }
 
-  // About one pair in five has logged nothing yet, and a third of the others also have a visit debrief.
-  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved" && p.cycle_id === cycle.id).filter((_, i) => i % 5 !== 4).map((p, i) => ({
-    id: `log-${String(i + 1).padStart(2, "0")}`,
+  // About one pair in five has logged nothing yet; the others have logged about three conversations each, one in each
+  // month of the cycle, and a third of them also have a visit debrief.
+  const conversation_logs: Row[] = pairings.filter((p) => p.status === "approved" && p.cycle_id === cycle.id).filter((_, i) => i % 5 !== 4).flatMap((p, i) => [0, 1, 2].map((k) => ({
+    id: k === 0 ? `log-${String(i + 1).padStart(2, "0")}` : `log-${String(i + 1).padStart(2, "0")}-${k}`,
     school_id: sid,
     cycle_id: cycle.id,
     pairing_id: p.id,
@@ -134,11 +135,11 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     less_frequently: "Calling on volunteers first.",
     resources: "Twenty minutes of shared planning time on Thursdays.",
     status: "submitted",
-    submitted_at: `2025-1${(i % 3) + 0}-${String((i % 27) + 1).padStart(2, "0")}T15:00:00Z`.replace("2025-10", "2025-10"),
+    submitted_at: `2025-${10 + ((i + k) % 3)}-${String(((i * 5 + k * 9) % 27) + 1).padStart(2, "0")}T15:00:00Z`,
     created_at: `2025-10-${String((i % 27) + 1).padStart(2, "0")}T14:00:00Z`,
     is_visit_debrief: false,
-  }));
-  for (let i = 0; i < conversation_logs.length; i += 3) {
+  })));
+  for (let i = 0; i < conversation_logs.length; i += 9) {
     const base = conversation_logs[i];
     conversation_logs.push({ ...base, id: `${base.id}-debrief`, is_visit_debrief: true });
   }
