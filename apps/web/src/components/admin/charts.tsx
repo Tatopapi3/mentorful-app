@@ -38,14 +38,14 @@ export function Sparkline({ values, labels, format = (n: number) => String(n) }:
 /** Conversations per month. A month under the floor is drawn as a dashed stub and labelled "<5". */
 export function MonthBars({ activity }: { activity: Activity }) {
   const n = activity.totals.length;
-  const W = Math.max(320, n * 92);
+  const W = Math.max(360, n * 110);
   const H = 190;
   const base = H - 34;
   const top = 26;
   const bw = Math.min(54, (W / n) * 0.55);
   return (
     <div style={{ overflowX: "auto" }}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Conversations by month: ${activity.totals.map((t) => `${monthLabel(t.month)} ${t.n ?? "fewer than 5"}`).join(", ")}`} style={{ width: "100%", minWidth: n * 64, height: "auto", display: "block" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Conversations by month: ${activity.totals.map((t) => `${monthLabel(t.month)} ${t.n ?? "fewer than 5"}`).join(", ")}`} style={{ width: "100%", minWidth: n * 64, maxWidth: W * 1.35, height: "auto", display: "block" }}>
         <line x1="0" x2={W} y1={base} y2={base} stroke={line} />
         {activity.totals.map((t, i) => {
           const cx = ((i + 0.5) * W) / n;
