@@ -5,7 +5,8 @@ import { Metric, NickDenied, NickPage } from "@/components/nick/page";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
-import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import { headlineTitle, progress } from "@/lib/admin/network";
+import { loadAdminSnapshot, loadPreviousSnapshot } from "@/lib/admin/snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
   const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
+  const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const actions = buildActions(facts, "/admin").slice(0, 6);
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
@@ -33,7 +35,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
   return (
     <NickPage
       eyebrow={`Pulse · ${snap.cycle ? `${snap.cycle.name} · ${snap.cycle.status}` : "No cycle"}`}
-      title={(facts.pairedPct ?? 0) >= 60 ? "Connection is growing" : "Where connection stands"}
+      title={`${headline.lead} ${headline.em.replace(/\.$/, "")}`}
       sub={<>{headlineSentence(facts)}{snap.school.priority ? ` · ${snap.school.priority}` : ""}</>}
     >
       <CycleSwitcher skin="nick" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/pulse" />

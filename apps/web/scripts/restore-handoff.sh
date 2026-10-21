@@ -41,8 +41,17 @@ N="$(run -t -A -c "select count(*) from information_schema.tables where table_sc
 [ "$N" = "0" ] || { echo "Refusing: the public schema already has $N tables. This script only restores into an empty project."; exit 1; }
 
 TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT
-# The project already has a public schema; the dump tries to create it.
-grep -v -e '^CREATE SCHEMA public;' -e '^COMMENT ON SCHEMA public' db/mentorful_handoff.sql > "$TMP"
+# Two changes to the dump, both for a fresh project:
+#  1. The project already has a public schema; the dump tries to create it.
+#  2. Four profiles point at login accounts (auth.users) that exist only in Nick's project. Here nobody has signed up yet, so
+#     they are restored as roster rows with auth_user_id empty, which is what the column is for ("NULL = roster row for someone
+#     who has not signed up yet"). Everything else is untouched.
+grep -v -e '^CREATE SCHEMA public;' -e '^COMMENT ON SCHEMA public' db/mentorful_handoff.sql \
+  | awk -F'\t' -v OFS='\t' '
+      /^COPY public\.profiles \(/ { n = split($0, a, /[(,)]/); for (i = 2; i < n; i++) { c = a[i]; gsub(/ /, "", c); if (c == "auth_user_id") col = i - 1 } inblock = 1; print; next }
+      inblock && /^\\\.$/ { inblock = 0 }
+      inblock && col { $col = "\\N" }
+      { print }' > "$TMP"
 
 echo "Restoring db/mentorful_handoff.sql (one transaction: all or nothing)..."
 run --single-transaction -f "$TMP"
