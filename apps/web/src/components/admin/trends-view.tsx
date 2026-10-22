@@ -3,6 +3,7 @@ import { AdminFrame, CycleSwitcher, Muted, Panel, basePath, type Skin } from "@/
 import { loadActivity, loadCycleTrend } from "@/lib/admin/trend-data";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import { departmentMatrix } from "@/lib/admin/network";
 import { activitySentence, buildActivity, trendSentence, type CycleMetrics, type Metric } from "@/lib/admin/trends";
 
 type Params = Record<string, string | string[] | undefined>;
@@ -81,7 +82,7 @@ export default async function TrendsView({ skin, searchParams }: { skin: Skin; s
       </Panel>
       {activity && activity.departments.length > 0 && (
         <Panel skin={skin} title="Where the activity is" eyebrow="By department">
-          <HeatGrid activity={activity} />
+          <HeatGrid activity={activity} hidden={departmentMatrix(snap).omitted} />
           <Muted skin={skin}>
             Darker means more conversations. A conversation counts for each partner&apos;s department. A cell under 5 says &ldquo;&lt;5&rdquo;, and departments with fewer than 5 teachers are left out, so no pair or person can be picked out. Leadership sees that conversations happened, never what was said.
           </Muted>
