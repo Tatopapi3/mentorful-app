@@ -49,6 +49,9 @@ export function trendSentence(rows: CycleMetrics[]): string {
 export type RawActivity = {
   months: { month: string; n: number | null }[];
   heat: { department: string; month: string; n: number | null }[];
+  /** By week (the Monday as YYYY-MM-DD). Absent when the database function is the earlier version. */
+  weeks?: { week: string; n: number | null }[];
+  heat_weeks?: { department: string; week: string; n: number | null }[];
 };
 
 export type Activity = {
@@ -94,4 +97,31 @@ export function activitySentence(a: Activity): string | null {
   const top = shown.reduce((x, y) => (y.n > x.n ? y : x));
   const total = shown.reduce((s, t) => s + t.n, 0);
   return `${total} conversations are counted in the months shown. ${monthLabel(top.month)} was the busiest, with ${top.n}.`;
+}
+
+export type Weekly = {
+  weeks: string[];
+  totals: { week: string; n: number | null }[];
+  departments: string[];
+  cell: (department: string, week: string) => number | null;
+  max: number;
+};
+
+/** Conversations by week and department, with the floor applied again so no small number can show. */
+export function buildWeekly(raw: RawActivity): Weekly | null {
+  const heat = raw.heat_weeks ?? [];
+  const wk = raw.weeks ?? [];
+  const weeks = [...new Set([...wk.map((w) => w.week), ...heat.map((h) => h.week)])].sort();
+  if (weeks.length === 0) return null;
+  const departments = [...new Set(heat.map((h) => h.department))].sort();
+  const cells = new Map(heat.map((h) => [`${h.department}|${h.week}`, floor(h.n)]));
+  const totals = weeks.map((week) => ({ week, n: floor(wk.find((w) => w.week === week)?.n) }));
+  return { weeks, totals, departments, cell: (d, w) => cells.get(`${d}|${w}`) ?? null, max: Math.max(1, ...totals.map((t) => t.n ?? 0), ...[...cells.values()].map((v) => v ?? 0)) };
+}
+
+/** "2026-02-23" becomes "Feb 23". */
+export function weekLabel(week: string): string {
+  const [, m, d] = week.split("-");
+  const name = MONTHS[Number(m) - 1];
+  return name ? `${name} ${Number(d)}` : week;
 }

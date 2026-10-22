@@ -1,4 +1,5 @@
 import { AuroraChrome } from "@/components/aurora/chrome";
+import { PresentButton } from "@/components/aurora/present-button";
 import { SwitchLook } from "@/components/aurora/switch-look";
 import { lookBase, lookOf } from "@/lib/admin/look";
 import { lookEnabled } from "@/lib/admin/looks";
@@ -46,7 +47,7 @@ export default async function LookAdminLayout({ children, params }: { children: 
   }
   const { data: school } = await admin.supabase.from("schools").select("name").eq("id", admin.schoolId).maybeSingle();
   return (
-    <AuroraChrome look={look} schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<SwitchLook current={look} />}>
+    <AuroraChrome look={look} schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<><PresentButton items={NAV} /><SwitchLook current={look} /></>}>
       {children}
     </AuroraChrome>
   );
