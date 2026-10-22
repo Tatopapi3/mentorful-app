@@ -1,10 +1,12 @@
-import { HeatGrid, MonthBars, Sparkline } from "@/components/admin/charts";
+import { HeatGrid, MonthBars, Sparkline, WeekHeat } from "@/components/admin/charts";
 import { AdminFrame, CycleSwitcher, Muted, Panel, basePath, type Skin } from "@/components/admin/kit";
 import { loadActivity, loadCycleTrend } from "@/lib/admin/trend-data";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 import { departmentMatrix } from "@/lib/admin/network";
-import { activitySentence, buildActivity, trendSentence, type CycleMetrics, type Metric } from "@/lib/admin/trends";
+import { GroupSummaryRoot } from "@/components/admin/group-summary";
+import { groupSummaries } from "@/lib/admin/summaries";
+import { activitySentence, buildActivity, buildWeekly, trendSentence, type CycleMetrics, type Metric } from "@/lib/admin/trends";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -54,9 +56,13 @@ export default async function TrendsView({ skin, searchParams }: { skin: Skin; s
   const [rows, raw] = await Promise.all([loadCycleTrend(admin), loadActivity(admin, snap.cycle?.id ?? null)]);
   const activity = raw ? buildActivity(raw) : null;
   const sentence = activity ? activitySentence(activity) : null;
+  const weekly = raw ? buildWeekly(raw) : null;
+  const matrix = departmentMatrix(snap);
+  const summaries = groupSummaries(snap, matrix, snap.participation ?? null, activity);
 
   return (
     <AdminFrame skin={skin} eyebrow={`Trends · ${snap.cycle?.name ?? "No cycle"}`} title="How things are changing" sub={rows.length ? trendSentence(rows) : "Trends appear once the school has a cycle with pairs."}>
+      <GroupSummaryRoot summaries={summaries}>
       <CycleSwitcher skin={skin} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={path} />
       {rows.length > 0 && (
         <Panel skin={skin} title="Cycle by cycle" eyebrow="Progress" count={`${rows.length} ${rows.length === 1 ? "cycle" : "cycles"}`}>
@@ -82,12 +88,19 @@ export default async function TrendsView({ skin, searchParams }: { skin: Skin; s
       </Panel>
       {activity && activity.departments.length > 0 && (
         <Panel skin={skin} title="Where the activity is" eyebrow="By department">
-          <HeatGrid activity={activity} hidden={departmentMatrix(snap).omitted} />
+          <HeatGrid activity={activity} hidden={matrix.omitted} />
           <Muted skin={skin}>
             Darker means more conversations. A conversation counts for each partner&apos;s department. A cell under 5 says &ldquo;&lt;5&rdquo;, and departments with fewer than 5 teachers are left out, so no pair or person can be picked out. Leadership sees that conversations happened, never what was said.
           </Muted>
         </Panel>
       )}
+      {weekly && (
+        <Panel skin={skin} title="Conversation frequency by week" eyebrow="Week by week">
+          <WeekHeat weekly={weekly} hidden={matrix.omitted} />
+          <Muted skin={skin}>Each column is a week (it starts on the Monday). Darker means more conversations. A dot means fewer than 5, hidden on purpose. Click a department for its summary.</Muted>
+        </Panel>
+      )}
+      </GroupSummaryRoot>
     </AdminFrame>
   );
 }

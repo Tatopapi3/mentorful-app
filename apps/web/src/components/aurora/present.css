@@ -1,0 +1,10 @@
+/* Present mode: step the chrome aside and make everything bigger for a room. */
+.ev[data-present="1"] .ev-topbar, .ev[data-present="1"] .ev-foot { display: none; }
+.ev[data-present="1"] .ev-main { max-width: 1400px; padding-top: 28px; font-size: 17.5px; }
+.ev[data-present="1"] .ev-main h1 { font-size: clamp(38px, 4.6vw, 64px); }
+.ev-present-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 80; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 999px; background: var(--ev-navy, #16283c); color: var(--ev-on-navy, #fff); box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.5); font-size: 13px; }
+.ev-present-bar button { all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; line-height: 1; }
+.ev-present-bar button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.ev-present-bar button:disabled { opacity: 0.35; cursor: default; }
+.ev-present-bar .ev-present-exit { width: auto; padding: 0 14px; border-radius: 999px; font-size: 12.5px; border: 1px solid rgba(255, 255, 255, 0.35); height: 30px; }
+@media (max-width: 1180px) { .ev-present-btn { display: none; } }
