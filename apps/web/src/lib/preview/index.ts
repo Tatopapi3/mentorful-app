@@ -8,7 +8,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { buildTables, IDS } from "./fixtures";
 import { buildNickTables } from "./nickTables";
-import { createMockClient, type Row, type Tables, type Visibility } from "./mockQuery";
+import { overlay } from "./journal";
+import { createMockClient, type Row, type Tables, type Visibility, type Write } from "./mockQuery";
 
 export type PreviewRole = "admin" | "teacher";
 
@@ -26,8 +27,9 @@ export function previewTables(): Tables {
   return g.__previewTables;
 }
 
-export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boolean } = {}) {
-  const tables = previewTables();
+export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boolean; journal?: Write[]; onWrite?: (w: Write) => void | Promise<void> } = {}) {
+  // With a journal the visitor gets their own copy of the data; without one they share the process's data (the local preview).
+  const tables = opts.journal ? overlay(previewTables(), opts.journal) : previewTables();
   const me = tables.profiles.find((p) => p.auth_user_id === (role === "admin" ? IDS.authAdmin : IDS.authTeacher))!;
   const visible: Visibility = (table, rows) => {
     if (opts.bypassRls) return rows;
@@ -37,6 +39,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
     return rows;
   };
   return createMockClient({
+    onWrite: opts.onWrite,
     tables,
     visible,
     user: { id: me.auth_user_id, email: me.email },

@@ -59,6 +59,7 @@ export default function PreviewHub() {
       <ul>
         <li><a href="/preview/as/teacher?next=/dashboard">Teacher dashboard</a> (Linda Johnson: two pairings, one draft conversation to submit)</li>
       </ul>
+      <p style={{ color: "#555" }}>Approvals and declines you make are kept in your own browser only. <a href="/preview/reset">Reset my changes</a> to start over.</p>
       <p style={{ color: "#555" }}>Switching between admin and teacher happens through the links above. Restarting the preview resets the data.</p>
     </main>
   );

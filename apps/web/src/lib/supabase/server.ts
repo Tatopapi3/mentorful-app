@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createPreviewClient, previewEnabled, type PreviewRole } from "@/lib/preview";
+import { readJournal, writeJournal } from "@/lib/preview/journal";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -29,7 +30,14 @@ export async function createClient() {
   // Local preview only (see lib/preview). Never reaches Supabase.
   if (previewEnabled()) {
     const role: PreviewRole = cookieStore.get("preview_as")?.value === "teacher" ? "teacher" : "admin";
-    return createPreviewClient(role) as unknown as typeof real;
+    const journal = await readJournal();
+    return createPreviewClient(role, {
+      journal,
+      onWrite: async (w) => {
+        journal.push(w);
+        await writeJournal(journal);
+      },
+    }) as unknown as typeof real;
   }
   return real;
 }

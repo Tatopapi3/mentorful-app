@@ -18,7 +18,11 @@ function compare(a: any, b: any, asc: boolean, nullsFirst: boolean) {
   return asc ? c : -c;
 }
 
+/** A change the demo made, so it can be kept in the visitor's own cookie and replayed on the next request. */
+export type Write = { t: "u"; table: string; ids: string[]; patch: Row } | { t: "i"; table: string; rows: Row[] };
+
 class Query implements PromiseLike<any> {
+  private written: Write | null = null;
   private filters: ((r: Row) => boolean)[] = [];
   private orders: Order[] = [];
   private cols: string[] | null = null;
@@ -34,6 +38,7 @@ class Query implements PromiseLike<any> {
     private tables: Tables,
     private table: string,
     private visible: Visibility,
+    private onWrite?: (w: Write) => void | Promise<void>,
   ) {}
 
   select(columns?: string, opts?: { count?: "exact"; head?: boolean }) {
@@ -100,10 +105,13 @@ class Query implements PromiseLike<any> {
     if (this.mode === "insert") {
       const rows = (Array.isArray(this.payload) ? this.payload : [this.payload!]).map((r) => ({ id: `new-${Math.random().toString(36).slice(2, 10)}`, created_at: new Date().toISOString(), ...r }));
       all.push(...rows);
+      this.written = { t: "i", table: this.table, rows };
       return { data: null, error: null };
     }
     if (this.mode === "update") {
-      for (const r of this.visible(this.table, all).filter(matches)) Object.assign(r, this.payload);
+      const hit = this.visible(this.table, all).filter(matches);
+      for (const r of hit) Object.assign(r, this.payload);
+      this.written = { t: "u", table: this.table, ids: hit.map((r) => String(r.id)), patch: this.payload as Row };
       return { data: null, error: null };
     }
 
@@ -122,7 +130,13 @@ class Query implements PromiseLike<any> {
   }
 
   then<T1 = any, T2 = never>(onfulfilled?: ((v: any) => T1 | PromiseLike<T1>) | null, onrejected?: ((e: any) => T2 | PromiseLike<T2>) | null): PromiseLike<T1 | T2> {
-    return Promise.resolve().then(() => this.run()).then(onfulfilled, onrejected);
+    return Promise.resolve()
+      .then(async () => {
+        const result = this.run();
+        if (this.written && this.onWrite) await this.onWrite(this.written);
+        return result;
+      })
+      .then(onfulfilled, onrejected);
   }
 }
 
@@ -131,9 +145,10 @@ export function createMockClient(opts: {
   visible: Visibility;
   user: { id: string; email: string } | null;
   rpc?: Record<string, (args: any) => any>;
+  onWrite?: (w: Write) => void | Promise<void>;
 }) {
   return {
-    from: (table: string) => new Query(opts.tables, table, opts.visible),
+    from: (table: string) => new Query(opts.tables, table, opts.visible, opts.onWrite),
     rpc: async (name: string, args: any) => {
       const fn = opts.rpc?.[name];
       return fn ? { data: fn(args), error: null } : { data: null, error: { message: `rpc ${name} is not available in preview mode` } };
