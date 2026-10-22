@@ -13,8 +13,12 @@ export default function PreviewHub() {
   return (
     <main style={{ maxWidth: 860, margin: "40px auto", padding: 24, fontFamily: "system-ui, sans-serif" }}>
       <div style={{ ...box, background: "#fdf3dc", borderColor: "#fab219" }}>
-        <strong>Preview mode.</strong> These are Nick&apos;s real pages running on made-up data (50 invented teachers, 32 pairings, about 70
-        conversations, 50 synthetic survey respondents). There is no database, nothing is saved, and nothing you do here reaches Nick&apos;s app.
+        <strong>Preview mode.</strong>{" "}
+        {process.env.PREVIEW_DATASET === "nick" ? (
+          <>These are the real pages running on the sandbox school from Nick&apos;s database file (50 demo teachers, 32 pairings, 32 conversation logs, 56 survey respondents of whom 50 are synthetic). Nothing here is a real school. There is no live database, nothing is saved, and nothing you do here reaches Nick&apos;s app. Restarting resets the data.</>
+        ) : (
+          <>These are the real pages running on made-up data (50 invented teachers in 7 departments, two cycles, pairings, requests, conversations and 50 synthetic survey respondents). There is no database, nothing is saved, and nothing you do here reaches Nick&apos;s app. Restarting the preview resets the data.</>
+        )}
       </div>
       <h1>Every page in the app</h1>
       <h2>Public pages</h2>

@@ -7,6 +7,7 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { buildTables, IDS } from "./fixtures";
+import { buildNickTables } from "./nickTables";
 import { createMockClient, type Row, type Tables, type Visibility } from "./mockQuery";
 
 export type PreviewRole = "admin" | "teacher";
@@ -20,6 +21,7 @@ export const previewEnabled = () =>
 const g = globalThis as unknown as { __previewTables?: Tables };
 
 export function previewTables(): Tables {
+  if (!g.__previewTables && process.env.PREVIEW_DATASET === "nick") g.__previewTables = buildNickTables();
   if (!g.__previewTables) g.__previewTables = buildTables(process.env.NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID ?? "preview-survey", process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID ?? IDS.school);
   return g.__previewTables;
 }

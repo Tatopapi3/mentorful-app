@@ -14,7 +14,8 @@
     "items": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-culture-scan-items.ts",
     "items:dry": "npm run items -- --dry-run",
     "items:verify": "npm run items -- --verify",
-    "preview": "PREVIEW_MOCK=1 NEXT_PUBLIC_PREVIEW_MOCK=1 NEXT_PUBLIC_SUPABASE_URL=https://preview.invalid NEXT_PUBLIC_SUPABASE_ANON_KEY=preview NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID=preview-survey NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID=school-sandbox SUPABASE_SERVICE_ROLE_KEY=preview next dev -p 3200",
+    "preview:nick": "PREVIEW_DATASET=nick NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID=ec3b0a3a-1e4b-4f47-bc50-de5b2832e60f NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID=a0000000-0000-0000-0000-000000000001 npm run preview",
+    "preview": "PREVIEW_MOCK=1 NEXT_PUBLIC_PREVIEW_MOCK=1 NEXT_PUBLIC_SUPABASE_URL=https://preview.invalid NEXT_PUBLIC_SUPABASE_ANON_KEY=preview NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID=${NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID:-preview-survey} NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID=${NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID:-school-sandbox} SUPABASE_SERVICE_ROLE_KEY=preview next dev -p 3200",
     "test": "vitest run"
   },
   "dependencies": {
