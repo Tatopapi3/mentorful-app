@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { groupSummaries } from "@/lib/admin/summaries";
+import { buildWeekly, weekLabel } from "@/lib/admin/trends";
 import { cultureBubbles, flowArcs, pairingSplit } from "@/lib/admin/visuals";
 import { headlineTitle } from "@/lib/admin/network";
 import { activitySentence, buildActivity, cycleTrend, monthLabel, trendSentence } from "@/lib/admin/trends";
@@ -371,5 +373,32 @@ describe("diagrams", () => {
     expect(pairingSplit(30, 5, 19)).toEqual({ active: 25, nudge: 5, crossing: 19, inside: 11 });
     expect(pairingSplit(30, null, 19).active).toBe(30);
     expect(pairingSplit(4, 9, 1).active).toBe(0);
+  });
+});
+
+describe("weekly activity and group summaries", () => {
+  it("build the weekly grid, hide small cells even if the database let one through, and label weeks", () => {
+    const w = buildWeekly({ months: [], heat: [], weeks: [{ week: "2026-03-09", n: 12 }, { week: "2026-03-02", n: 3 }], heat_weeks: [{ department: "Math", week: "2026-03-02", n: 2 }, { department: "Math", week: "2026-03-09", n: 7 }] })!;
+    expect(w.weeks).toEqual(["2026-03-02", "2026-03-09"]);
+    expect(w.totals.map((t) => t.n)).toEqual([null, 12]);
+    expect(w.cell("Math", "2026-03-02")).toBeNull();
+    expect(w.cell("Math", "2026-03-09")).toBe(7);
+    expect(weekLabel("2026-03-09")).toBe("Mar 9");
+    expect(buildWeekly({ months: [], heat: [] })).toBeNull();
+  });
+
+  const people = [...Array.from({ length: 5 }, (_, i) => ({ id: `A${i}`, name: "a", dept: "Arts" })), ...Array.from({ length: 5 }, (_, i) => ({ id: `B${i}`, name: "b", dept: "Math" })), ...Array.from({ length: 5 }, (_, i) => ({ id: `C${i}`, name: "c", dept: "ELA" })), { id: "P0", name: "p", dept: "PE" }];
+  const pr = (a: string, b: string) => ({ id: a + b, a, b, domain: null, tag: null });
+  const snap = { people, pairs: [pr("A0", "B0"), pr("A1", "B1"), pr("A2", "A3"), pr("B2", "C0")] };
+
+  it("summarise a department with counts only, and give a department under 5 no summary", () => {
+    const m = departmentMatrix(snap);
+    const s = groupSummaries(snap, m, { pairs: 4, with_conversation: 3, with_debrief: 0, complete: 0, teachers: 16, active_teachers: 8, by_department: [{ department: "Arts", teachers: 5, active: 4 }] }, null);
+    expect(Object.keys(s).sort()).toEqual(["ELA", "Arts", "Math"].sort());
+    expect(s.PE).toBeUndefined();
+    expect(s.Arts).toMatchObject({ teachers: 5, pairs: 3, within: 1, across: 2, activePct: 80 });
+    expect(s.Arts.connected).toEqual([{ dept: "Math", count: 2 }]);
+    expect(s.Arts.notConnected).toEqual(["ELA"]);
+    expect(s.Math.connected.map((c) => c.dept)).toEqual(["Arts", "ELA"]);
   });
 });

@@ -1,5 +1,6 @@
-import type { Activity } from "@/lib/admin/trends";
-import { monthLabel } from "@/lib/admin/trends";
+import type { Activity, Weekly } from "@/lib/admin/trends";
+import { monthLabel, weekLabel } from "@/lib/admin/trends";
+import { DeptLink } from "@/components/admin/group-summary";
 import { HiddenGroups } from "@/components/admin/hidden-groups";
 
 /*
@@ -89,7 +90,7 @@ export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden
           {activity.departments.map((d) => (
             <tr key={d}>
               <th scope="row" style={{ ...cellStyle, border: 0, borderBottom: `1px solid ${line}`, textAlign: "left", fontWeight: 600 }}>
-                {d}
+                <DeptLink dept={d} />
               </th>
               {activity.months.map((m) => {
                 const n = activity.cell(d, m);
@@ -106,6 +107,57 @@ export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden
       </table>
     </div>
     <HiddenGroups names={hidden} />
+    </>
+  );
+}
+
+/** Conversations by week: departments down, weeks across, with an all-departments row first. Anything under 5 is a hatched dot. */
+export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: string[] }) {
+  const cell = { padding: "8px 6px", textAlign: "center" as const, border: `1px solid ${line}`, fontSize: 12.5, minWidth: 54 };
+  const shade = (n: number | null) => (n === null ? "transparent" : `color-mix(in srgb, ${teal} ${Math.round(16 + (n / weekly.max) * 66)}%, transparent)`);
+  const hatch = `repeating-linear-gradient(135deg, transparent 0 5px, ${line} 5px 6px)`;
+  return (
+    <>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 150 + weekly.weeks.length * 58 }}>
+          <thead>
+            <tr>
+              <th />
+              {weekly.weeks.map((w) => (
+                <th key={w} scope="col" style={{ ...cell, border: 0, borderBottom: `1px solid ${line}`, fontWeight: 600, color: muted, fontSize: 11.5 }}>
+                  {weekLabel(w)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" style={{ ...cell, border: 0, borderBottom: `1px solid ${line}`, textAlign: "left", fontWeight: 700 }}>All departments</th>
+              {weekly.totals.map((t) => (
+                <td key={t.week} style={{ ...cell, background: shade(t.n), fontWeight: 600, color: t.n === null ? muted : ink }} title={t.n === null ? "Fewer than 5 conversations" : `${t.n} conversations`}>
+                  {t.n === null ? "·" : t.n}
+                </td>
+              ))}
+            </tr>
+            {weekly.departments.map((d) => (
+              <tr key={d}>
+                <th scope="row" style={{ ...cell, border: 0, borderBottom: `1px solid ${line}`, textAlign: "left", fontWeight: 600 }}>
+                  <DeptLink dept={d} />
+                </th>
+                {weekly.weeks.map((w) => {
+                  const n = weekly.cell(d, w);
+                  return (
+                    <td key={w} style={{ ...cell, background: n === null ? hatch : shade(n), color: n === null ? muted : ink, fontWeight: n === null ? 400 : 600 }} title={n === null ? "Fewer than 5 conversations" : `${n} conversations`}>
+                      {n === null ? "·" : n}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <HiddenGroups names={hidden} />
     </>
   );
 }
