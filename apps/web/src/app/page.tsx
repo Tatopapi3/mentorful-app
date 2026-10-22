@@ -7,13 +7,14 @@ import SiteHeader from "@/components/SiteHeader";
  * The prototype repeated the logo inside the navy hero; here the shared
  * SiteHeader sits above it instead, so the mark isn't rendered twice.
  *
- * Card order and copy follow the prototype. All four demo routes that the old
- * "Demo routes" list linked to are preserved.
+ * Card order and copy follow the prototype. The original demo routes are
+ * preserved, with the leadership overview added.
  */
 
 const DEMOS = [
   { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
   { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
+  { href: "/admin/preview", title: "Leadership overview", blurb: "Culture, pairing, and topics for a school." },
   { href: "/admin/map", title: "Faculty map", blurb: "A staff network, drawn from data." },
   { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
 ];
