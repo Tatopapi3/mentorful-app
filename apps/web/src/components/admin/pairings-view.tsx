@@ -1,9 +1,12 @@
-import { AdminFrame, Chip, CycleSwitcher, LinkBtn, Muted, Notice, Panel, Row, SubmitBtn, basePath, type Skin } from "@/components/admin/kit";
+import { StackBar } from "@/components/admin/diagrams";
+import { AdminFrame, Chip, CycleSwitcher, LinkBtn, Muted, Notice, Panel, Row, StatGrid, SubmitBtn, basePath, type Skin } from "@/components/admin/kit";
 import { decidePairing, publishRound } from "@/app/admin/pairings/actions";
 import { buildFacts } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 import { DOMAIN_LABEL } from "@/lib/domains";
+import { participationRates, quietLabel } from "@/lib/admin/participation";
+import { pairingSplit } from "@/lib/admin/visuals";
 import { orientPairs, randomizePairs, seededRandom } from "@/lib/pairing/randomize";
 
 type Params = Record<string, string | string[] | undefined>;
@@ -35,6 +38,8 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
     : null;
 
   const crosses = (a: string, b: string) => byId.get(a)?.dept !== byId.get(b)?.dept;
+  const crossing = snap.pairs.filter((x) => crosses(x.a, x.b)).length;
+  const split = pairingSplit(facts.pairCount, snap.quietPairs ?? null, crossing);
   const q = (extra: Record<string, string>) => `${path}?${new URLSearchParams({ ...(cycleParam ? { cycle: cycleParam } : {}), ...extra }).toString()}`;
   const notice = one(searchParams.notice);
   const error = one(searchParams.error);
@@ -48,6 +53,32 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
 
       {snap.cycle && (
         <>
+          <StatGrid
+            skin={skin}
+            items={[
+              { label: "Pairs", value: String(facts.pairCount), note: `${facts.faculty} teachers` },
+              { label: "Across departments", value: `${facts.crossPct ?? 0}%`, note: `${crossing} of ${facts.pairCount} pairs` },
+              { label: "Have talked", value: snap.participation ? `${participationRates(snap.participation).conversationPct ?? 0}%` : "n/a", note: snap.participation ? `${snap.participation.with_conversation} of ${snap.participation.pairs} pairs logged something` : "needs the participation function" },
+              { label: "Waiting for you", value: String(snap.requests.length + facts.unpaired), note: `${snap.requests.length} ${snap.requests.length === 1 ? "request" : "requests"} · ${facts.unpaired} unpaired` },
+            ]}
+          />
+          <Panel skin={skin} title="Pairing progress" eyebrow="How pairs are doing" count={`${facts.pairCount} pairs`}>
+            <p style={{ margin: "0 0 14px", display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+              <strong style={{ font: "600 42px var(--ev-display, var(--font-serif, Georgia, serif))", letterSpacing: "-0.02em" }}>{facts.crossPct ?? 0}%</strong>
+              <span style={{ color: "var(--ev-muted, var(--muted))" }}>of pairs connect different departments</span>
+            </p>
+            <h3 style={{ margin: "0 0 8px", fontSize: 15 }}>How the pairs are doing</h3>
+            {split.nudge === null ? (
+              <Muted skin={skin}>Whether pairs are active comes from a database function (script 015) that is not applied here yet.</Muted>
+            ) : (
+              <>
+                <StackBar parts={[{ label: "on track", value: split.active, tone: "teal" }, { label: "need a nudge", value: split.nudge, tone: "amber" }]} />
+                <Muted skin={skin}>A nudge is a reminder for the pair, not a mark against anyone. You see how many have not logged in 30 days ({quietLabel(split.nudge)}), never which pairs.</Muted>
+              </>
+            )}
+            <h3 style={{ margin: "18px 0 8px", fontSize: 15 }}>Cross-department mix</h3>
+            <StackBar parts={[{ label: "across departments", value: split.crossing, tone: "teal" }, { label: "inside one department", value: split.inside, tone: "grey" }]} />
+          </Panel>
           <Panel skin={skin} title="Waiting for your decision" count={`${snap.requests.length} ${snap.requests.length === 1 ? "request" : "requests"}`} eyebrow="Requests">
             {snap.requests.length === 0 && <Muted skin={skin}>No requests are waiting.</Muted>}
             {snap.requests.map((r) => {

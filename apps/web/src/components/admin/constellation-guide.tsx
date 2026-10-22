@@ -1,4 +1,6 @@
+import { PairingFlow } from "@/components/admin/diagrams";
 import { Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
+import { HiddenGroups } from "@/components/admin/hidden-groups";
 import type { AdminSnapshot } from "@/lib/admin/facts";
 import { coverage, crossCount, departmentMatrix, directions, progress, suggestions } from "@/lib/admin/network";
 
@@ -63,6 +65,12 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
           </div>
         </Panel>
       )}
+      {m.depts.length >= 2 && Object.keys(m.cross).length > 0 && (
+        <Panel skin={skin} title="How pairs flow between departments" eyebrow="Pairing flow">
+          <PairingFlow matrix={m} />
+          <Muted skin={skin}>One arc for every two departments that have a pair between them; a thicker arc means more pairs. &ldquo;Within&rdquo; counts pairs that stay inside one department.</Muted>
+        </Panel>
+      )}
       {m.depts.length >= 2 && (
         <Panel skin={skin} title="Which departments are connected" eyebrow="Departments">
           <div style={{ overflowX: "auto" }}>
@@ -93,10 +101,8 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
               </tbody>
             </table>
           </div>
-          <Muted skin={skin}>
-            Each cell counts pairs between two departments. &ldquo;None&rdquo; is a connection that doesn&apos;t exist yet.
-            {m.omitted.length > 0 ? ` Departments with fewer than 5 teachers are left out so no one can be picked out.` : ""}
-          </Muted>
+          <HiddenGroups names={m.omitted} />
+          <Muted skin={skin}>Each cell counts pairs between two departments. &ldquo;None&rdquo; is a connection that doesn&apos;t exist yet.</Muted>
         </Panel>
       )}
     </>

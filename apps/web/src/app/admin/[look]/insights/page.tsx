@@ -2,7 +2,7 @@ import { lookBase, lookOf } from "@/lib/admin/look";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import Link from "next/link";
-import NetworkSlide from "@/app/report/slides/NetworkSlide";
+import { CultureBubbles } from "@/components/admin/diagrams";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { SeverityTag } from "@/components/aurora/severity";
 import { buildActions, PLC_FOR_DOMAIN } from "@/lib/admin/actions";
@@ -78,8 +78,9 @@ export default async function InsightsPage({ params: routeParams, searchParams }
               <h2>
                 How the four dimensions <em>connect.</em>
               </h2>
-              <div style={{ border: "1px solid var(--ev-line)", borderRadius: 14, overflow: "hidden", background: "#fff", marginTop: 12 }}>
-                <NetworkSlide stats={snap.stats} finding={findings.network.finding.sentence} synthetic={scan.includesSynthetic} footerLeft={`School Culture Scan · ${scan.n} respondents`} />
+              <div style={{ border: "1px solid var(--ev-line)", borderRadius: 14, background: "var(--ev-panel-solid)", marginTop: 12, padding: "18px 18px 14px" }}>
+                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} />
+                <p style={{ margin: "12px 0 0", textAlign: "center", fontSize: 15 }}>{findings.network.finding.sentence}</p>
               </div>
               <h3 style={{ marginTop: 22 }}>{findings.gap.finding.title}</h3>
               <p className="ev-muted" style={{ maxWidth: 760 }}>{findings.gap.finding.sentence}</p>

@@ -1,3 +1,4 @@
+import { FocusBanner } from "@/components/admin/diagrams";
 import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import NickDimensionBars from "@/components/nick/dimension-bars";
@@ -23,6 +24,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
   const facts = buildFacts(snap);
   const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const actions = buildActions(facts, "/admin").slice(0, 6);
+  const focus = actions.find((a) => a.severity === "do") ?? actions[0];
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
   const pctText = (n: number | null) => (n === null ? "n/a" : `${n}%`);
@@ -39,6 +41,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
       sub={<>{headlineSentence(facts)}{snap.school.priority ? ` · ${snap.school.priority}` : ""}</>}
     >
       <CycleSwitcher skin="nick" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/pulse" />
+      {focus && <FocusBanner lead={focus.title} body={focus.detail} href={focus.href} cta="See why" />}
       <section className="adm-metrics" aria-label="Summary">
         <Metric label="Took the scan" value={pctText(facts.scan?.completionPct ?? null)} note={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty} teachers`) : "no results yet"} />
         <Metric label="Have a partner" value={pctText(facts.pairedPct)} note={`${facts.pairCount} pairs`} />

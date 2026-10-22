@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { cultureBubbles, flowArcs, pairingSplit } from "@/lib/admin/visuals";
 import { headlineTitle } from "@/lib/admin/network";
 import { activitySentence, buildActivity, cycleTrend, monthLabel, trendSentence } from "@/lib/admin/trends";
 import { coverage, departmentMatrix, directions, gaps, progress, reach, suggestions } from "@/lib/admin/network";
@@ -330,5 +331,45 @@ describe("pulse headline", () => {
     expect(headlineTitle([row("down"), row("same")]).em).toBe("slipped.");
     expect(headlineTitle([row("up"), row("down")]).em).toBe("shifting.");
     expect(headlineTitle([row("same"), row("same")]).em).toBe("holding steady.");
+  });
+});
+
+describe("diagrams", () => {
+  const dim = (mean: number) => ({ mean }) as never;
+  const stats = {
+    dimensions: { structural: dim(3.1), relational: dim(4.6), cognitive: dim(4.4), efficacy: dim(4.5) },
+    // order: structural, relational, cognitive, efficacy
+    partial: [[1, 0.43, 0.05, -0.05], [0.43, 1, 0.41, 0.3], [0.05, 0.41, 1, 0.08], [-0.05, 0.3, 0.08, 1]],
+  };
+
+  it("size the bubbles by the average, mark the lowest as the focus, and draw weak ties faint", () => {
+    const { bubbles, ties, focus } = cultureBubbles(stats);
+    expect(focus).toBe("structural");
+    expect(bubbles.filter((b) => b.focus).map((b) => b.dimension)).toEqual(["structural"]);
+    const r = Object.fromEntries(bubbles.map((b) => [b.dimension, b.r]));
+    expect(r.relational).toBeGreaterThan(r.structural);
+    expect(ties).toHaveLength(6);
+    const t = (a: string, b: string) => ties.find((x) => x.a === a && x.b === b)!;
+    expect(t("structural", "relational").weak).toBe(false);
+    expect(t("structural", "relational").width).toBeGreaterThan(t("relational", "efficacy").width);
+    expect(t("structural", "cognitive").weak).toBe(true);
+    expect(t("structural", "cognitive").width).toBe(1.2);
+  });
+
+  it("draw one arc per connected pair of departments, thicker for more pairs, and none for departments with no pair", () => {
+    const people = [...Array.from({ length: 5 }, (_, i) => ({ id: `A${i}`, name: "a", dept: "Arts" })), ...Array.from({ length: 5 }, (_, i) => ({ id: `B${i}`, name: "b", dept: "Math" })), ...Array.from({ length: 5 }, (_, i) => ({ id: `C${i}`, name: "c", dept: "ELA" }))];
+    const pair = (a: string, b: string) => ({ id: a + b, a, b, domain: null, tag: null });
+    const m = departmentMatrix({ people, pairs: [pair("A0", "B0"), pair("A1", "B1"), pair("A2", "B2"), pair("B3", "C0"), pair("A3", "A4")] });
+    const { dots, arcs } = flowArcs(m);
+    expect(dots.map((d) => d.dept)).toEqual(["Arts", "ELA", "Math"]);
+    expect(dots.find((d) => d.dept === "Arts")!.within).toBe(1);
+    expect(arcs.map((a) => `${a.a}-${a.b}:${a.count}`)).toEqual(["Arts-Math:3", "ELA-Math:1"]);
+    expect(arcs[0].width).toBeGreaterThan(arcs[1].width);
+  });
+
+  it("split pairs into on track and needing a nudge without naming any pair", () => {
+    expect(pairingSplit(30, 5, 19)).toEqual({ active: 25, nudge: 5, crossing: 19, inside: 11 });
+    expect(pairingSplit(30, null, 19).active).toBe(30);
+    expect(pairingSplit(4, 9, 1).active).toBe(0);
   });
 });

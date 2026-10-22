@@ -1,7 +1,7 @@
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import Link from "next/link";
-import NetworkSlide from "@/app/report/slides/NetworkSlide";
+import { CultureBubbles } from "@/components/admin/diagrams";
 import NickDimensionBars from "@/components/nick/dimension-bars";
 import { Bar, NickDenied, NickPage } from "@/components/nick/page";
 import { buildActions, PLC_FOR_DOMAIN } from "@/lib/admin/actions";
@@ -67,8 +67,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                 <h2>How the four dimensions connect</h2>
                 <span className="mono adm-count">the structure underneath</span>
               </div>
-              <div style={{ border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", background: "#fff" }}>
-                <NetworkSlide stats={snap.stats} finding={findings.network.finding.sentence} synthetic={scan.includesSynthetic} footerLeft={`School Culture Scan · ${scan.n} respondents`} />
+              <div style={{ border: "1px solid var(--line)", borderRadius: 4, background: "var(--card)", padding: "18px 18px 14px" }}>
+                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} />
+                <p style={{ margin: "12px 0 0", textAlign: "center", fontSize: 15 }}>{findings.network.finding.sentence}</p>
               </div>
               <h3 style={{ fontFamily: "var(--font-serif), Georgia, serif", margin: "20px 0 4px" }}>{findings.gap.finding.title}</h3>
               <p className="nk-lead">{findings.gap.finding.sentence}</p>

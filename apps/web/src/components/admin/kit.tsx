@@ -104,12 +104,21 @@ export function Muted({ skin, children }: { skin: Skin; children: ReactNode }) {
   return skin === "nick" ? <p className="adm-foot">{children}</p> : <p className="ev-small">{children}</p>;
 }
 
-/** Switch which cycle the numbers describe. Shown only when the school has more than one. */
+/** The small shield that says the whole view is privacy-protected. Drawn in each look's own tokens. */
+export function PrivacyPill() {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 13px", border: "1px solid var(--ev-line, var(--line))", borderRadius: 999, fontSize: 12.5, whiteSpace: "nowrap", color: "var(--ev-teal, var(--teal-dk))", background: "var(--ev-panel-solid, var(--card))" }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+      Privacy-protected view · groups under 5 are hidden
+    </span>
+  );
+}
+
+/** Switch which cycle the numbers describe (shown only when the school has more than one), beside the privacy pill. */
 export function CycleSwitcher({ skin, cycles, selectedId, path }: { skin: Skin; cycles: { id: string; name: string; status: string }[]; selectedId: string | null; path: string }) {
-  if (cycles.length < 2) return null;
-  if (skin === "nick") {
-    return (
-      <p style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", margin: "0 0 18px" }}>
+  const switcher =
+    cycles.length < 2 ? null : skin === "nick" ? (
+      <p style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", margin: 0 }}>
         <span className="mono adm-eyebrow" style={{ margin: 0 }}>Cycle</span>
         {cycles.map((c) => (
           <Link key={c.id} href={`${path}?cycle=${c.id}`} className={`nk-btn${c.id === selectedId ? " nk-primary" : ""}`} prefetch={false}>
@@ -117,15 +126,19 @@ export function CycleSwitcher({ skin, cycles, selectedId, path }: { skin: Skin; 
           </Link>
         ))}
       </p>
+    ) : (
+      <div className="ev-tabs" role="group" aria-label="Cycle" style={{ margin: 0 }}>
+        {cycles.map((c) => (
+          <Link key={c.id} href={`${path}?cycle=${c.id}`} aria-current={c.id === selectedId ? "page" : undefined} prefetch={false}>
+            {c.name}
+          </Link>
+        ))}
+      </div>
     );
-  }
   return (
-    <div className="ev-tabs" role="group" aria-label="Cycle" style={{ margin: "0 0 18px" }}>
-      {cycles.map((c) => (
-        <Link key={c.id} href={`${path}?cycle=${c.id}`} aria-current={c.id === selectedId ? "page" : undefined} prefetch={false}>
-          {c.name}
-        </Link>
-      ))}
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", margin: "0 0 18px" }}>
+      {switcher ?? <span />}
+      <PrivacyPill />
     </div>
   );
 }

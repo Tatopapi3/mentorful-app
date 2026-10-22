@@ -1,4 +1,5 @@
 import { lookBase, lookOf } from "@/lib/admin/look";
+import { FocusBanner } from "@/components/admin/diagrams";
 import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
@@ -23,6 +24,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, base).slice(0, 6);
+  const focus = actions.find((a) => a.severity === "do") ?? actions[0];
   const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
@@ -50,6 +52,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
       {snap.school.priority && <p className="ev-small">Strategic priority: {snap.school.priority}</p>}
 
       <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/pulse`} />
+      {focus && <FocusBanner lead={focus.title} body={focus.detail} href={focus.href} cta="See why" />}
       <div className="v3-rings" style={{ marginTop: 18 }}>
         <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />

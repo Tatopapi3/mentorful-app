@@ -1,5 +1,6 @@
 import type { Activity } from "@/lib/admin/trends";
 import { monthLabel } from "@/lib/admin/trends";
+import { HiddenGroups } from "@/components/admin/hidden-groups";
 
 /*
  * Small charts for the Trends page, drawn the same in every look. Colors come from whichever look's tokens are
@@ -68,9 +69,10 @@ export function MonthBars({ activity }: { activity: Activity }) {
 }
 
 /** Departments down, months across. Darker means more conversations; a cell under the floor says "<5". */
-export function HeatGrid({ activity }: { activity: Activity }) {
+export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden?: string[] }) {
   const cellStyle = { padding: "9px 10px", textAlign: "center" as const, border: `1px solid ${line}`, fontSize: 13, minWidth: 74 };
   return (
+    <>
     <div style={{ overflowX: "auto" }}>
       <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 120 + activity.months.length * 78 }}>
         <thead>
@@ -103,5 +105,7 @@ export function HeatGrid({ activity }: { activity: Activity }) {
         </tbody>
       </table>
     </div>
+    <HiddenGroups names={hidden} />
+    </>
   );
 }
