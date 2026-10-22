@@ -93,9 +93,22 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
           for (const d of depts) if ((size.get(d) ?? 0) >= MIN) heat.set(`${d}|${month}`, (heat.get(`${d}|${month}`) ?? 0) + 1);
         }
         const hide = (n: number) => (n >= MIN ? n : null);
+        // The same counts by week (the Monday of each submission), so the weekly heat map has something to show.
+        const monday = (iso: string) => { const d = new Date(iso); const day = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - day); return d.toISOString().slice(0, 10); };
+        const weeks = new Map<string, number>();
+        const heatWeeks = new Map<string, number>();
+        for (const l of logs) {
+          const wk = monday(String(l.submitted_at));
+          weeks.set(wk, (weeks.get(wk) ?? 0) + 1);
+          const p = pr.get(l.pairing_id);
+          if (!p) continue;
+          for (const d of new Set([p.host_id, p.visitor_id].map((id) => prof.get(id)?.department ?? "Unassigned"))) if ((size.get(d) ?? 0) >= MIN) heatWeeks.set(`${d}|${wk}`, (heatWeeks.get(`${d}|${wk}`) ?? 0) + 1);
+        }
         return {
           months: [...months.entries()].sort().map(([month, n]) => ({ month, n: hide(n) })),
           heat: [...heat.entries()].sort().map(([k, n]) => ({ department: k.split("|")[0], month: k.split("|")[1], n: hide(n) })),
+          weeks: [...weeks.entries()].sort().map(([week, n]) => ({ week, n: hide(n) })),
+          heat_weeks: [...heatWeeks.entries()].sort().map(([k, n]) => ({ department: k.split("|")[0], week: k.split("|")[1], n: hide(n) })),
         };
       },
       conversation_log_count: (args: { p_cycle: string | null }) => tables.conversation_logs.filter((l) => l.status === "submitted" && (!args?.p_cycle || l.cycle_id === args.p_cycle)).length,
