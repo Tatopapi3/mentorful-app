@@ -37,20 +37,21 @@ export default function CultureScanCard() {
     status === "in-progress" ? "Continue" : status === "not-started" ? "Start" : null;
 
   return (
-    <section
-      style={{
-        marginTop: 24,
-        padding: 16,
-        border: "1px solid #ccc",
-        borderRadius: 4,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
-      <h2 style={{ margin: 0 }}>School Culture Scan</h2>
-      <p style={{ margin: 0 }}>Status: {label}</p>
-      {cta && <Link href="/survey">{cta}</Link>}
+    <section className="tch-card tch-scan" style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="tch-card-head">
+        <h2 style={{ margin: 0 }}>School Culture Scan</h2>
+        <span className="mono">{label}</span>
+      </div>
+      <p className="tch-lede" style={{ margin: 0 }}>
+        A short, anonymous check on how connected your school feels. Your answers are never linked to you.
+      </p>
+      {cta && (
+        <div>
+          <Link className="btn" href="/survey" style={{ textDecoration: "none" }}>
+            {cta}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

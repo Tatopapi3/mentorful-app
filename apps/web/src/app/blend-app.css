@@ -35,3 +35,7 @@ body.blend-app::before { content: ""; position: absolute; inset: 0 0 auto 0; hei
 /* the teacher dashboard sits on the glow too */
 .blend-app .tch-head h1 { letter-spacing: -0.02em; }
 .blend-app .tch-eyebrow { color: var(--teal-dk); letter-spacing: 0.16em; }
+
+/* a ghost button on the navy hero needs light text */
+.blend-app .land-hero .btn-ghost { color: #cdeeea; border-color: rgba(255, 255, 255, 0.4); }
+.blend-app .land-hero .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
