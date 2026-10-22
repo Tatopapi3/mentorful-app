@@ -93,7 +93,8 @@ export function buildFacts(s: AdminSnapshot): Facts {
     const weakest = ranked[ranked.length - 1];
     scan = {
       n: s.scan.n,
-      completionPct: pct(s.scan.n, s.people.length),
+      // More responses than teachers happens when the survey also holds synthetic or past-staff answers; never show above 100%.
+      completionPct: (() => { const p = pct(s.scan!.n, s.people.length); return p === null ? null : Math.min(100, p); })(),
       cte: s.scan.means.efficacy,
       cteCi: s.scan.ci.efficacy,
       strongest: { dimension: strongest, mean: s.scan.means[strongest] },

@@ -40,7 +40,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
     >
       <CycleSwitcher skin="nick" cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path="/admin/pulse" />
       <section className="adm-metrics" aria-label="Summary">
-        <Metric label="Took the scan" value={pctText(facts.scan?.completionPct ?? null)} note={scan ? `${scan.n} of ${facts.faculty} teachers` : "no results yet"} />
+        <Metric label="Took the scan" value={pctText(facts.scan?.completionPct ?? null)} note={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty} teachers`) : "no results yet"} />
         <Metric label="Have a partner" value={pctText(facts.pairedPct)} note={`${facts.pairCount} pairs`} />
         <Metric label="Cross departments" value={pctText(facts.crossPct)} note="of all pairs" />
         <Metric label="Conversations" value={String(facts.conversations)} note={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
