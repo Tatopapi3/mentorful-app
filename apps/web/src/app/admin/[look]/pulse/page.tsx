@@ -51,7 +51,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
 
       <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/pulse`} />
       <div className="v3-rings" style={{ marginTop: 18 }}>
-        <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? `${scan.n} of ${facts.faculty}` : "no results yet"} />
+        <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />
         <Ring pct={facts.crossPct} label="Cross departments" sub="of all pairs" />
         <Ring pct={null} display={String(facts.conversations)} label="Conversations" sub={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
