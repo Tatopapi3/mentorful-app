@@ -25,6 +25,8 @@ declare
   v_school uuid := public.my_school_id();
   v_months jsonb;
   v_heat jsonb;
+  v_weeks jsonb;
+  v_heat_weeks jsonb;
 begin
   if not public.is_school_admin() then
     raise exception 'conversation_activity: admin only' using errcode = '42501';
@@ -35,7 +37,8 @@ begin
 
   -- One CTE feeds both aggregates; nothing is written, so the function can stay STABLE.
   with logs as (
-    select cl.id, pr.host_id, pr.visitor_id, to_char(date_trunc('month', cl.submitted_at), 'YYYY-MM') as month
+    select cl.id, pr.host_id, pr.visitor_id, to_char(date_trunc('month', cl.submitted_at), 'YYYY-MM') as month,
+           to_char(date_trunc('week', cl.submitted_at), 'YYYY-MM-DD') as week
       from public.conversation_logs cl
       join public.pairings pr on pr.id = cl.pairing_id
      where cl.school_id = v_school and cl.cycle_id = p_cycle and cl.status = 'submitted'
@@ -51,8 +54,11 @@ begin
   by_month as (
     select month, count(*)::int as n from logs group by month
   ),
+  by_week as (
+    select week, count(*)::int as n from logs group by week
+  ),
   by_dept as (
-    select d.department, l.month, count(*)::int as n
+    select d.department, l.month, l.week, count(*)::int as n
       from logs l
       cross join lateral (
         select distinct coalesce(p.department, 'Unassigned') as department
@@ -60,13 +66,18 @@ begin
          where p.id in (l.host_id, l.visitor_id)
       ) d
      where d.department in (select department from big)
-     group by d.department, l.month
+     group by d.department, l.month, l.week
+  ),
+  dept_month as (
+    select department, month, sum(n)::int as n from by_dept group by department, month
   )
   select coalesce((select jsonb_agg(jsonb_build_object('month', m.month, 'n', case when m.n >= MIN_CELL then m.n end) order by m.month) from by_month m), '[]'::jsonb),
-         coalesce((select jsonb_agg(jsonb_build_object('department', h.department, 'month', h.month, 'n', case when h.n >= MIN_CELL then h.n end) order by h.department, h.month) from by_dept h), '[]'::jsonb)
-    into v_months, v_heat;
+         coalesce((select jsonb_agg(jsonb_build_object('department', h.department, 'month', h.month, 'n', case when h.n >= MIN_CELL then h.n end) order by h.department, h.month) from dept_month h), '[]'::jsonb),
+         coalesce((select jsonb_agg(jsonb_build_object('week', w.week, 'n', case when w.n >= MIN_CELL then w.n end) order by w.week) from by_week w), '[]'::jsonb),
+         coalesce((select jsonb_agg(jsonb_build_object('department', h.department, 'week', h.week, 'n', case when h.n >= MIN_CELL then h.n end) order by h.department, h.week) from by_dept h), '[]'::jsonb)
+    into v_months, v_heat, v_weeks, v_heat_weeks;
 
-  return jsonb_build_object('months', v_months, 'heat', v_heat);
+  return jsonb_build_object('months', v_months, 'heat', v_heat, 'weeks', v_weeks, 'heat_weeks', v_heat_weeks);
 end $$;
 
 revoke execute on function public.conversation_activity(uuid) from public, anon;

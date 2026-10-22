@@ -1,6 +1,8 @@
 import { PairingFlow } from "@/components/admin/diagrams";
 import { Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
 import { HiddenGroups } from "@/components/admin/hidden-groups";
+import { DeptLink, GroupSummaryRoot } from "@/components/admin/group-summary";
+import { groupSummaries } from "@/lib/admin/summaries";
 import type { AdminSnapshot } from "@/lib/admin/facts";
 import { coverage, crossCount, departmentMatrix, directions, progress, suggestions } from "@/lib/admin/network";
 
@@ -53,7 +55,7 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
   }
 
   return (
-    <>
+    <GroupSummaryRoot summaries={groupSummaries(snap, m, snap.participation ?? null, null)}>
       {sug.length > 0 && (
         <Panel skin={skin} title="Pairs that would add a new connection" eyebrow="Suggested" count={sug.length}>
           {sug.map((s) => (
@@ -79,14 +81,14 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
                 <tr>
                   <th />
                   {m.depts.map((d) => (
-                    <th key={d} style={th}>{d}</th>
+                    <th key={d} style={th}><DeptLink dept={d} /></th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {m.depts.map((r) => (
                   <tr key={r}>
-                    <th scope="row" style={{ ...th, textAlign: "left" }}>{r}</th>
+                    <th scope="row" style={{ ...th, textAlign: "left" }}><DeptLink dept={r} /></th>
                     {m.depts.map((c) => {
                       if (r === c) return <td key={c} style={{ ...td, color: "var(--muted, var(--ev-muted))" }} title="Pairs inside this department">{m.within[r] ?? 0}<small> within</small></td>;
                       const n = crossCount(m, r, c);
@@ -105,7 +107,7 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
           <Muted skin={skin}>Each cell counts pairs between two departments. &ldquo;None&rdquo; is a connection that doesn&apos;t exist yet.</Muted>
         </Panel>
       )}
-    </>
+    </GroupSummaryRoot>
   );
 }
 
