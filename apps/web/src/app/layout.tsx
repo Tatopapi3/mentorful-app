@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lora, Public_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "./blend-app.css";
 
 // Type system ported from the app-screens prototype: Lora for headings and the
 // wordmark, Public Sans for body, JetBrains Mono for small uppercase labels.
@@ -45,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased blend-app`}
       >
         {children}
       </body>

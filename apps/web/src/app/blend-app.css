@@ -1,0 +1,37 @@
+/*
+ * The Blend skin for the rest of the app (landing, sign-in, survey, teacher dashboard): Nick's own pages and classes,
+ * drawn in the Blend look: Aurora's floating bar and soft glow with his paper, ink and serif. It is a skin only. Every
+ * page, field and button works as before. Scoped to body.blend-app, which the root layout sets on this branch.
+ * The admin pages bring their own Blend theme (aurora/blend.css) and are not touched here.
+ */
+body.blend-app { background: var(--paper); position: relative; }
+body.blend-app::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 62vh; z-index: -1; pointer-events: none; background: radial-gradient(40% 70% at 12% 0%, rgba(127, 216, 203, 0.42), transparent 70%), radial-gradient(40% 70% at 88% 0%, rgba(183, 191, 245, 0.42), transparent 70%); }
+
+/* the bar: Aurora's floating pill, in paper */
+.blend-app .site-header { position: sticky; top: 12px; z-index: 40; margin: 12px auto 0; width: min(1240px, calc(100% - 24px)); padding: 7px 14px 7px 20px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--card) 86%, transparent); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); box-shadow: 0 1px 0 rgba(30, 42, 51, 0.04), 0 14px 30px -18px rgba(22, 40, 60, 0.28); }
+.blend-app .site-header--sticky { border-bottom: 1px solid var(--line); }
+.blend-app .site-header--sticky .site-header__inner { max-width: none; }
+.blend-app .site-wordmark { font-family: var(--font-serif), Georgia, serif; font-weight: 600; letter-spacing: -0.02em; }
+
+/* controls and cards: gentler rectangles, a hairline, and the one gradient on the primary action */
+.blend-app .btn { border-radius: 10px; background: linear-gradient(135deg, #0a9a8a, #4a55c8); box-shadow: 0 8px 18px -10px rgba(74, 85, 200, 0.7); }
+.blend-app .btn-ghost { background: transparent; color: var(--teal-dk); border: 1.5px solid var(--line); box-shadow: none; }
+.blend-app .field { border-radius: 10px; }
+.blend-app .demo, .blend-app .tch-card { border-radius: 14px; box-shadow: 0 1px 0 rgba(30, 42, 51, 0.04), 0 14px 30px -20px rgba(22, 40, 60, 0.25); }
+.blend-app .demo { transition: transform 0.2s, box-shadow 0.2s; }
+.blend-app .demo:hover { transform: translateY(-2px); }
+.blend-app .tch-log { border-radius: 12px; }
+.blend-app .tch-chips li { border-radius: 6px; font-family: var(--font-mono), monospace; font-weight: 500; letter-spacing: 0.02em; }
+
+/* landing: the navy hero becomes one rounded card on the page, with Aurora's glow in it */
+.blend-app .land-hero { width: min(1240px, calc(100% - 24px)); margin: 18px auto 0; border-radius: 22px; padding: 76px 0 84px; background: radial-gradient(120% 140% at 0% 0%, #24445f 0%, #16283c 55%, #0b1622 100%); position: relative; overflow: hidden; }
+.blend-app .land-hero::after { content: ""; position: absolute; width: 380px; height: 380px; right: -100px; top: -140px; border-radius: 50%; background: radial-gradient(circle, rgba(94, 234, 212, 0.34), transparent 65%); }
+.blend-app .land-hero .wrap { position: relative; z-index: 1; }
+.blend-app .land-hero h1 { font-family: var(--font-serif), Georgia, serif; letter-spacing: -0.02em; }
+
+/* sign-in: the two halves become cards on the glow */
+.blend-app .auth { width: min(1240px, calc(100% - 24px)); margin: 18px auto 0; min-height: calc(100vh - 96px); border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: var(--card); box-shadow: 0 24px 50px -30px rgba(22, 40, 60, 0.35); }
+
+/* the teacher dashboard sits on the glow too */
+.blend-app .tch-head h1 { letter-spacing: -0.02em; }
+.blend-app .tch-eyebrow { color: var(--teal-dk); letter-spacing: 0.16em; }
