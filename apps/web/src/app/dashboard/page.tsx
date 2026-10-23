@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SiteHeader from "@/components/SiteHeader";
 import CultureScanCard from "./CultureScanCard";
-import TeacherOrbit from "./TeacherOrbit";
-import { initials, orbitLogs, placeDots, rhythmGrid } from "@/lib/teacher/orbit";
 import LogConversationForm from "./LogConversationForm";
 import { submitLog } from "./actions";
 import {
@@ -111,7 +109,7 @@ export default async function DashboardPage() {
   const { data: logRows } = await supabase
     .from("conversation_logs")
     .select(
-      "id, domain, vision, strength_noted, more_frequently, less_frequently, resources, status, submitted_at, created_at, host_id, visitor_id, logged_by, is_visit_debrief"
+      "id, domain, vision, strength_noted, more_frequently, less_frequently, resources, status, submitted_at, created_at, host_id, visitor_id, logged_by"
     )
     .order("submitted_at", { ascending: false, nullsFirst: true })
     .order("created_at", { ascending: false });
@@ -124,8 +122,6 @@ export default async function DashboardPage() {
     domain: p.domain,
   }));
 
-  const entries = orbitLogs(logs as never, me.id, (id) => fullName(id ? partners.get(id) ?? null : null), (d) => DOMAIN_LABEL[d as keyof typeof DOMAIN_LABEL] ?? d);
-
   return (
     <>
       <SiteHeader />
@@ -134,13 +130,6 @@ export default async function DashboardPage() {
           <p className="mono tch-eyebrow">Your dashboard</p>
           <h1>{fullName(me)}</h1>
         </header>
-
-        <TeacherOrbit
-          me={{ name: fullName(me), initials: initials(fullName(me)) }}
-          partners={[...new Set(partnerIds)].slice(0, 2).map((id) => ({ name: fullName(partners.get(id) ?? null), initials: initials(fullName(partners.get(id) ?? null)) }))}
-          logs={placeDots(entries)}
-          rhythm={rhythmGrid(entries)}
-        />
 
         <div className="tch-top">
           {/* ------------------------------------------------ profile card */}
@@ -271,7 +260,7 @@ export default async function DashboardPage() {
                 const iHost = l.host_id === me.id;
                 const when = l.submitted_at ?? l.created_at;
                 return (
-                  <li key={l.id} id={`log-${l.id}`} className="tch-entry">
+                  <li key={l.id} className="tch-entry">
                     <div className="tch-entry-head">
                       <span className="tch-chip">{DOMAIN_LABEL[l.domain] ?? l.domain}</span>
                       <span className="tch-entry-who">

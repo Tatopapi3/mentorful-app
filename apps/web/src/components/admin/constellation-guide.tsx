@@ -2,6 +2,8 @@ import { PairingFlow } from "@/components/admin/diagrams";
 import { Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
 import { HiddenGroups } from "@/components/admin/hidden-groups";
 import { DeptLink, GroupSummaryRoot } from "@/components/admin/group-summary";
+import { FacultyOrbit } from "@/components/admin/faculty-orbit";
+import { facultyOrbit } from "@/lib/admin/faculty-orbit";
 import { groupSummaries } from "@/lib/admin/summaries";
 import type { AdminSnapshot } from "@/lib/admin/facts";
 import { coverage, crossCount, departmentMatrix, directions, progress, suggestions } from "@/lib/admin/network";
@@ -29,6 +31,7 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
   };
 
   if (part === "top") {
+    const orbit = facultyOrbit(snap, snap.participation ?? null, prev);
     return (
       <>
         <StatGrid
@@ -39,6 +42,13 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
             { label: "Department connections", value: `${cov.connected} of ${cov.possible}`, note: note("Department connections", "pairs of departments with at least one pair between them") },
           ]}
         />
+        {orbit.planets.length >= 2 && (
+          <GroupSummaryRoot summaries={groupSummaries(snap, m, snap.participation ?? null, null)}>
+            <Panel skin={skin} title="Your faculty, in orbit" eyebrow="Faculty orbit">
+              <FacultyOrbit planets={orbit.planets} lenses={orbit.lenses} directions={orbit.directions} />
+            </Panel>
+          </GroupSummaryRoot>
+        )}
         <Panel skin={skin} title="Where to head next" eyebrow="Direction">
           {dirs.length === 0 ? (
             <Muted skin={skin}>Everyone has a partner and every department is connected. Nothing needs doing here.</Muted>

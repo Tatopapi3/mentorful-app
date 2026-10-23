@@ -12,6 +12,9 @@ import { monthLabel } from "@/lib/admin/trends";
  */
 const Ctx = createContext<((dept: string) => void) | null>(null);
 
+/** Opens the group summary for a department, or does nothing outside a <GroupSummaryRoot>. */
+export const useGroupSummary = () => useContext(Ctx);
+
 export function DeptLink({ dept, children, style }: { dept: string; children?: ReactNode; style?: React.CSSProperties }) {
   const open = useContext(Ctx);
   if (!open) return <>{children ?? dept}</>;
