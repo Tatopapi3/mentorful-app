@@ -25,8 +25,6 @@ type Person = { name: string; initials: string };
 const box: React.CSSProperties = { border: `1px solid ${line}`, background: card, borderRadius: 14, padding: "20px 22px 18px", minWidth: 0 };
 const eyebrow: React.CSSProperties = { font: `500 11px ${mono}`, letterSpacing: "0.16em", textTransform: "uppercase", color: muted, display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px" };
 const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-// a plain calendar day (no time) is read as that day everywhere, not shifted by the viewer's time zone
-const fmtDay = (day: string) => new Date(`${day}T00:00:00Z`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
 export default function TeacherOrbit({ me, partners, logs, rhythm }: { me: Person; partners: Person[]; logs: PlacedLog[]; rhythm: RhythmGrid | null }) {
   const [f, setF] = useState<Filter>("all");
@@ -98,13 +96,13 @@ export default function TeacherOrbit({ me, partners, logs, rhythm }: { me: Perso
               {rhythm.weeks.map((w) => (
                 <div key={w[0].date} style={{ display: "grid", gap: 4 }}>
                   {w.map((c) => (
-                    <div key={c.date} title={c.count ? `${fmtDay(c.date)}: ${c.count}` : fmtDay(c.date)} style={{ aspectRatio: "1", borderRadius: 4, background: c.count ? `color-mix(in srgb, ${teal} ${Math.round(40 + (c.count / rhythm.max) * 50)}%, transparent)` : "var(--ev-soft, var(--paper-2))" }} />
+                    <div key={c.date} title={c.count ? `${fmt(c.date)}: ${c.count}` : fmt(c.date)} style={{ aspectRatio: "1", borderRadius: 4, background: c.count ? `color-mix(in srgb, ${teal} ${Math.round(40 + (c.count / rhythm.max) * 50)}%, transparent)` : "var(--ev-soft, var(--paper-2))" }} />
                   ))}
                 </div>
               ))}
             </div>
             <p style={{ margin: "14px 0 0", fontSize: 15 }}><strong>{rhythm.active}</strong> of the last {rhythm.weeks.length} weeks had something shared.</p>
-            <p style={{ margin: "4px 0 0", fontSize: 12.5, color: muted }}>Each column is a week, ending {fmtDay(rhythm.to)}.</p>
+            <p style={{ margin: "4px 0 0", fontSize: 12.5, color: muted }}>Each column is a week, ending {fmt(rhythm.to)}.</p>
           </>
         ) : (
           <p style={{ color: muted, margin: 0 }}>Your rhythm appears once you log a conversation.</p>
