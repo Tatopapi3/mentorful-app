@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { facultyOrbit, farness, orbitDirections } from "@/lib/admin/faculty-orbit";
 import { groupSummaries } from "@/lib/admin/summaries";
 import { buildWeekly, weekLabel } from "@/lib/admin/trends";
 import { cultureBubbles, flowArcs, pairingSplit } from "@/lib/admin/visuals";
@@ -400,5 +401,46 @@ describe("weekly activity and group summaries", () => {
     expect(s.Arts.connected).toEqual([{ dept: "Math", count: 2 }]);
     expect(s.Arts.notConnected).toEqual(["ELA"]);
     expect(s.Math.connected.map((c) => c.dept)).toEqual(["Arts", "ELA"]);
+  });
+});
+
+describe("faculty orbit", () => {
+  const dept = (d: string, n: number) => Array.from({ length: n }, (_, i) => ({ id: `${d}${i}`, name: d, dept: d }));
+  const people = [...dept("Arts", 5), ...dept("ELA", 5), ...dept("Math", 6), ...dept("Sci", 5), ...dept("PE", 3)];
+  const pr = (a: string, b: string) => ({ id: a + b, a, b, domain: null, tag: null });
+  const now = { school: { name: "s", priority: null }, cycle: null, cycles: [], people, pairs: [pr("Math0", "ELA0"), pr("Math1", "Sci0"), pr("Math2", "Arts0"), pr("Math3", "Math4"), pr("ELA1", "ELA2")], requests: [], conversations: null, scan: null } as never;
+  const before = { ...(now as object), pairs: [pr("Math0", "ELA0"), pr("Math3", "Math4")] } as never;
+  const part = { pairs: 5, with_conversation: 5, with_debrief: 0, complete: 0, teachers: 24, active_teachers: 12, by_department: [{ department: "Arts", teachers: 5, active: 1 }, { department: "ELA", teachers: 5, active: 4 }, { department: "Math", teachers: 6, active: 6 }, { department: "Sci", teachers: 5, active: 3 }] };
+  const o = facultyOrbit(now, part, before);
+
+  it("make a planet for each department of 5 or more and none for a smaller one", () => {
+    expect(o.planets.map((p) => p.dept).sort()).toEqual(["Arts", "ELA", "Math", "Sci"]);
+  });
+
+  it("work out each lens, with Math the hub and Arts furthest out on participation", () => {
+    const by = Object.fromEntries(o.planets.map((p) => [p.dept, p]));
+    expect(by.Math.reach).toBe(3);
+    expect(by.Math.values.connections).toBe(1);
+    expect(by.Arts.values.participation).toBeCloseTo(0.2);
+    expect(by.Math.values.mix).toBeCloseTo(0.75);
+    expect(by.Arts.notes.participation).toBe("20% talked");
+    expect(farness(by.Math.values.connections)).toBe(0);
+    expect(farness(null)).toBe(1);
+  });
+
+  it("offer the growth lens only when there is an earlier cycle, and show who gained", () => {
+    expect(o.lenses).toContain("growth");
+    const none = facultyOrbit(now, part, null);
+    expect(none.lenses).not.toContain("growth");
+    expect(o.planets.find((p) => p.dept === "Math")!.growth).toBe(2);
+  });
+
+  it("say where to head in plain words for each lens", () => {
+    const conn = orbitDirections(o.planets, "connections");
+    expect(conn[0].title).toBe("Bring Arts closer");
+    expect(conn[0].detail).toContain("ELA");
+    expect(conn.some((d) => d.title === "Learn from Math")).toBe(true);
+    expect(orbitDirections(o.planets, "participation")[0].title).toBe("Check in with Arts");
+    expect(orbitDirections(o.planets, "growth").some((d) => d.title === "Math grew the most")).toBe(true);
   });
 });
