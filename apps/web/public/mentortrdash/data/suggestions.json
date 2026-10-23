@@ -1,0 +1,50 @@
+[
+ {
+  "id": "s-liam-1",
+  "teacher": "liam",
+  "focus": "Visible objectives",
+  "why": "Mia noticed students losing the thread with nothing to steer back toward.",
+  "prompt": "Agree on one place the objective lives, and check it at each transition.",
+  "module": "PLC Navigator"
+ },
+ {
+  "id": "s-liam-2",
+  "teacher": "liam",
+  "focus": "Wait time",
+  "why": "You noted Ava's wait time is far longer than yours.",
+  "prompt": "Each time a question lands in your next visit, count three seconds silently and compare notes.",
+  "module": "Fishbowl Protocol"
+ },
+ {
+  "id": "s-avery-1",
+  "teacher": "avery",
+  "focus": "Closing the feedback loop",
+  "why": "Jack saw your exit tickets produce a reteach list the same day.",
+  "prompt": "Pick one rubric row to score live next week and share what students did with it.",
+  "module": "Feedback Reframing Relay"
+ },
+ {
+  "id": "s-avery-2",
+  "teacher": "avery",
+  "focus": "One new representation a day",
+  "why": "You saw a second representation land on students still holding the first.",
+  "prompt": "Map next unit's representations so no lesson introduces two.",
+  "module": "Domain Mapping Dominoes"
+ },
+ {
+  "id": "s-harper-1",
+  "teacher": "harper",
+  "focus": "Private correction",
+  "why": "Logan named whole-room correction as the thing to do less of.",
+  "prompt": "Script two private redirects you could use instead, and try one each this week.",
+  "module": "Trust Calibration Matrix"
+ },
+ {
+  "id": "s-harper-2",
+  "teacher": "harper",
+  "focus": "The good-news first call",
+  "why": "You saw Mason's call log give him history to stand on.",
+  "prompt": "Each make one positive call home this week and log the specific thing the student did.",
+  "module": "Efficacy Quest"
+ }
+]

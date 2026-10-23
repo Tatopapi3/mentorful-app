@@ -1,0 +1,44 @@
+[
+ {
+  "id": "p-liam-ava",
+  "host": "ava",
+  "visitor": "liam",
+  "domain": "CLASSROOM",
+  "status": "approved"
+ },
+ {
+  "id": "p-mia-liam",
+  "host": "liam",
+  "visitor": "mia",
+  "domain": "CLASSROOM",
+  "status": "approved"
+ },
+ {
+  "id": "p-avery-noah",
+  "host": "noah",
+  "visitor": "avery",
+  "domain": "PLANNING",
+  "status": "approved"
+ },
+ {
+  "id": "p-jack-avery",
+  "host": "avery",
+  "visitor": "jack",
+  "domain": "ASSESSMENT",
+  "status": "approved"
+ },
+ {
+  "id": "p-harper-mason",
+  "host": "mason",
+  "visitor": "harper",
+  "domain": "COMMUNICATION",
+  "status": "approved"
+ },
+ {
+  "id": "p-logan-harper",
+  "host": "harper",
+  "visitor": "logan",
+  "domain": "CLASSROOM",
+  "status": "approved"
+ }
+]

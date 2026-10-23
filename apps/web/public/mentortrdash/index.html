@@ -1,0 +1,1115 @@
+<!doctype html>
+<!--
+  The "Mentorful Teacher Dashboard" artifact (claude.ai/artifact/4tD28CDa5xajoG2969LUvo),
+  as published, running standalone on its own sample data. Served at /mentortrdash.
+
+  Changes from the artifact's copy, none of them to the page itself:
+  - its font URLs point at ./fonts instead of artifact blobs;
+  - runtime.js stands in for the Dashboard runtime (dash.data / calc / onData /
+    params) and loads ./data/*.json;
+  - the runtime's --cds-* tokens and page gutter are defined below.
+
+  Drafts, chat messages and uploaded files live in the page until a reload. The
+  app-wired version, which saves drafts to Supabase, is /dashboard/v2.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mentorful Teacher Dashboard</title>
+<meta name="description" content="A teacher's co-mentoring dashboard: profile, co-mentors, conversation journal, games hub, Culture Scan, pairing agent and pair chat. Sample data.">
+<link rel="icon" href="/icon.png">
+<link rel="preload" href="/mentortrdash/fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/mentortrdash/fonts/lora-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* The Dashboard runtime's tokens and defaults, which the page is written against. */
+html, body { margin: 0; background: #e6f2f0; }
+body { color: #2c2416; -webkit-font-smoothing: antialiased; }
+#dash-root {
+  --cds-pad-xs: 6px; --cds-pad-sm: 10px; --cds-pad-md: 14px; --cds-pad-lg: 22px; --cds-pad-xl: 28px;
+  --cds-gap-xs: 6px; --cds-gap-sm: 10px; --cds-gap-md: 16px; --cds-gap-lg: 22px; --cds-gap-xl: 30px;
+  --cds-font-size-caption: 13px; --cds-font-size-body: 15px; --cds-font-size-heading: 19px; --cds-font-size-title: 30px;
+  --cds-font-weight-medium: 500; --cds-radius: 5px;
+  --cds-dur-slow: 300ms; --cds-ease-out: cubic-bezier(.2, .8, .2, 1);
+  --cds-chart-grid: rgba(22, 40, 60, .08); --cds-chart-axis: rgba(22, 40, 60, .3);
+  font-family: "Public Sans", system-ui, sans-serif; font-size: 15px; line-height: 1.6;
+  min-height: 100vh; padding: 16px; box-sizing: border-box; background: #e6f2f0;
+}
+@media (min-width: 900px) { #dash-root { padding: 24px; } }
+#dash-root .dash-skeleton { color: transparent !important; background: rgba(22, 40, 60, .08); border-radius: 4px; }
+#dash-root b, #dash-root strong { font-weight: 600; }
+.mf-noscript { font-family: system-ui, sans-serif; padding: 24px; }
+</style>
+<script src="/mentortrdash/d3.v7.9.0.min.js"></script>
+<script src="/mentortrdash/runtime.js" defer></script>
+</head>
+<body>
+<div id="dash-root"></div>
+<noscript><p class="mf-noscript">The Mentorful Teacher Dashboard needs JavaScript.</p></noscript>
+<template id="mf-page">
+<style>
+@font-face { font-family: "Lora"; font-weight: 400; font-display: swap; src: url("/mentortrdash/fonts/lora-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Lora"; font-weight: 600; font-display: swap; src: url("/mentortrdash/fonts/lora-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Lora"; font-weight: 700; font-display: swap; src: url("/mentortrdash/fonts/lora-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 400; font-display: swap; src: url("/mentortrdash/fonts/public-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 500; font-display: swap; src: url("/mentortrdash/fonts/public-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 600; font-display: swap; src: url("/mentortrdash/fonts/public-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url("/mentortrdash/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 500; font-display: swap; src: url("/mentortrdash/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); }
+/* Mentorful brand tokens, as on mentorful.co (:root of the site). Light-only, as in the app. */
+.mf {
+  --navy: #16283c; --navy-2: #1e3448; --navy-deep: #0e1b29; --paper: #f7f4ed; --card: #fffefb; --paper-2: #efeae0;
+  --teal: #00897b; --teal-dk: #007064; --teal-lift: #26a79a; --teal-bg: #e6f2f0; --amber: #e09b2d;
+  --ink: #2c2416; --muted: #8b8377; --muted-light: #a9bacb; --line: rgba(22, 40, 60, .14); --line-dark: rgba(255, 255, 255, .16);
+  --mf-accent: var(--teal); --mf-accent-soft: var(--teal-bg);
+  --color-fg: var(--ink); --color-fg-muted: var(--muted); --color-bg: var(--paper); --color-panel: var(--card);
+  --color-border-line: var(--line); --color-ok: var(--teal); --color-warn: var(--amber); --color-bad: #b3261e;
+  --cds-text-secondary: var(--muted); --cds-surface-popover: var(--card); --cds-border: var(--line);
+  --cds-chart-muted: #d9d2c5; --cds-radius: 5px;
+  --font-anthropic-sans: "Public Sans", system-ui, sans-serif; --font-anthropic-serif: "Lora", Georgia, serif;
+  --mf-mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: light; line-height: 1.6;
+}
+.mf h1, .mf h2, .mf h3 { font-family: var(--font-anthropic-serif); font-weight: 600; line-height: 1.15; letter-spacing: -.01em; }
+.mf .mono { font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+#dash-root { --dash-gutter: 0; }
+.mf { font-family: var(--font-anthropic-sans); color: var(--color-fg); background: var(--teal-bg); padding: var(--cds-pad-lg); border-radius: var(--cds-radius); min-height: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 22rem); gap: var(--cds-gap-lg); align-items: start; }
+.mf * { box-sizing: border-box; }
+.mf-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+.mf h2 { font-size: 19px; margin: 0; }
+.mf h3 { font-size: 17px; margin: 0; }
+.mf p { margin: 0; }
+.mf-muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.mf-head { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm); margin-bottom: var(--cds-gap-md); flex-wrap: wrap; }
+.mf button { font: inherit; color: inherit; cursor: pointer; }
+.mf button:focus-visible, .mf input:focus-visible, .mf textarea:focus-visible, .mf a:focus-visible { outline: 2px solid var(--mf-accent); outline-offset: 2px; }
+.mf-btn { border: 1.5px solid rgba(0, 137, 123, .42); color: var(--teal) !important; background: transparent; border-radius: 3px; font-weight: 600; transition: background .18s; padding: var(--cds-pad-xs) var(--cds-pad-md); font-size: var(--cds-font-size-caption); }
+.mf-btn-primary { background: var(--teal); border-color: var(--teal); color: #fff !important; font-weight: 600; }
+.mf-btn-primary:hover:not(:disabled) { background: #007064; border-color: #007064; }
+.mf-btn:not(.mf-btn-primary):hover:not(:disabled) { background: rgba(0, 137, 123, .08); }
+.mf-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Left nav */
+.mf-nav { position: sticky; top: var(--cds-gap-md); display: flex; flex-direction: column; gap: var(--cds-gap-sm); width: 15rem; transition: width var(--cds-dur-slow) var(--cds-ease-out); padding: var(--cds-pad-md); }
+.mf-nav.collapsed { width: 4.25rem; }
+.mf-nav.collapsed .mf-label, .mf-nav.collapsed .mf-user-meta { display: none; }
+.mf-brand { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-gap-xs); padding-bottom: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+.mf-brand-name { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-anthropic-serif); font-weight: 700; font-size: 19px; line-height: 1; white-space: nowrap; color: var(--ink); }
+.mf-brand-name img { width: 30px; height: 30px; }
+.mf-nav.collapsed .mf-brand { flex-direction: column; }
+.mf-nav.collapsed .mf-brand-name { display: inline-flex; }
+.mf-nav.collapsed .mf-brand-name span { display: none; }
+.mf-toggle { border: 1px solid var(--color-border-line); background: var(--color-bg); border-radius: var(--cds-radius); width: 2rem; height: 2rem; display: grid; place-items: center; flex: none; }
+.mf-nav.collapsed .mf-toggle svg { transform: rotate(180deg); }
+.mf-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.mf-links a { display: flex; align-items: center; gap: var(--cds-gap-sm); padding: var(--cds-pad-sm); border-radius: 3px; color: #4a5a68; font-size: 14.5px !important; text-decoration: none; font-size: var(--cds-font-size-body); white-space: nowrap; }
+.mf-links a:hover { color: var(--teal); }
+.mf-links a[aria-current="true"] { color: var(--teal-dk); background: var(--teal-bg); font-weight: 600; }
+.mf-icon { width: 1.25rem; height: 1.25rem; flex: none; }
+.mf-user { margin-top: var(--cds-gap-md); padding-top: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); display: flex; gap: var(--cds-gap-sm); align-items: center; }
+.mf-avatar { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; flex: none; font-family: var(--font-anthropic-serif); font-size: 14px; font-weight: 600; background: var(--navy); color: var(--paper); position: relative; }
+.mf-dot { position: absolute; right: 0; bottom: 0; width: .6rem; height: .6rem; border-radius: 50%; background: var(--color-ok); border: 2px solid var(--color-panel); }
+.mf-user-meta { min-width: 0; line-height: 1.3; }
+.mf-user-meta > * { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mf-role { display: inline-block !important; margin-top: 2px; padding: 1px 8px; border-radius: 3px; font-weight: 600; background: var(--mf-accent-soft); color: var(--mf-accent); font-size: var(--cds-font-size-caption); }
+
+/* Main */
+.mf-main { display: flex; flex-direction: column; gap: var(--cds-gap-lg); min-width: 0; }
+.mf-banner { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--cds-gap-md); flex-wrap: wrap; background: var(--navy); border-color: var(--navy-deep); border-radius: 6px; color: #fff; }
+.mf-banner .mf-muted { color: #93a9bc; font-size: 16px; }
+.mf-banner .mf-pill { color: var(--amber); }
+.mf-banner h1 { font-size: clamp(28px, 3.4vw, 40px); color: #fff; margin: 0 0 var(--cds-gap-sm); }
+.mf-eyebrow { color: var(--amber) !important; letter-spacing: .18em !important; font-weight: 500 !important; margin-bottom: 14px; }
+.mf-weekbar { height: 6px; border-radius: 999px; background: rgba(250, 247, 242, .18); overflow: hidden; margin-top: var(--cds-gap-sm); max-width: 18rem; }
+.mf-weekbar > div { height: 100%; background: var(--teal-lift); border-radius: 999px; width: 0; transition: width var(--cds-dur-slow) var(--cds-ease-out); }
+.mf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: var(--cds-gap-md); }
+.mf-kpi .mf-num { font-family: var(--font-anthropic-serif); font-weight: 600; font-size: 30px; color: var(--navy); font-variant-numeric: tabular-nums; display: block; margin-top: var(--cds-gap-xs); }
+.mf-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+
+.mf-lock { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--teal-dk); font-size: 12px; font-weight: 600; border: 1px solid var(--line); border-radius: 3px; padding: 1px var(--cds-pad-sm); background: var(--teal-bg); cursor: help; }
+.mf-lock svg { width: .85rem; height: .85rem; }
+.mf-tip { position: absolute; right: 0; top: calc(100% + 6px); width: 15rem; z-index: 5; background: var(--navy); border: 1px solid var(--navy-deep); border-radius: 4px; box-shadow: 0 6px 20px rgba(14, 27, 41, .25); color: var(--paper) !important; font-weight: 400; padding: var(--cds-pad-xs) var(--cds-pad-sm); color: var(--color-fg); font-size: var(--cds-font-size-caption); opacity: 0; pointer-events: none; transition: opacity .15s; }
+.mf-lock:hover .mf-tip, .mf-lock:focus .mf-tip { opacity: 1; }
+
+.mf-partner { display: flex; gap: var(--cds-gap-md); align-items: flex-start; }
+.mf-partner .mf-avatar { width: 3.25rem; height: 3.25rem; font-size: var(--cds-font-size-body); }
+.mf-dl { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--cds-gap-md); margin: var(--cds-gap-sm) 0 0; font-size: var(--cds-font-size-caption); }
+.mf-dl dt { color: var(--color-fg-muted); }
+.mf-dl dd { margin: 0; }
+.mf-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); margin-top: var(--cds-gap-sm); min-height: 1.5rem; }
+.mf-chip { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 3px; border: 1px solid var(--line); background: var(--paper); color: #4a443a; }
+.mf-chip.shared { border-color: transparent; color: var(--teal-dk); background: var(--teal-bg); }
+
+/* Quick log */
+.mf-tags { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); border: 0; padding: 0; margin: 0 0 var(--cds-gap-sm); }
+.mf-tag { border: 1px solid var(--line); background: var(--paper); border-radius: 3px; padding: 6px 12px; font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .14em; color: var(--ink); }
+.mf-tag:hover { border-color: var(--teal); }
+.mf-tag[aria-checked="true"] { background: var(--teal); border-color: var(--teal); color: #fff !important; }
+.mf-input { width: 100%; font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm); resize: vertical; }
+.mf-row { display: flex; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; margin-top: var(--cds-gap-sm); flex-wrap: wrap; }
+.mf-timer { font-variant-numeric: tabular-nums; }
+.mf-session { list-style: none; margin: var(--cds-gap-sm) 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mf-session li { font-size: var(--cds-font-size-caption); display: flex; gap: var(--cds-gap-sm); }
+
+.mf-chart { position: relative; min-height: 190px; }
+.mf-tooltip { position: absolute; background: var(--card); border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 6px 20px rgba(44, 36, 22, .14); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; opacity: 0; white-space: nowrap; }
+.mf-tooltip .k { color: var(--cds-text-secondary); }
+
+/* Games */
+.mf-games { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); min-height: 10rem; }
+.mf-game { display: flex; flex-direction: column; gap: var(--cds-gap-xs); border: 1px solid var(--line); border-radius: 5px; padding: var(--cds-pad-md); background: var(--paper); text-align: left; transition: border-color .15s, transform .15s; }
+.mf-game:hover { border-color: var(--teal); }
+.mf-game-ico { width: 2rem; height: 2rem; border-radius: 4px; display: grid; place-items: center; background: var(--mf-accent-soft); color: var(--mf-accent); }
+.mf-prog { height: 6px; border-radius: 999px; background: var(--color-border-line); overflow: hidden; margin-top: auto; }
+.mf-prog > div { height: 100%; border-radius: 999px; background: var(--mf-accent); }
+.mf-game-foot { display: flex; justify-content: space-between; }
+
+/* Table */
+.mf-tablebox { max-height: 18rem; overflow: auto; }
+.mf table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.mf th, .mf td { text-align: left; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+.mf th { position: sticky; top: 0; background: var(--card); color: var(--muted); font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 400; }
+.mf td.num, .mf th.num { text-align: right; }
+.mf-pill { font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .12em; color: var(--teal-dk); font-weight: 500; }
+
+/* Right rail */
+.mf-rail { display: flex; flex-direction: column; gap: var(--cds-gap-lg); position: sticky; top: var(--cds-gap-md); min-width: 0; }
+.mf-agent { border-color: var(--teal); border-top: 3px solid var(--teal); }
+.mf-spark { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); font-weight: 500; }
+.mf-focus { font-family: var(--font-anthropic-serif); font-weight: 600; font-size: 19px; color: var(--navy); margin: var(--cds-gap-xs) 0; }
+.mf-quote { font-family: var(--font-anthropic-serif); color: #4a443a; border-left: 3px solid var(--teal); padding-left: var(--cds-pad-sm); margin: var(--cds-gap-sm) 0; font-size: var(--cds-font-size-body); }
+.mf-agent-body { min-height: 9rem; }
+.mf-chat { display: flex; flex-direction: column; }
+.mf-msgs { display: flex; flex-direction: column; gap: var(--cds-gap-sm); max-height: 22rem; min-height: 12rem; overflow-y: auto; padding: var(--cds-pad-xs) 2px; }
+.mf-msg { max-width: 85%; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-radius: 5px; background: var(--paper); border: 1px solid var(--color-border-line); font-size: var(--cds-font-size-body); }
+.mf-msg.me { align-self: flex-end; background: var(--teal); border-color: var(--teal); color: #fff; }
+.mf-msg.me time { color: rgba(255, 255, 255, .78); }
+.mf-msg time { display: block; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin-top: 2px; }
+.mf-compose { display: flex; gap: var(--cds-gap-xs); margin-top: var(--cds-gap-sm); }
+.mf-compose input { flex: 1; min-width: 0; }
+.mf-presence { display: inline-flex; align-items: center; gap: 6px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mf-presence i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--color-ok); display: inline-block; }
+
+.mf-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.mf-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.mf [data-dash-source-state=empty] { color: transparent; }
+.mf [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.mf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Mentorful products strip (copy from mentorful.co/#products) */
+.mf-prods { list-style: none; margin: var(--cds-gap-md) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-sm); counter-reset: prod; }
+.mf-prod { counter-increment: prod; }
+.mf-prod a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: var(--cds-pad-md); border: 1px solid var(--line); border-top: 3px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); text-decoration: none; transition: border-color .18s, background .18s; }
+.mf-prod a::before { content: counter(prod, decimal-leading-zero); font-family: var(--mf-mono); font-size: 10px; letter-spacing: .15em; color: var(--muted); }
+.mf-prod a:hover { border-color: var(--teal); background: var(--card); }
+.mf-prod.current a { border-top-color: var(--teal); }
+.mf-prod.current a::before { color: var(--teal); }
+.mf-prod h3 { font-size: 16.5px; line-height: 1.28; }
+.mf-prod p { font-size: 13.5px; line-height: 1.5; color: #5a6670; }
+.mf .mf-eyebrow-teal { color: var(--teal); letter-spacing: .18em; font-weight: 500; margin-bottom: 8px; }
+.mf-prodnote { margin-top: var(--cds-gap-md) !important; font-size: 14px; color: #5a6670; }
+.mf-link { color: var(--teal); font-weight: 600; font-size: 14.5px; text-decoration: none; }
+.mf-link:hover { text-decoration: underline; }
+
+@media (max-width: 1100px) {
+  .mf { grid-template-columns: auto minmax(0, 1fr); }
+  .mf-rail { grid-column: 2; position: static; }
+}
+@media (max-width: 700px) {
+  .mf { grid-template-columns: minmax(0, 1fr); }
+  .mf-rail { grid-column: auto; }
+  .mf-nav, .mf-nav.collapsed { position: static; width: auto; }
+  .mf-links { flex-direction: row; flex-wrap: wrap; }
+  .mf-nav.collapsed .mf-label { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mf-game.in { animation: mfIn var(--cds-dur-slow) var(--cds-ease-out) both; }
+  @keyframes mfIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+</style>
+
+<style>
+/* App integration: rules for the parts that come from apps/web/src/app/dashboard. */
+.mf-viewas { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.mf-viewas label { color: #93a9bc !important; }
+.mf-select { font: inherit; font-size: 14px; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 3px; padding: 6px 10px; }
+.mf-banner .mf-select { border-color: var(--navy-deep); }
+.mf-banner-actions { display: flex; flex-direction: column; gap: var(--cds-gap-sm); align-items: flex-end; }
+.mf-me { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md) var(--cds-gap-lg); margin-top: var(--cds-gap-md); }
+.mf-me > div { min-width: 0; }
+.mf-me .mono { color: #93a9bc !important; display: block; margin-bottom: 2px; }
+.mf-me-val { font-family: var(--font-anthropic-serif); font-weight: 600; font-size: 16px; color: #fff; }
+.mf-me-sub { font-size: 13px; color: #93a9bc; font-style: italic; }
+.mf-banner .mf-quote { color: #dfe7ee; border-left-color: var(--teal-lift); margin: var(--cds-gap-md) 0 0; max-width: 62ch; font-size: 15px; }
+.mf-mentors { list-style: none; margin: 0; padding: 0; min-height: 8rem; }
+.mf-mentor { display: flex; gap: var(--cds-gap-md); align-items: flex-start; }
+.mf-mentor + .mf-mentor { margin-top: var(--cds-gap-md); padding-top: var(--cds-gap-md); border-top: 1px solid var(--line); }
+.mf-mentor h3 { display: inline; margin-right: 8px; }
+.mf-role-line { margin-top: 4px !important; font-size: 13.5px; color: var(--muted); }
+.mf-insight { margin-top: 6px !important; font-size: 14px; line-height: 1.5; color: #4a443a; }
+.mf-insight b { font-weight: 600; color: var(--ink); }
+.mf-chips .mf-chip { margin: 0; }
+.mf-field { display: block; margin-top: var(--cds-gap-sm); }
+.mf-field .mono { display: block; margin-bottom: 4px; }
+.mf-lede { font-size: 14px; color: #6b6459; margin: -4px 0 var(--cds-gap-sm) !important; max-width: 64ch; }
+.mf-drafts { list-style: none; margin: 0 0 var(--cds-gap-sm); padding: 0; display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.mf-draft { border: 1px dashed var(--line); border-radius: 4px; padding: var(--cds-pad-sm); background: var(--paper); display: flex; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; font-size: 13.5px; }
+.mf-draft .mf-draft-text { flex: 1; min-width: 12rem; }
+.mf tr[data-key] { cursor: pointer; }
+.mf tr[data-key]:hover td { background: var(--paper); }
+.mf tr[aria-selected="true"] td { background: var(--teal-bg); }
+.mf-entry { margin-top: var(--cds-gap-md); padding-top: var(--cds-gap-md); border-top: 1px solid var(--line); min-height: 6rem; }
+.mf-entry-head { display: flex; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; margin-bottom: var(--cds-gap-sm); font-size: 13.5px; color: #6b6459; }
+.mf-entry dl { margin: 0; display: grid; grid-template-columns: minmax(7rem, 9rem) 1fr; gap: 6px var(--cds-gap-md); }
+.mf-entry dt { font-family: var(--mf-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.mf-entry dd { margin: 0; font-size: 14.5px; line-height: 1.55; color: #3c362c; }
+.mf-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: var(--cds-gap-sm); }
+.mf-tabs button { border: 1px solid var(--line); background: var(--paper); border-radius: 3px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: #4a5a68; }
+.mf-tabs button[aria-selected="true"] { background: var(--teal); border-color: var(--teal); color: #fff; }
+.mf-scan-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: #6b6459; }
+.mf-scan-status i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--amber); display: inline-block; }
+.mf-demo-note { font-size: 12.5px; color: var(--muted); margin-top: var(--cds-gap-xs) !important; }
+.mf-chat-tools { display: flex; align-items: center; gap: var(--cds-gap-xs); }
+.mf-icon-btn { width: 2rem; height: 2rem; display: inline-grid; place-items: center; border: 1px solid var(--line); background: var(--paper); border-radius: 3px; color: var(--teal-dk); flex: none; }
+.mf-icon-btn:hover { border-color: var(--teal); background: var(--teal-bg); }
+.mf-icon-btn svg { width: 1rem; height: 1rem; }
+.mf-chat .mf-ico-close { display: none; }
+.mf.chat-wide .mf-chat .mf-ico-open { display: none; }
+.mf.chat-wide .mf-chat .mf-ico-close { display: block; }
+.mf.chat-wide { grid-template-columns: auto minmax(0, 1fr) minmax(0, 40rem); }
+.mf.chat-wide .mf-msgs { max-height: 65vh; min-height: 26rem; }
+.mf.chat-wide .mf-msg { max-width: 75%; }
+.mf-chat.dragging .mf-msgs { outline: 2px dashed var(--teal); outline-offset: 4px; background: var(--teal-bg); }
+.mf-file { display: flex; align-items: center; gap: var(--cds-gap-sm); margin-top: 4px; padding: 6px 8px; border-radius: 4px; background: rgba(255, 255, 255, .16); border: 1px solid var(--line); text-decoration: none; color: inherit; font-size: 13px; }
+.mf-msg:not(.me) .mf-file { background: var(--card); }
+.mf-file svg { width: 1.1rem; height: 1.1rem; flex: none; }
+.mf-file span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mf-file small { opacity: .75; white-space: nowrap; }
+.mf-msg img.mf-shot { display: block; max-width: 100%; max-height: 16rem; border-radius: 4px; margin-top: 4px; }
+.mf-pending { display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--cds-gap-xs); }
+.mf-pending:empty { display: none; }
+.mf-pending .mf-chip { display: inline-flex; align-items: center; gap: 6px; }
+.mf-pending button { border: 0; background: none; padding: 0 2px; color: var(--muted); font-size: 14px; line-height: 1; }
+.mf-chat-err { color: var(--color-bad) !important; }
+@media (max-width: 1100px) { .mf.chat-wide { grid-template-columns: auto minmax(0, 1fr); } }
+@media (max-width: 700px) { .mf.chat-wide { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) {
+  .mf-banner-actions, .mf-viewas { align-items: flex-start; }
+  .mf-entry dl { grid-template-columns: 1fr; gap: 2px 0; }
+}
+</style>
+
+<div class="mf" id="mf">
+  <!-- LEFT NAV -->
+  <nav class="mf-nav mf-card" id="mf-nav" aria-label="Dashboard navigation">
+    <div class="mf-brand">
+      <span class="mf-brand-name"><img src="data:image/png;base64,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" alt=""><span>Mentorful</span></span>
+      <button class="mf-toggle" id="mf-toggle" aria-expanded="true" aria-controls="mf-nav" aria-label="Collapse navigation">
+        <svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+    <ul class="mf-links">
+      <li><a href="#profile" data-target="profile" aria-current="true" aria-label="Profile and strengths"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="mf-label">Profile &amp; strengths</span></a></li>
+      <li><a href="#pair" data-target="pair" aria-label="My co-mentor pair"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-4-6.3"/></svg><span class="mf-label">My co-mentor pair</span></a></li>
+      <li><a href="#journal" data-target="journal" aria-label="Private journal and logs"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="mf-label">Private journal &amp; logs</span></a></li>
+      <li><a href="#games" data-target="games" aria-label="Pedagogy games hub"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg><span class="mf-label">Pedagogy games hub</span></a></li>
+      <li><a href="#survey" data-target="survey" aria-label="Culture scan survey"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="mf-label">Culture Scan survey</span></a></li>
+      <li><a href="#products" data-target="products" aria-label="Mentorful products"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="mf-label">Mentorful products</span></a></li>
+      <li><a href="#mf-chat" data-target="mf-chat" data-open-chat aria-label="Pair chat"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg><span class="mf-label">Pair chat</span></a></li>
+    </ul>
+    <div class="mf-user" id="profile-mini">
+      <span class="mf-avatar" aria-hidden="true"><span id="me-initials">—</span><span class="mf-dot"></span></span>
+      <span class="mf-user-meta">
+        <strong class="mk-me dash-skeleton" data-source="profiles" data-field="name">—</strong>
+        <span class="mf-muted mk-me" data-source="profiles" data-field="school">—</span>
+        <span class="mf-role mk-me" data-source="profiles" data-field="role">—</span>
+      </span>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="mf-main" aria-label="Workspace">
+    <section class="mf-card mf-banner" id="profile" aria-labelledby="mf-welcome">
+      <div style="min-width:0;flex:1">
+        <div class="mf-eyebrow mono">Your dashboard · <span data-source="cohort" data-field="cohort" data-row="0">—</span> · Week <span data-source="cohort" data-field="week" data-row="0">—</span> of <span data-source="cohort" data-field="total_weeks" data-row="0">—</span></div>
+        <h1 id="mf-welcome">Welcome back, <span class="mk-me" data-source="profiles" data-field="first_name">—</span></h1>
+        <p class="mf-muted"><span class="mk-me" data-source="profiles" data-field="department">—</span> · <span class="mk-me" data-source="profiles" data-field="school">—</span> · Your journal leans toward <b class="mf-pill" id="mf-top-domain" data-source="domain_counts" data-field="label">—</b></p>
+        <div class="mf-weekbar" role="progressbar" aria-label="Cohort progress" aria-valuemin="0" id="mf-weekbar"><div></div></div>
+        <div class="mf-me" aria-label="Your profile">
+          <div><span class="mono">Strong in</span><span class="mf-me-val mk-tp" data-source="teacher_profile" data-field="strong_in">—</span></div>
+          <div><span class="mono">Teaching style</span><span class="mf-me-val mk-tp" data-source="teacher_profile" data-field="style_label">—</span><br><span class="mf-me-sub mk-tp" data-source="teacher_profile" data-field="style_tagline">—</span></div>
+          <div><span class="mono">Archetype</span><span class="mf-me-val mk-tp" data-source="teacher_profile" data-field="archetype_label">—</span></div>
+        </div>
+        <blockquote class="mf-quote mk-me" data-source="profiles" data-field="inspiration">—</blockquote>
+      </div>
+      <div class="mf-banner-actions">
+        <div class="mf-viewas">
+          <label class="mono" for="mf-teacher">Viewing as</label>
+          <select id="mf-teacher" class="mf-select" data-source="profiles"></select>
+        </div>
+        <button class="mf-btn mf-btn-primary" id="mf-quicklog-cta">+ Log a conversation</button>
+      </div>
+    </section>
+
+    <div class="mf-kpis" aria-label="Your activity this cycle">
+      <div class="mf-card mf-kpi"><span class="mono">Conversations logged</span><span class="mf-num dash-skeleton mk-kpi" data-source="teacher_kpis" data-field="conversations">—</span><span class="mf-muted">In your journal</span></div>
+      <div class="mf-card mf-kpi"><span class="mono">Co-mentors</span><span class="mf-num dash-skeleton mk-kpi" data-source="teacher_kpis" data-field="comentors">—</span><span class="mf-muted">This cycle</span></div>
+      <div class="mf-card mf-kpi"><span class="mono">Visits you made</span><span class="mf-num dash-skeleton mk-kpi" data-source="teacher_kpis" data-field="visits_made">—</span><span class="mf-muted">You observed them</span></div>
+      <div class="mf-card mf-kpi"><span class="mono">Game modules done</span><span class="mf-num dash-skeleton"><span class="mk-kpi" data-source="teacher_kpis" data-field="modules_done">—</span> / <span class="mk-kpi" data-source="teacher_kpis" data-field="modules_total">—</span></span><span class="mf-muted">Of the games hub</span></div>
+    </div>
+
+    <div class="mf-grid2">
+      <section class="mf-card" id="pair" aria-labelledby="pair-h">
+        <div class="mf-head">
+          <h2 id="pair-h">Your co-mentors</h2>
+          <span class="mf-lock" tabindex="0" aria-describedby="tip-pair">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Public profile
+            <span class="mf-tip" role="tooltip" id="tip-pair">Privacy-restricted view: only public profile fields are shown. Personal email and contact details are never exposed.</span>
+          </span>
+        </div>
+        <ul class="mf-mentors" id="mf-mentors" data-source="pair_insights"></ul>
+      </section>
+
+      <section class="mf-card" id="quicklog" aria-labelledby="ql-h">
+        <div class="mf-head">
+          <h2 id="ql-h">Log a conversation <span class="mono">· under 60 seconds</span></h2>
+          <span class="mf-muted mf-timer" id="mf-timer" aria-live="off">0:60</span>
+        </div>
+        <label class="mf-field" for="mf-with" style="margin-top:0"><span class="mono">With</span></label>
+        <select id="mf-with" class="mf-select" style="width:100%;margin-bottom:var(--cds-gap-sm)" data-source="pair_insights"></select>
+        <div class="mf-tags" role="radiogroup" aria-label="Concern domain (required)" id="mf-tags"></div>
+        <label class="mf-field" for="mf-vision"><span class="mono">What they’re working toward</span></label>
+        <textarea id="mf-vision" class="mf-input" rows="2" maxlength="400"></textarea>
+        <label class="mf-field" for="mf-note"><span class="mono">What you noticed working</span></label>
+        <textarea id="mf-note" class="mf-input" rows="2" maxlength="400"></textarea>
+        <div class="mf-row">
+          <span class="mf-lock" tabindex="0" aria-describedby="tip-log">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Pair-private
+            <span class="mf-tip" role="tooltip" id="tip-log">Visible ONLY to you and your co-mentor. Admins cannot read this text.</span>
+          </span>
+          <button class="mf-btn mf-btn-primary" id="mf-save" disabled>Save draft</button>
+        </div>
+        <p class="mf-muted" id="mf-ql-status" role="status" style="margin-top:var(--cds-gap-xs)">Pick one tag to continue.</p>
+        <p class="mf-demo-note">Saved as a draft, visible only to the two of you. Submit it from the journal when you’re ready.</p>
+      </section>
+    </div>
+
+    <section class="mf-grid2" id="journal" aria-label="Private journal and logs">
+      <div class="mf-card">
+        <div class="mf-head"><h2 id="dom-h">Domains of concern</h2><span class="mono">Your journal</span></div>
+        <div class="mf-chart" id="mf-domain-chart" data-source="domain_counts" role="img" aria-labelledby="dom-h"></div>
+      </div>
+      <div class="mf-card">
+        <div class="mf-head">
+          <h2>Conversation journal</h2>
+          <span class="mf-lock" tabindex="0" aria-describedby="tip-journal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Pair-private
+            <span class="mf-tip" role="tooltip" id="tip-journal">Visible ONLY to you and your co-mentor. Admins cannot read this text.</span>
+          </span>
+        </div>
+        <p class="mf-lede">Private to you and the colleague in each conversation. Your school lead sees how many conversations happened and in which domains, never what was said.</p>
+        <ul class="mf-drafts" id="mf-drafts" aria-label="Drafts from this session"></ul>
+        <div class="mf-tablebox">
+          <table id="mf-logs" data-source="journal" data-row-key="id,teacher">
+            <thead><tr><th data-field="date" scope="col">Date</th><th data-field="domain" scope="col">Domain</th><th data-field="with" scope="col">With</th><th data-field="vision" scope="col">Working toward</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="mf-entry" id="mf-entry" data-source="journal" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="mf-card" id="games" aria-labelledby="games-h">
+      <div class="mf-head"><h2 id="games-h">Pedagogy games hub</h2><span class="mono">Progress for your pair</span></div>
+      <div class="mf-games" id="mf-games" data-source="games"></div>
+    </section>
+
+    <section class="mf-card" id="survey" aria-labelledby="survey-h">
+      <div class="mf-head"><h2 id="survey-h">School Culture Scan</h2><span class="mf-lock" tabindex="0" aria-describedby="tip-survey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Anonymous<span class="mf-tip" role="tooltip" id="tip-survey">Your answers are anonymous and can't be traced back to you. Your school sees dimension-level results only.</span></span></div>
+      <p class="mf-muted">Where your faculty stands on structure, relationships, shared knowledge and collective efficacy: 26 statements in four short sections, about ten minutes.</p>
+      <p class="mf-scan-status" style="margin-top:var(--cds-gap-sm)"><i aria-hidden="true"></i>Status is kept in the Mentorful app on your own device.</p>
+      <div class="mf-row" style="justify-content:flex-start"><a class="mf-btn mf-btn-primary" href="https://app.mentorful.co/survey" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Take the scan in the app</a><a class="mf-link" href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer">About the School Culture Scan →</a></div>
+    </section>
+
+    <section class="mf-card" id="products" aria-labelledby="products-h">
+      <p class="mf-eyebrow-teal mono">What we offer</p>
+      <div class="mf-head" style="margin-bottom:0"><h2 id="products-h">Mentorful products</h2><a class="mf-link" href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer">mentorful.co →</a></div>
+      <p class="mf-muted">Start anywhere. Most schools build from left to right.</p>
+      <ol class="mf-prods" aria-label="Mentorful products, in suggested order">
+        <li class="mf-prod current"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>School Culture Scan</h3><p>Where your faculty stands: structure, relationships, shared knowledge, collective efficacy. Full network report and a findings session.</p></a></li>
+        <li class="mf-prod"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>Teacher Diagnostic PD</h3><p>A workshop that gets a faculty to see itself. Teachers leave with a partner and a first conversation scheduled.</p></a></li>
+        <li class="mf-prod"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>Initiative Launch Playbook</h3><p>Co-mentoring as the infrastructure a rollout travels through. Early adopters paired with skeptics, deliberately.</p></a></li>
+        <li class="mf-prod"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>PLC Facilitator Certification</h3><p>Six weeks, cohort-based. Clinic, Toolbox, Task Force, Data Dive, with a portfolio of facilitated sessions.</p></a></li>
+        <li class="mf-prod"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>Data Analysis Certification</h3><p>Read a network report, interpret what it says about your faculty, make decisions you can defend.</p></a></li>
+        <li class="mf-prod"><a href="https://mentorful.co/#products" target="_blank" rel="noopener noreferrer"><h3>Leadership Strategy Consulting</h3><p>Longer-horizon work across a leadership team or a district. Network architecture and internal capacity.</p></a></li>
+      </ol>
+      <p class="mf-prodnote">Every one works on its own. Together they build. Your co-mentoring pair is part of the School Culture Scan.</p>
+    </section>
+  </main>
+
+  <!-- RIGHT RAIL -->
+  <aside class="mf-rail" aria-label="Pairing agent and chat">
+    <section class="mf-card mf-agent" aria-labelledby="agent-h">
+      <div class="mf-head">
+        <span class="mf-spark" id="agent-h"><svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg>AI pairing agent</span>
+        <span class="mf-muted" id="agent-count" aria-live="polite"></span>
+      </div>
+      <div class="mf-agent-body" id="mf-agent" data-source="suggestions" aria-live="polite"></div>
+      <div class="mf-row">
+        <button class="mf-btn" id="agent-next">Next suggestion</button>
+        <button class="mf-btn mf-btn-primary" id="agent-use">Use in a log</button>
+      </div>
+    </section>
+
+    <section class="mf-card mf-chat" id="mf-chat" aria-labelledby="chat-h">
+      <div class="mf-head">
+        <div><h2 id="chat-h">Pair chat</h2><span class="mf-presence"><i aria-hidden="true"></i><span id="chat-who">—</span> is active</span></div>
+        <div class="mf-chat-tools">
+          <span class="mf-lock" tabindex="0" aria-describedby="tip-chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Encrypted
+            <span class="mf-tip" role="tooltip" id="tip-chat">Visible ONLY to you and your co-mentor. Admins cannot read this text.</span>
+          </span>
+          <button class="mf-icon-btn" id="mf-chat-size" type="button" aria-expanded="false" aria-controls="mf-chat" aria-label="Open chat wider" title="Open chat wider">
+            <svg class="mf-ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <svg class="mf-ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="mf-tabs" role="tablist" aria-label="Choose a co-mentor" id="mf-chat-tabs"></div>
+      <div class="mf-msgs" id="mf-msgs" data-source="chat" role="log" aria-label="Messages"></div>
+      <div class="mf-pending" id="mf-pending" aria-label="Files to send"></div>
+      <div class="mf-compose">
+        <input type="file" id="mf-file" multiple hidden aria-hidden="true" tabindex="-1">
+        <button class="mf-icon-btn" id="mf-attach" type="button" aria-label="Attach a file" title="Attach a file" style="height:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <label class="mf-sr" for="mf-chat-in">Message your co-mentor</label>
+        <input id="mf-chat-in" class="mf-input" placeholder="Message your co-mentor…" maxlength="500">
+        <button class="mf-btn mf-btn-primary" id="mf-chat-send" aria-label="Send message">Send</button>
+      </div>
+      <p class="mf-muted" id="mf-chat-note" style="margin-top:var(--cds-gap-xs)">Attach or drop files up to 10 MB. Messages and files you send here stay in this view only.</p>
+    </section>
+  </aside>
+</div>
+
+<script>
+// Shared constants, mirrored from apps/web/src/lib/domains.ts.
+window.MF_DOMAINS = ['CLASSROOM', 'PLANNING', 'COMMUNICATION', 'ASSESSMENT', 'CELEBRATIONS'];
+window.MF_DOMAIN_LABEL = { CLASSROOM: 'Classroom Culture', PLANNING: 'Lesson Planning', COMMUNICATION: 'Communication', ASSESSMENT: 'Assessment & Feedback', CELEBRATIONS: 'Celebrations' };
+
+dash.calc('teacher_profile', {
+  title: 'Teacher profile labels',
+  description: 'Strength tags resolved to domains, plus teaching-style and archetype copy, as the app shows them.',
+  inputs: ['profiles'],
+  fn: (profiles) => {
+    const TAG_TO_DOMAIN = {
+      'Classroom Presence': 'CLASSROOM', 'Discussion Craft': 'CLASSROOM', 'Clear Explanations': 'CLASSROOM', 'Warm-Strict Culture': 'CLASSROOM',
+      'Unit Architecture': 'PLANNING', 'Task Design': 'PLANNING', 'Pacing and Sequencing': 'PLANNING', 'Differentiation Planning': 'PLANNING',
+      'Family Communication': 'COMMUNICATION', 'Student Conferencing': 'COMMUNICATION', 'Team Coordination': 'COMMUNICATION', 'De-escalation and Repair': 'COMMUNICATION',
+      'Rubric Clarity': 'ASSESSMENT', 'Feedback Efficiency': 'ASSESSMENT', 'Mastery Checks': 'ASSESSMENT', 'Data-Informed Reteach': 'ASSESSMENT'
+    };
+    const ORDER = ['CLASSROOM', 'PLANNING', 'COMMUNICATION', 'ASSESSMENT'];
+    const LABEL = { CLASSROOM: 'Classroom Culture', PLANNING: 'Lesson Planning', COMMUNICATION: 'Communication', ASSESSMENT: 'Assessment & Feedback' };
+    const STYLE = { nurturer: ['Nurturer', 'Care first, then challenge.'], activator: ['Activator', 'Spark curiosity, ignite action.'], architect: ['Architect', 'Design clarity, build mastery.'] };
+    const ARCH = { puzzler: 'Puzzler', 'story-lover': 'Story-Lover', fixer: 'Fixer', 'mover-shaker': 'Mover & Shaker', competitor: 'Competitor', performer: 'Performer', artist: 'Artist', collector: 'Collector', 'party-captain': 'Party Captain', prankster: 'Prankster', 'novelty-seeker': 'Novelty-Seeker' };
+    return profiles.map(p => {
+      const found = String(p.strength_tags || '').split(';').map(t => TAG_TO_DOMAIN[t.trim()]).filter(Boolean);
+      const domains = ORDER.filter(d => found.includes(d));
+      const st = STYLE[p.teaching_style] || ['', ''];
+      return { teacher: p.key, domains: domains.join(','), strong_in: domains.map(d => LABEL[d]).join(' · '), style_label: st[0], style_tagline: st[1], archetype_label: ARCH[p.archetype_id] || '' };
+    });
+  }
+});
+
+dash.calc('pair_insights', {
+  title: 'Co-mentor pairings, per teacher',
+  description: 'Each approved pairing seen from both sides: who visits whom, the focus, shared strengths and the archetype contrast.',
+  inputs: ['pairings', 'profiles', 'teacher_profile'],
+  fn: (pairings, profiles, teacher_profile) => {
+    const LABEL = { CLASSROOM: 'Classroom Culture', PLANNING: 'Lesson Planning', COMMUNICATION: 'Communication', ASSESSMENT: 'Assessment & Feedback', CELEBRATIONS: 'Celebrations' };
+    const prof = Object.fromEntries(profiles.map(p => [p.key, p]));
+    const tp = Object.fromEntries(teacher_profile.map(t => [t.teacher, t]));
+    const rows = [];
+    pairings.filter(x => x.status === 'approved').forEach(x => {
+      [x.host, x.visitor].forEach(me => {
+        const other = me === x.host ? x.visitor : x.host;
+        const mine = (tp[me]?.domains || '').split(',').filter(Boolean);
+        const theirs = (tp[other]?.domains || '').split(',').filter(Boolean);
+        const shared = mine.filter(d => theirs.includes(d)).map(d => LABEL[d]);
+        rows.push({
+          pairing_id: x.id, teacher: me, partner_key: other,
+          partner: prof[other]?.name || 'A colleague', department: prof[other]?.department || '',
+          role: me === x.host ? 'They visit your classroom.' : 'You visit their classroom.',
+          domain: x.domain, focus: LABEL[x.domain] || x.domain || '',
+          shared: shared.join(' and '),
+          my_archetype: tp[me]?.archetype_label || '', their_archetype: tp[other]?.archetype_label || ''
+        });
+      });
+    });
+    return rows;
+  }
+});
+
+dash.calc('journal', {
+  title: 'Conversation journal, per teacher',
+  description: 'Each conversation log seen by both people in it, newest first.',
+  inputs: ['logs', 'profiles'],
+  fn: (logs, profiles) => {
+    const name = Object.fromEntries(profiles.map(p => [p.key, p.name]));
+    const rows = [];
+    logs.forEach(l => {
+      [l.host, l.visitor].forEach(me => {
+        const other = me === l.host ? l.visitor : l.host;
+        rows.push({
+          id: l.id, teacher: me, date: l.submitted_at, domain: l.domain, with: name[other] || 'A colleague',
+          who: me === l.host ? 'They observed you' : 'You observed them', status: l.status,
+          vision: l.vision, strength_noted: l.strength_noted, more_frequently: l.more_frequently,
+          less_frequently: l.less_frequently, resources: l.resources
+        });
+      });
+    });
+    return rows.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  }
+});
+
+dash.calc('domain_counts', {
+  title: 'Journal entries per domain',
+  description: 'How many of each teacher’s logged conversations fall in each of the five concern domains.',
+  inputs: ['journal', 'profiles'],
+  fn: (journal, profiles) => {
+    const D = ['CLASSROOM', 'PLANNING', 'COMMUNICATION', 'ASSESSMENT', 'CELEBRATIONS'];
+    const LABEL = { CLASSROOM: 'Classroom Culture', PLANNING: 'Lesson Planning', COMMUNICATION: 'Communication', ASSESSMENT: 'Assessment & Feedback', CELEBRATIONS: 'Celebrations' };
+    const rows = [];
+    profiles.forEach(p => D.forEach(domain => rows.push({ teacher: p.key, domain, label: LABEL[domain], logs: journal.filter(j => j.teacher === p.key && j.domain === domain).length })));
+    return rows;
+  }
+});
+
+dash.calc('teacher_kpis', {
+  title: 'Teacher activity totals',
+  description: 'Per teacher: conversations in the journal, co-mentors this cycle, visits made, and finished game modules.',
+  inputs: ['journal', 'pair_insights', 'games'],
+  fn: (journal, pair_insights, games) => {
+    const teachers = [...new Set(pair_insights.map(p => p.teacher))];
+    return teachers.map(t => ({
+      teacher: t,
+      conversations: journal.filter(j => j.teacher === t).length,
+      comentors: pair_insights.filter(p => p.teacher === t).length,
+      visits_made: journal.filter(j => j.teacher === t && j.who === 'You observed them').length,
+      modules_done: games.filter(g => Number(g.progress) >= 1).length,
+      modules_total: games.length
+    }));
+  }
+});
+
+window.MF = { selected: null, drafts: {}, sentMsgs: {}, sugIdx: 0, chatPair: {}, entry: {} };
+window.MF_me = () => dash.params().teacher || 'liam';
+</script>
+
+<script>
+// Nav: collapse + section links
+const nav = document.getElementById('mf-nav');
+const toggle = document.getElementById('mf-toggle');
+toggle.addEventListener('click', () => {
+  const collapsed = nav.classList.toggle('collapsed');
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+  toggle.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
+});
+const links = [...nav.querySelectorAll('a[data-target]')];
+links.forEach(a => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  const el = document.getElementById(a.dataset.target);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  dash.setLink(el.id);
+  links.forEach(l => l.setAttribute('aria-current', String(l === a)));
+}));
+const named = document.getElementById(location.hash.slice(1));
+if (named) setTimeout(() => named.scrollIntoView(), 0);
+
+// Viewing as
+document.getElementById('mf-teacher').addEventListener('change', (e) => {
+  MF.sugIdx = 0; MF.selected = null;
+  dash.setParams({ teacher: e.target.value });
+});
+</script>
+
+<script>
+// Log a conversation: controlled vocabulary + 60s timer. Drafts live for this session.
+const tagsEl = document.getElementById('mf-tags');
+const note = document.getElementById('mf-note');
+const vision = document.getElementById('mf-vision');
+const withSel = document.getElementById('mf-with');
+const save = document.getElementById('mf-save');
+const status = document.getElementById('mf-ql-status');
+const timerEl = document.getElementById('mf-timer');
+let started = null, tick = null;
+
+MF_DOMAINS.forEach((d, i) => {
+  const b = document.createElement('button');
+  b.className = 'mf-tag';
+  b.type = 'button';
+  b.setAttribute('role', 'radio');
+  b.setAttribute('aria-checked', 'false');
+  b.title = MF_DOMAIN_LABEL[d];
+  b.tabIndex = i === 0 ? 0 : -1;
+  b.textContent = d;
+  b.addEventListener('click', () => select(d));
+  b.addEventListener('keydown', (e) => {
+    if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+    e.preventDefault();
+    const n = (i + (e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : MF_DOMAINS.length - 1)) % MF_DOMAINS.length;
+    select(MF_DOMAINS[n]);
+    tagsEl.children[n].focus();
+  });
+  tagsEl.appendChild(b);
+});
+
+function startTimer() {
+  if (started) return;
+  started = Date.now();
+  tick = setInterval(() => {
+    const left = Math.max(0, 60 - Math.floor((Date.now() - started) / 1000));
+    timerEl.textContent = '0:' + String(left).padStart(2, '0');
+    timerEl.style.color = left <= 10 ? 'var(--color-warn)' : '';
+    if (!left) clearInterval(tick);
+  }, 250);
+}
+function select(d, quiet) {
+  MF.selected = d;
+  [...tagsEl.children].forEach(b => {
+    const on = b.textContent === d;
+    b.setAttribute('aria-checked', String(on));
+    b.tabIndex = on ? 0 : -1;
+  });
+  save.disabled = !d;
+  if (!quiet) { status.textContent = 'Tagged ' + MF_DOMAIN_LABEL[d] + '. Add what they’re working toward or what you noticed, then save.'; startTimer(); }
+}
+window.MF_selectDomain = select;
+note.addEventListener('input', startTimer);
+vision.addEventListener('input', startTimer);
+withSel.addEventListener('change', () => {
+  const opt = withSel.selectedOptions[0];
+  if (opt && opt.dataset.domain) select(opt.dataset.domain, true);
+});
+function resetForm() {
+  note.value = ''; vision.value = ''; MF.selected = null; save.disabled = true;
+  [...tagsEl.children].forEach((b, i) => { b.setAttribute('aria-checked', 'false'); b.tabIndex = i === 0 ? 0 : -1; });
+  clearInterval(tick); started = null; timerEl.textContent = '0:60'; timerEl.style.color = '';
+}
+window.MF_resetForm = resetForm;
+save.addEventListener('click', () => {
+  if (!MF_DOMAINS.includes(MF.selected)) { status.textContent = 'Choose one of the five domain tags.'; return; }
+  if (!withSel.value) { status.textContent = 'Choose who the conversation was with.'; return; }
+  const v = vision.value.trim(), s = note.value.trim();
+  if (!v && !s) { status.textContent = 'Add at least what they’re working toward or what you noticed.'; return; }
+  const secs = started ? Math.round((Date.now() - started) / 1000) : 0;
+  const me = MF_me();
+  (MF.drafts[me] = MF.drafts[me] || []).unshift({ id: 'd' + Date.now(), domain: MF.selected, with: withSel.selectedOptions[0].textContent, vision: v, strength_noted: s, status: 'draft', secs });
+  status.textContent = 'Draft saved in ' + secs + ' seconds.';
+  resetForm();
+  window.MF_drawDrafts && window.MF_drawDrafts();
+});
+document.getElementById('mf-quicklog-cta').addEventListener('click', () => {
+  document.getElementById('quicklog').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  withSel.focus();
+});
+
+// Chat compose (session only)
+const chatIn = document.getElementById('mf-chat-in');
+const MAX_FILE = 10 * 1024 * 1024;
+const fileIn = document.getElementById('mf-file');
+const pendingEl = document.getElementById('mf-pending');
+const chatNote = document.getElementById('mf-chat-note');
+const chatNoteText = chatNote.textContent;
+MF.pending = [];
+const fmtSize = (b) => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+window.MF_fmtSize = fmtSize;
+function drawPending() {
+  pendingEl.textContent = '';
+  MF.pending.forEach((f, i) => {
+    const c = document.createElement('span'); c.className = 'mf-chip';
+    c.textContent = f.name + ' · ' + fmtSize(f.size);
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + f.name);
+    x.addEventListener('click', () => { MF.pending.splice(i, 1); drawPending(); });
+    c.appendChild(x); pendingEl.appendChild(c);
+  });
+}
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve({ name: file.name, size: file.size, type: file.type || 'application/octet-stream', url: r.result });
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+async function addFiles(list) {
+  const files = [...list];
+  const tooBig = files.filter(f => f.size > MAX_FILE);
+  chatNote.classList.toggle('mf-chat-err', tooBig.length > 0);
+  chatNote.textContent = tooBig.length ? `${tooBig.map(f => f.name).join(', ')} ${tooBig.length === 1 ? 'is' : 'are'} over 10 MB and wasn’t added.` : chatNoteText;
+  for (const f of files.filter(f => f.size <= MAX_FILE)) {
+    try { MF.pending.push(await readFile(f)); } catch (e) { chatNote.classList.add('mf-chat-err'); chatNote.textContent = `Couldn’t read ${f.name}.`; }
+  }
+  drawPending();
+  chatIn.focus();
+}
+document.getElementById('mf-attach').addEventListener('click', () => fileIn.click());
+fileIn.addEventListener('change', () => { addFiles(fileIn.files); fileIn.value = ''; });
+const chatCard = document.getElementById('mf-chat');
+chatCard.addEventListener('dragover', (e) => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); chatCard.classList.add('dragging'); } });
+chatCard.addEventListener('dragleave', (e) => { if (!chatCard.contains(e.relatedTarget)) chatCard.classList.remove('dragging'); });
+chatCard.addEventListener('drop', (e) => { e.preventDefault(); chatCard.classList.remove('dragging'); if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+chatIn.addEventListener('paste', (e) => { if (e.clipboardData && e.clipboardData.files.length) { e.preventDefault(); addFiles(e.clipboardData.files); } });
+
+function send() {
+  const text = chatIn.value.trim();
+  const pid = MF.chatPair[MF_me()];
+  if ((!text && !MF.pending.length) || !pid) return;
+  (MF.sentMsgs[pid] = MF.sentMsgs[pid] || []).push({ at: new Date().toISOString(), text, files: MF.pending });
+  MF.pending = []; drawPending();
+  chatIn.value = '';
+  chatNote.classList.remove('mf-chat-err'); chatNote.textContent = chatNoteText;
+  window.MF_drawChat && window.MF_drawChat();
+}
+
+// Open the chat wider, and close it back
+const sizeBtn = document.getElementById('mf-chat-size');
+function setWide(on) {
+  document.getElementById('mf').classList.toggle('chat-wide', on);
+  sizeBtn.setAttribute('aria-expanded', String(on));
+  const label = on ? 'Close wide chat' : 'Open chat wider';
+  sizeBtn.setAttribute('aria-label', label); sizeBtn.title = label;
+  if (on) chatCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  window.MF_drawChat && window.MF_drawChat();
+}
+sizeBtn.addEventListener('click', () => setWide(!document.getElementById('mf').classList.contains('chat-wide')));
+// Left-nav "Pair chat" link opens the chat wide and puts the cursor in the message box.
+document.querySelector('a[data-open-chat]').addEventListener('click', () => { setWide(true); setTimeout(() => chatIn.focus({ preventScroll: true }), 350); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.getElementById('mf').classList.contains('chat-wide')) { setWide(false); sizeBtn.focus(); } });
+document.getElementById('mf-chat-send').addEventListener('click', send);
+chatIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+// Agent controls
+document.getElementById('agent-next').addEventListener('click', () => { MF.sugIdx++; window.MF_drawAgent && window.MF_drawAgent(); });
+document.getElementById('agent-use').addEventListener('click', () => {
+  const p = window.MF_currentPrompt;
+  if (!p) return;
+  vision.value = p;
+  startTimer();
+  document.getElementById('quicklog').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  vision.focus();
+});
+
+// Journal: pick an entry
+document.getElementById('mf-logs').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-key]');
+  if (!tr) return;
+  MF.entry[MF_me()] = tr.dataset.key;
+  window.MF_drawJournal && window.MF_drawJournal();
+});
+</script>
+
+<script>
+const fmtDate = d3.utcFormat('%b %-d, %Y');
+const fmtShort = d3.utcFormat('%b %-d');
+const fmtTime = d3.timeFormat('%b %-d, %-I:%M %p');
+const fmtInt = d3.format(',');
+const setText = (sel, v) => { const el = typeof sel === 'string' ? document.getElementById(sel) : sel; if (el) el.textContent = v; };
+const fail = (el) => { el.textContent = ''; const d = document.createElement('div'); d.className = 'mf-fail'; d.textContent = 'Failed to load'; el.appendChild(d); };
+const initials = (n) => String(n || '').split(' ').map(s => s[0] || '').join('').slice(0, 2).toUpperCase();
+const enc = (s) => encodeURIComponent(s);
+const bold = (parent, text) => { const b = document.createElement('b'); b.textContent = text; parent.appendChild(b); };
+
+const GAME_ICONS = {
+  trust: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  dominoes: '<rect x="3" y="4" width="8" height="16" rx="2"/><rect x="13" y="4" width="8" height="16" rx="2"/><path d="M3 12h8M13 12h8"/>',
+  plc: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+  fishbowl: '<circle cx="12" cy="13" r="8"/><path d="M8 5h8"/><path d="M9 14c1.5-2 4.5-2 6 0-1.5 2-4.5 2-6 0zM15 14l2-1.5v3z"/>',
+  efficacy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/>',
+  relay: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>'
+};
+
+let animated = false;
+
+const MF_render = () => {
+  const me = MF_me();
+  const profiles = dash.data('profiles'), cohort = dash.data('cohort'), games = dash.data('games');
+  const tp = dash.data('teacher_profile'), pi = dash.data('pair_insights'), kpis = dash.data('teacher_kpis');
+  const dc = dash.data('domain_counts');
+
+  // Viewing-as switcher: the three demo teachers who can sign in to the app.
+  const sel = document.getElementById('mf-teacher');
+  if (profiles.status === 'ok') {
+    const opts = profiles.data.filter(p => p.demo_login === true || p.demo_login === 'true');
+    if (sel.options.length !== opts.length) sel.replaceChildren(...opts.map(p => new Option(p.name + ' · ' + p.department, p.key)));
+    sel.value = me;
+  }
+
+  // Me
+  const meRow = profiles.status === 'ok' ? profiles.data.find(p => p.key === me) : null;
+  document.querySelectorAll('.mk-me').forEach(el => {
+    el.dataset.where = 'key=' + enc(me);
+    el.classList.toggle('dash-skeleton', profiles.status === 'loading');
+    el.textContent = meRow ? meRow[el.dataset.field] : '—';
+  });
+  setText('me-initials', meRow ? initials(meRow.name) : '—');
+  const tpRow = tp.status === 'ok' ? tp.data.find(r => r.teacher === me) : null;
+  document.querySelectorAll('.mk-tp').forEach(el => { el.dataset.where = 'teacher=' + enc(me); el.textContent = tpRow ? tpRow[el.dataset.field] : '—'; });
+
+  // Cohort
+  const c0 = cohort.status === 'ok' ? cohort.data[0] : null;
+  document.querySelectorAll('[data-source="cohort"]').forEach(el => { el.textContent = c0 ? c0[el.dataset.field] : '—'; });
+  const wb = document.getElementById('mf-weekbar');
+  if (c0) {
+    wb.setAttribute('aria-valuemax', c0.total_weeks); wb.setAttribute('aria-valuenow', c0.week);
+    wb.firstElementChild.style.width = (100 * Number(c0.week) / Number(c0.total_weeks)) + '%';
+  }
+
+  // KPIs
+  const k0 = kpis.status === 'ok' ? kpis.data.find(r => r.teacher === me) : null;
+  document.querySelectorAll('.mk-kpi').forEach(el => {
+    el.dataset.where = 'teacher=' + enc(me);
+    el.textContent = k0 ? fmtInt(k0[el.dataset.field]) : '—';
+    const box = el.closest('.mf-num'); if (box) box.classList.toggle('dash-skeleton', !k0 && kpis.status === 'loading');
+  });
+
+  // Takeaway: the domain this teacher has logged most
+  const top = document.getElementById('mf-top-domain');
+  const mine = dc.status === 'ok' ? dc.data.filter(r => r.teacher === me) : [];
+  const best = mine.slice().sort((a, b) => b.logs - a.logs)[0];
+  if (best && best.logs > 0) { top.dataset.where = `teacher=${enc(me)}&domain=${enc(best.domain)}`; top.textContent = best.label; }
+  else { delete top.dataset.where; top.textContent = '—'; }
+
+  drawMentors(pi, me);
+  drawWith(pi, me);
+  drawDomainChart(dc, me);
+  window.MF_drawJournal();
+  window.MF_drawDrafts();
+  drawGames(games);
+  window.MF_drawChat(); window.MF_drawAgent();
+  if (games.status === 'ok') animated = true;
+};
+
+function drawMentors(res, me) {
+  const box = document.getElementById('mf-mentors');
+  box.textContent = '';
+  if (res.status === 'error') return fail(box);
+  if (res.status !== 'ok') return;
+  const rows = res.data.filter(r => r.teacher === me);
+  if (!rows.length) { const p = document.createElement('p'); p.className = 'mf-muted'; p.textContent = 'No pairings this cycle yet.'; box.appendChild(p); return; }
+  rows.forEach(r => {
+    const li = document.createElement('li'); li.className = 'mf-mentor';
+    const av = document.createElement('span'); av.className = 'mf-avatar'; av.setAttribute('aria-hidden', 'true'); av.textContent = initials(r.partner);
+    const dot = document.createElement('span'); dot.className = 'mf-dot'; av.appendChild(dot);
+    const body = document.createElement('div'); body.style.minWidth = '0';
+    const h = document.createElement('h3'); h.textContent = r.partner;
+    const dept = document.createElement('span'); dept.className = 'mf-muted'; dept.textContent = r.department;
+    const role = document.createElement('p'); role.className = 'mf-role-line'; role.textContent = r.role + (r.focus ? ' Focus: ' + r.focus + '.' : '');
+    body.append(h, dept, role);
+    const contrast = r.my_archetype && r.their_archetype && r.my_archetype !== r.their_archetype;
+    if (r.shared || contrast) {
+      const p = document.createElement('p'); p.className = 'mf-insight';
+      if (r.shared) { p.append('You’re both strong in '); bold(p, r.shared); p.append(', so this is peer coaching rather than teaching.'); }
+      if (contrast) { p.append((r.shared ? ' ' : '') + 'You come at it as a '); bold(p, r.my_archetype); p.append(', they come at it as a '); bold(p, r.their_archetype); p.append('.'); }
+      body.appendChild(p);
+    }
+    li.append(av, body); box.appendChild(li);
+  });
+}
+
+function drawWith(res, me) {
+  const sel = document.getElementById('mf-with');
+  const rows = res.status === 'ok' ? res.data.filter(r => r.teacher === me) : [];
+  const key = rows.map(r => r.pairing_id).join('|');
+  if (sel.dataset.key === key) return;
+  sel.dataset.key = key;
+  sel.replaceChildren(...rows.map(r => { const o = new Option(r.partner, r.pairing_id); o.dataset.domain = r.domain || ''; return o; }));
+  MF_resetForm();
+  if (rows[0] && rows[0].domain) MF_selectDomain(rows[0].domain, true);
+  document.getElementById('mf-ql-status').textContent = rows.length ? 'Focus is pre-set from the pairing. Change the tag if the conversation was about something else.' : 'You aren’t in a pairing this cycle, so there’s nobody to log a conversation with yet.';
+}
+
+function drawDomainChart(res, me) {
+  const box = document.getElementById('mf-domain-chart');
+  box.textContent = '';
+  if (res.status === 'error' || dash.data('logs').status === 'error') return fail(box);
+  if (res.status !== 'ok') return;
+  const rows = res.data.filter(r => r.teacher === me);
+  const W = Math.max(260, box.clientWidth), rowH = 34, top = 4;
+  const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${rows.length * rowH + top + 4}`);
+  const probe = svg.append('text').attr('font-size', 'var(--cds-font-size-caption)');
+  let labW = 0; rows.forEach(r => { probe.text(r.label); labW = Math.max(labW, probe.node().getComputedTextLength()); });
+  probe.remove();
+  const left = labW + 12, right = 34;
+  const x = d3.scaleLinear([0, Math.max(1, d3.max(rows, r => r.logs) || 1)], [0, W - left - right]);
+  const max = d3.max(rows, r => r.logs);
+  const tip = d3.select(box).append('div').attr('class', 'mf-tooltip');
+  const g = svg.selectAll('g').data(rows).join('g').attr('transform', (d, i) => `translate(0,${top + i * rowH})`);
+  g.append('text').attr('x', left - 12).attr('y', rowH / 2).attr('dy', '0.35em').attr('text-anchor', 'end')
+    .attr('fill', 'var(--color-fg-muted)').attr('font-size', 'var(--cds-font-size-caption)').text(d => d.label);
+  g.append('rect').attr('x', left).attr('y', rowH / 2 - 9).attr('height', 18).attr('rx', 4)
+    .attr('width', d => Math.max(2, x(d.logs)))
+    .attr('fill', d => d.logs > 0 && d.logs === max ? 'var(--teal)' : 'var(--cds-chart-muted)')
+    .on('mousemove', (e, d) => {
+      const [mx, my] = d3.pointer(e, box);
+      tip.style('opacity', 1).html('');
+      tip.append('div').attr('class', 'k').text(d.label);
+      tip.append('div').text(`${fmtInt(d.logs)} ${d.logs === 1 ? 'conversation' : 'conversations'}`);
+      const tw = tip.node().offsetWidth;
+      tip.style('left', Math.min(box.clientWidth - tw, mx + 10) + 'px').style('top', (my - 40) + 'px');
+    })
+    .on('mouseleave', () => tip.style('opacity', 0));
+  g.append('text').attr('x', d => left + Math.max(2, x(d.logs)) + 6).attr('y', rowH / 2).attr('dy', '0.35em')
+    .attr('font-size', 'var(--cds-font-size-caption)').attr('fill', 'var(--color-fg)').style('font-variant-numeric', 'tabular-nums').text(d => fmtInt(d.logs));
+  box.setAttribute('aria-label', 'Conversations by domain: ' + rows.map(r => `${r.label} ${r.logs}`).join(', '));
+}
+
+window.MF_drawJournal = () => {
+  const me = MF_me();
+  const res = dash.data('journal');
+  const tb = document.querySelector('#mf-logs tbody');
+  const detail = document.getElementById('mf-entry');
+  tb.textContent = ''; detail.textContent = '';
+  if (res.status === 'error') { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 4; fail(td); return; }
+  if (res.status !== 'ok') return;
+  const rows = res.data.filter(r => r.teacher === me);
+  if (!rows.length) { const p = document.createElement('p'); p.className = 'mf-muted'; p.textContent = 'Nothing logged yet.'; detail.appendChild(p); return; }
+  const picked = MF.entry[me] && rows.some(r => `${enc(r.id)},${enc(r.teacher)}` === MF.entry[me]) ? MF.entry[me] : `${enc(rows[0].id)},${enc(rows[0].teacher)}`;
+  rows.forEach(r => {
+    const tr = tb.insertRow(); tr.dataset.key = `${enc(r.id)},${enc(r.teacher)}`;
+    tr.tabIndex = 0;
+    tr.setAttribute('aria-selected', String(tr.dataset.key === picked));
+    tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tr.click(); } });
+    tr.insertCell().textContent = fmtShort(new Date(String(r.date).slice(0, 10)));
+    const d = tr.insertCell(); d.className = 'mf-pill'; d.textContent = r.domain;
+    tr.insertCell().textContent = r.with;
+    tr.insertCell().textContent = r.vision;
+  });
+  const r = rows.find(x => `${enc(x.id)},${enc(x.teacher)}` === picked);
+  const head = document.createElement('div'); head.className = 'mf-entry-head';
+  const chip = document.createElement('span'); chip.className = 'mf-chip shared'; chip.textContent = MF_DOMAIN_LABEL[r.domain] || r.domain;
+  const who = document.createElement('span'); who.textContent = r.who + ' · ' + r.with;
+  const when = document.createElement('span'); when.className = 'mono'; when.style.marginLeft = 'auto'; when.textContent = fmtDate(new Date(String(r.date).slice(0, 10)));
+  head.append(chip, who, when);
+  const dl = document.createElement('dl');
+  [['Working toward', r.vision], ['Noticed working', r.strength_noted], ['More of', r.more_frequently], ['Less of', r.less_frequently], ['Swapping', r.resources]].forEach(([k, v]) => {
+    if (!v) return;
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v;
+    dl.append(dt, dd);
+  });
+  detail.append(head, dl);
+};
+
+window.MF_drawDrafts = () => {
+  const ul = document.getElementById('mf-drafts');
+  ul.textContent = '';
+  (MF.drafts[MF_me()] || []).forEach(dft => {
+    const li = document.createElement('li'); li.className = 'mf-draft';
+    const t = document.createElement('b'); t.className = 'mf-pill'; t.textContent = dft.domain;
+    const tx = document.createElement('span'); tx.className = 'mf-draft-text'; tx.textContent = dft.with + ' · ' + (dft.vision || dft.strength_noted);
+    const st = document.createElement('span'); st.className = 'mono'; st.textContent = dft.status === 'draft' ? 'Draft · this session' : 'Submitted · this session';
+    li.append(t, tx, st);
+    if (dft.status === 'draft') {
+      const b = document.createElement('button'); b.className = 'mf-btn'; b.type = 'button'; b.textContent = 'Submit this entry';
+      b.addEventListener('click', () => { dft.status = 'submitted'; window.MF_drawDrafts(); });
+      li.appendChild(b);
+    }
+    ul.appendChild(li);
+  });
+};
+
+function drawGames(res) {
+  const box = document.getElementById('mf-games');
+  box.textContent = '';
+  box.classList.toggle('dash-skeleton', res.status === 'loading');
+  if (res.status === 'error') return fail(box);
+  if (res.status !== 'ok') return;
+  res.data.forEach((gm, i) => {
+    const p = Math.max(0, Math.min(1, Number(gm.progress)));
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mf-game' + (animated ? '' : ' in');
+    b.style.animationDelay = (i * 50) + 'ms';
+    b.setAttribute('aria-label', `Launch ${gm.module}, ${d3.format('.0%')(p)} complete`);
+    const ico = document.createElement('span'); ico.className = 'mf-game-ico';
+    ico.innerHTML = `<svg class="mf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GAME_ICONS[gm.slug] || GAME_ICONS.plc}</svg>`;
+    const h = document.createElement('h3'); h.textContent = gm.module;
+    const f = document.createElement('p'); f.className = 'mf-muted'; f.textContent = gm.focus + ' · ' + gm.minutes + ' min';
+    const bar = document.createElement('div'); bar.className = 'mf-prog'; const fill = document.createElement('div'); fill.style.width = (p * 100) + '%'; bar.appendChild(fill);
+    const foot = document.createElement('div'); foot.className = 'mf-game-foot mf-muted';
+    const a = document.createElement('span'); a.textContent = p >= 1 ? 'Complete' : p > 0 ? d3.format('.0%')(p) + ' done' : 'Not started';
+    const s = document.createElement('span'); s.textContent = fmtInt(Number(gm.sessions)) + (Number(gm.sessions) === 1 ? ' session' : ' sessions');
+    foot.append(a, s);
+    b.append(ico, h, f, bar, foot);
+    box.appendChild(b);
+  });
+}
+
+window.MF_drawChat = () => {
+  const me = MF_me();
+  const box = document.getElementById('mf-msgs');
+  const tabs = document.getElementById('mf-chat-tabs');
+  const chat = dash.data('chat'), pi = dash.data('pair_insights'), profiles = dash.data('profiles');
+  box.textContent = ''; tabs.textContent = '';
+  if (chat.status === 'error') return fail(box);
+  if (chat.status !== 'ok' || pi.status !== 'ok') return;
+  const pairs = pi.data.filter(r => r.teacher === me);
+  if (!pairs.length) { setText('chat-who', '—'); return; }
+  if (!pairs.some(p => p.pairing_id === MF.chatPair[me])) MF.chatPair[me] = pairs[0].pairing_id;
+  const cur = pairs.find(p => p.pairing_id === MF.chatPair[me]);
+  pairs.forEach(p => {
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(p === cur)); b.textContent = p.partner.split(' ')[0];
+    b.addEventListener('click', () => { MF.chatPair[me] = p.pairing_id; window.MF_drawChat(); });
+    tabs.appendChild(b);
+  });
+  setText('chat-who', cur.partner);
+  const first = (k) => { const p = profiles.status === 'ok' ? profiles.data.find(x => x.key === k) : null; return p ? p.first_name : k; };
+  const msgs = chat.data.filter(m => m.pairing_id === cur.pairing_id).map(m => ({ at: m.at, text: m.text, mine: m.sender === me, who: first(m.sender) }))
+    .concat((MF.sentMsgs[cur.pairing_id] || []).map(m => ({ ...m, mine: true })));
+  msgs.forEach(m => {
+    const d = document.createElement('div'); d.className = 'mf-msg' + (m.mine ? ' me' : '');
+    const t = document.createElement('span'); t.textContent = m.text || '';
+    if (m.text) d.appendChild(t);
+    (m.files || []).forEach(f => {
+      if (/^image\//.test(f.type) && /^data:image\//.test(f.url)) {
+        const img = document.createElement('img'); img.className = 'mf-shot'; img.src = f.url; img.alt = f.name; d.appendChild(img);
+      }
+      const a = document.createElement('a'); a.className = 'mf-file'; a.href = f.url; a.download = f.name;
+      a.setAttribute('aria-label', `Download ${f.name}, ${window.MF_fmtSize(f.size)}`);
+      a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+      const nm = document.createElement('span'); nm.textContent = f.name;
+      const sz = document.createElement('small'); sz.textContent = window.MF_fmtSize(f.size);
+      a.append(nm, sz); d.appendChild(a);
+    });
+    const tm = document.createElement('time'); tm.dateTime = m.at; tm.textContent = (m.mine ? 'You' : m.who) + ' · ' + fmtTime(new Date(m.at));
+    d.append(tm); box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+};
+
+window.MF_drawAgent = () => {
+  const box = document.getElementById('mf-agent');
+  const s = dash.data('suggestions');
+  box.textContent = '';
+  window.MF_currentPrompt = null;
+  if (s.status === 'error') return fail(box);
+  const rows = s.status === 'ok' ? s.data.filter(r => r.teacher === MF_me()) : [];
+  if (!rows.length) { setText('agent-count', ''); return; }
+  const r = rows[MF.sugIdx % rows.length];
+  setText('agent-count', `${(MF.sugIdx % rows.length) + 1} of ${rows.length}`);
+  const lab = document.createElement('p'); lab.className = 'mf-muted'; lab.textContent = 'Suggested focus';
+  const f = document.createElement('p'); f.className = 'mf-focus'; f.textContent = r.focus;
+  const w = document.createElement('p'); w.className = 'mf-muted'; w.textContent = r.why;
+  const q = document.createElement('p'); q.className = 'mf-quote'; q.textContent = r.prompt;
+  const m = document.createElement('p'); m.className = 'mf-muted'; m.textContent = 'Try it with: ' + r.module;
+  box.append(lab, f, w, q, m);
+  window.MF_currentPrompt = r.prompt;
+};
+
+dash.onData(MF_render);
+</script>
+
+</template>
+</body>
+</html>

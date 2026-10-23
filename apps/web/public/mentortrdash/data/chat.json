@@ -1,0 +1,86 @@
+[
+ {
+  "id": "c1",
+  "pairing_id": "p-liam-ava",
+  "sender": "ava",
+  "at": "2026-09-25T14:05:00Z",
+  "text": "Discussion-protocol one-pager is in your mailbox."
+ },
+ {
+  "id": "c2",
+  "pairing_id": "p-liam-ava",
+  "sender": "liam",
+  "at": "2026-09-25T14:20:00Z",
+  "text": "Thank you! Ratios unit map coming your way Friday."
+ },
+ {
+  "id": "c3",
+  "pairing_id": "p-mia-liam",
+  "sender": "mia",
+  "at": "2026-10-08T21:10:00Z",
+  "text": "Here's the checkpoint slide. Try it right after the first practice set."
+ },
+ {
+  "id": "c4",
+  "pairing_id": "p-mia-liam",
+  "sender": "liam",
+  "at": "2026-10-09T12:02:00Z",
+  "text": "Using it Thursday. Objective goes on the board too."
+ },
+ {
+  "id": "c5",
+  "pairing_id": "p-avery-noah",
+  "sender": "noah",
+  "at": "2026-09-30T15:40:00Z",
+  "text": "Objective-writing frame attached. Swap for the pacing calendar?"
+ },
+ {
+  "id": "c6",
+  "pairing_id": "p-avery-noah",
+  "sender": "avery",
+  "at": "2026-09-30T16:01:00Z",
+  "text": "Deal. Sending it now."
+ },
+ {
+  "id": "c7",
+  "pairing_id": "p-jack-avery",
+  "sender": "avery",
+  "at": "2026-10-14T13:15:00Z",
+  "text": "Exit-ticket template is in the shared drive."
+ },
+ {
+  "id": "c8",
+  "pairing_id": "p-jack-avery",
+  "sender": "jack",
+  "at": "2026-10-14T13:30:00Z",
+  "text": "Great. Free 4th period to walk through the revision cycle?"
+ },
+ {
+  "id": "c9",
+  "pairing_id": "p-harper-mason",
+  "sender": "mason",
+  "at": "2026-09-23T18:00:00Z",
+  "text": "Call log format attached. Two lines, every call."
+ },
+ {
+  "id": "c10",
+  "pairing_id": "p-harper-mason",
+  "sender": "harper",
+  "at": "2026-09-23T18:25:00Z",
+  "text": "Love it. Repair script coming tomorrow."
+ },
+ {
+  "id": "c11",
+  "pairing_id": "p-logan-harper",
+  "sender": "logan",
+  "at": "2026-10-16T12:45:00Z",
+  "text": "Tried your door check-in today. Huge difference with 3rd period."
+ },
+ {
+  "id": "c12",
+  "pairing_id": "p-logan-harper",
+  "sender": "harper",
+  "at": "2026-10-16T13:05:00Z",
+  "text": "So glad! I'll bring the September norms activity Monday."
+ }
+]

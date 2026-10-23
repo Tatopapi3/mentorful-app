@@ -16,7 +16,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except static assets, the favicon and the artifact page file.
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|dashboard-v2/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)",
+    // Everything except static assets, the favicon and the artifact page files.
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|dashboard-v2/|mentortrdash/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)",
   ],
 };
