@@ -1,6 +1,7 @@
 import { lookBase, lookOf } from "@/lib/admin/look";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
+import { TrendsSections, loadTrendsData } from "@/components/admin/trends-view";
 import Link from "next/link";
 import { CultureBubbles } from "@/components/admin/diagrams";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
@@ -30,6 +31,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
   const actions = buildActions(facts, base).filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);
   const findings = snap.stats ? buildFindings(snap.stats) : null;
+  const trends = await loadTrendsData(admin, snap);
   const scan = snap.scan;
   const early = scan ? scan.n < REPRESENTATIVE_SHARE * facts.faculty : false;
 
@@ -93,6 +95,10 @@ export default async function InsightsPage({ params: routeParams, searchParams }
       )}
 
       <ParticipationPanel skin={look} snap={snap} />
+
+      <div id="trends" style={{ scrollMarginTop: 96 }}>
+        <TrendsSections skin={look} snap={snap} data={trends} withHeading />
+      </div>
 
       <div className="ev-lead-grid" style={{ marginTop: 22, alignItems: "start" }}>
         <section className="ev-panel">

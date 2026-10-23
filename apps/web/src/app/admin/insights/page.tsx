@@ -1,5 +1,6 @@
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
+import { TrendsSections, loadTrendsData } from "@/components/admin/trends-view";
 import Link from "next/link";
 import { CultureBubbles } from "@/components/admin/diagrams";
 import NickDimensionBars from "@/components/nick/dimension-bars";
@@ -34,6 +35,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const domains = Object.entries(facts.domainCounts).sort((a, b) => b[1] - a[1]);
   const maxDomain = Math.max(1, ...domains.map(([, n]) => n));
   const maxLink = Math.max(1, ...conn.links.map((l) => l.count));
+  const trends = await loadTrendsData(admin, snap);
 
   return (
     <NickPage eyebrow={`Insights · ${snap.cycle?.name ?? "No cycle"}`} title="What it shows, and where to head" sub="School-wide patterns from the Culture Scan and from who is paired. Groups are never shown, and no individual’s answers can be traced.">
@@ -82,6 +84,10 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       )}
 
       <ParticipationPanel skin="nick" snap={snap} />
+
+      <div id="trends" style={{ scrollMarginTop: 24 }}>
+        <TrendsSections skin="nick" snap={snap} data={trends} withHeading />
+      </div>
 
       <div className="nk-two">
         <section className="adm-card">
