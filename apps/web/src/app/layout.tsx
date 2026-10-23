@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lora, Public_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import AuthReturnCatcher from "@/components/AuthReturnCatcher";
 
 // Type system ported from the app-screens prototype: Lora for headings and the
 // wordmark, Public Sans for body, JetBrains Mono for small uppercase labels.
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body
         className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <AuthReturnCatcher />
         {children}
       </body>
     </html>

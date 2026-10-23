@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { checkSignIn } from "@/lib/auth/actions";
 import SiteHeader from "@/components/SiteHeader";
+
+// Set by the auth callback and the proxy (src/lib/supabase/proxy.ts).
+const REDIRECT_ERRORS: Record<string, string> = {
+  auth: "That sign-in link didn't work. It may have expired or already been used. Send a new one.",
+  not_allowed: "That email isn't authorized to sign in here.",
+};
 
 /**
  * Login and check-your-email screens, ported from the app-screens prototype.
@@ -12,22 +19,33 @@ import SiteHeader from "@/components/SiteHeader";
  * All other copy is verbatim, except the address on the sent screen, which is
  * the one the person actually typed rather than the prototype's placeholder.
  */
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; reason?: string }>;
+}) {
+  const params = use(searchParams);
+  const known = REDIRECT_ERRORS[params.error ?? ""];
+  // Supabase's own reason (e.g. "Email link is invalid or has expired"), when the callback had one.
+  const redirectError = known ? (params.reason ? `${known} (${params.reason})` : known) : null;
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(redirectError);
   // Separate from `status` so a failed resend doesn't drop the person back to
   // the form — they still have a valid link from the first send.
   const [resend, setResend] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  async function sendLink(address: string) {
+
+  async function sendLink(address: string, existingOnly: boolean) {
     const supabase = createClient();
     return supabase.auth.signInWithOtp({
       email: address,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // With an allowlist on, never create an account from this form.
+        shouldCreateUser: !existingOnly,
       },
     });
   }
@@ -37,7 +55,14 @@ export default function LoginPage() {
     setStatus("sending");
     setError(null);
 
-    const { error } = await sendLink(email);
+    const check = await checkSignIn(email);
+    if (!check.allowed) {
+      setStatus("error");
+      setError(REDIRECT_ERRORS.not_allowed);
+      return;
+    }
+
+    const { error } = await sendLink(email, check.existingOnly);
 
     if (error) {
       setStatus("error");
@@ -51,7 +76,8 @@ export default function LoginPage() {
 
   async function handleResend() {
     setResend("sending");
-    const { error } = await sendLink(email);
+    const check = await checkSignIn(email);
+    const { error } = await sendLink(email, check.existingOnly);
     setResend(error ? "error" : "sent");
   }
 
@@ -158,6 +184,20 @@ export default function LoginPage() {
               </button>
               {error && <p className="auth-error">{error}</p>}
             </form>
+            {process.env.NODE_ENV === "development" ? (
+              // Local only: /auth/dev-login refuses outside `next dev` on localhost.
+              <form method="post" action="/auth/dev-login" style={{ marginTop: 10 }}>
+                <input type="hidden" name="email" value={email} />
+                <button
+                  type="submit"
+                  className="btn btn-ghost"
+                  style={{ width: "100%" }}
+                  disabled={!email}
+                >
+                  Sign in without email (localhost)
+                </button>
+              </form>
+            ) : null}
             <p className="help">
               {"Your school set up your account, so there's nothing to create. Can't get in? "}
               <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>
