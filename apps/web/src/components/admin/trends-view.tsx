@@ -1,8 +1,9 @@
 import { HeatGrid, MonthBars, Sparkline, WeekHeat } from "@/components/admin/charts";
 import { AdminFrame, CycleSwitcher, Muted, Panel, basePath, type Skin } from "@/components/admin/kit";
 import { loadActivity, loadCycleTrend } from "@/lib/admin/trend-data";
-import { requireAdmin } from "@/lib/admin/require";
+import { requireAdmin, type AdminContext } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import type { AdminSnapshot } from "@/lib/admin/facts";
 import { departmentMatrix } from "@/lib/admin/network";
 import { GroupSummaryRoot } from "@/components/admin/group-summary";
 import { groupSummaries } from "@/lib/admin/summaries";
@@ -47,13 +48,19 @@ function TrendCard({ rows, k, label, unit, note }: { rows: CycleMetrics[]; k: Me
 // Trends: how the numbers have moved cycle by cycle, and when and where conversations happen. Pairings are read like
 // the rest of the dashboard. Conversations are pair-private, so they arrive only as counts from a database function
 // (script 016), with anything under 5 hidden and no department under 5 teachers shown.
-export default async function TrendsView({ skin, searchParams }: { skin: Skin; searchParams: Params }) {
-  const admin = await requireAdmin();
-  if (!admin) return null;
-  const path = `${basePath(skin)}/trends`;
-  const cycleParam = typeof searchParams.cycle === "string" ? searchParams.cycle : undefined;
-  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
+// The panels live in one component so the Insights page and the stand-alone Trends page show exactly the same thing.
+export type TrendsData = {
+  rows: CycleMetrics[];
+  raw: Awaited<ReturnType<typeof loadActivity>>;
+};
+
+export async function loadTrendsData(admin: AdminContext, snap: AdminSnapshot): Promise<TrendsData> {
   const [rows, raw] = await Promise.all([loadCycleTrend(admin), loadActivity(admin, snap.cycle?.id ?? null)]);
+  return { rows, raw };
+}
+
+export function TrendsSections({ skin, snap, data, withHeading }: { skin: Skin; snap: AdminSnapshot; data: TrendsData; withHeading?: boolean }) {
+  const { rows, raw } = data;
   const activity = raw ? buildActivity(raw) : null;
   const sentence = activity ? activitySentence(activity) : null;
   const weekly = raw ? buildWeekly(raw) : null;
@@ -61,9 +68,12 @@ export default async function TrendsView({ skin, searchParams }: { skin: Skin; s
   const summaries = groupSummaries(snap, matrix, snap.participation ?? null, activity);
 
   return (
-    <AdminFrame skin={skin} eyebrow={`Trends · ${snap.cycle?.name ?? "No cycle"}`} title="How things are changing" sub={rows.length ? trendSentence(rows) : "Trends appear once the school has a cycle with pairs."}>
-      <GroupSummaryRoot summaries={summaries}>
-      <CycleSwitcher skin={skin} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={path} />
+    <GroupSummaryRoot summaries={summaries}>
+      {withHeading && (
+        <Panel skin={skin} title="How things are changing" eyebrow="Trends">
+          <Muted skin={skin}>{rows.length ? trendSentence(rows) : "Trends appear once the school has a cycle with pairs."}</Muted>
+        </Panel>
+      )}
       {rows.length > 0 && (
         <Panel skin={skin} title="Cycle by cycle" eyebrow="Progress" count={`${rows.length} ${rows.length === 1 ? "cycle" : "cycles"}`}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
@@ -100,7 +110,23 @@ export default async function TrendsView({ skin, searchParams }: { skin: Skin; s
           <Muted skin={skin}>Each column is a week (it starts on the Monday). Darker means more conversations. A dot means fewer than 5, hidden on purpose. Click a department for its summary.</Muted>
         </Panel>
       )}
-      </GroupSummaryRoot>
+    </GroupSummaryRoot>
+  );
+}
+
+// The stand-alone Trends page, still reachable at its own address. It is no longer a tab: Trends sits inside Insights.
+export default async function TrendsView({ skin, searchParams }: { skin: Skin; searchParams: Params }) {
+  const admin = await requireAdmin();
+  if (!admin) return null;
+  const path = `${basePath(skin)}/trends`;
+  const cycleParam = typeof searchParams.cycle === "string" ? searchParams.cycle : undefined;
+  const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
+  const data = await loadTrendsData(admin, snap);
+
+  return (
+    <AdminFrame skin={skin} eyebrow={`Trends · ${snap.cycle?.name ?? "No cycle"}`} title="How things are changing" sub={data.rows.length ? trendSentence(data.rows) : "Trends appear once the school has a cycle with pairs."}>
+      <CycleSwitcher skin={skin} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={path} />
+      <TrendsSections skin={skin} snap={snap} data={data} />
     </AdminFrame>
   );
 }
