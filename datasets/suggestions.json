@@ -1,0 +1,13 @@
+{
+  "description": "Focus suggestions written by Claude for each demo teacher from their journal entries, standing in for the Gemini pairing agent's output.",
+  "source": {
+    "kind": "file",
+    "name": "suggestions.json",
+    "url": "/_blob/8cb593162547199d9d9ff184e65c2017"
+  },
+  "title": "Sample agent suggestions",
+  "updated": {
+    "at": "2026-10-22T17:45:00Z",
+    "by": "Claude (sample data)"
+  }
+}

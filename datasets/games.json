@@ -1,0 +1,13 @@
+{
+  "description": "Sample rows written by Claude: the six pedagogy game modules with your pair's progress.",
+  "source": {
+    "kind": "file",
+    "name": "games.json",
+    "url": "/_blob/54b4a4f2fa12d5acf783f6c1a1b1027f"
+  },
+  "title": "Sample games hub progress",
+  "updated": {
+    "at": "2026-10-22T16:25:00Z",
+    "by": "Claude (sample data)"
+  }
+}

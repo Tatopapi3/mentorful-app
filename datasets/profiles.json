@@ -1,0 +1,13 @@
+{
+  "description": "The app's nine demo-visible teachers: names, styles, archetypes and quotes from mentorful-app scripts/013_demo_enrichment.sql. Co-mentor departments and every strength tag are assumed, chosen to fit the app's tag-to-domain and teaching-style rules.",
+  "source": {
+    "kind": "file",
+    "name": "profiles.json",
+    "url": "/_blob/e041a697c8c11679117dc322a7af80b5"
+  },
+  "title": "Sample demo teachers",
+  "updated": {
+    "at": "2026-10-22T17:45:00Z",
+    "by": "Claude (from mentorful-app demo data)"
+  }
+}

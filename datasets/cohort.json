@@ -1,0 +1,13 @@
+{
+  "description": "Sample row written by Claude: cohort name, current week and pairing start.",
+  "source": {
+    "kind": "file",
+    "name": "cohort.json",
+    "url": "/_blob/9ad9a098771d768b8af2c40b780c739a"
+  },
+  "title": "Sample cohort calendar",
+  "updated": {
+    "at": "2026-10-22T16:25:00Z",
+    "by": "Claude (sample data)"
+  }
+}
