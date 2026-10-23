@@ -163,6 +163,31 @@ export function DeckToolbar({ count }: { count: number }) {
     }
   }
 
+  async function downloadPptx() {
+    setBusy(true);
+    setError(null);
+    try {
+      // Loaded on demand so the PowerPoint writer never ships in the page bundle.
+      const { default: PptxGenJS } = await import("pptxgenjs");
+      const pptx = new PptxGenJS();
+      pptx.layout = "LAYOUT_WIDE";
+      pptx.title = "Culture Scan deck";
+      for (let i = 1; i <= count; i++) {
+        setProgress(`Rendering slide ${i} of ${count}…`);
+        const canvas = await rasterize(i, PNG_SCALE);
+        const data = canvas.toDataURL("image/jpeg", 0.92).replace(/^data:/, "");
+        pptx.addSlide().addImage({ data, x: 0, y: 0, w: 13.333, h: 7.5 });
+      }
+      setProgress("Writing PowerPoint…");
+      await pptx.writeFile({ fileName: "culture-scan-deck.pptx" });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+      setProgress(null);
+    }
+  }
+
   async function downloadAllPng() {
     setBusy(true);
     setError(null);
@@ -189,6 +214,9 @@ export function DeckToolbar({ count }: { count: number }) {
         onClick={downloadPdf}
       >
         Download deck as PDF
+      </button>
+      <button type="button" style={{ ...btn, padding: "8px 16px", fontWeight: 600 }} disabled={busy} onClick={downloadPptx}>
+        Download deck as PowerPoint
       </button>
       <button type="button" style={{ ...btn, padding: "8px 16px" }} disabled={busy} onClick={downloadAllPng}>
         Download all PNGs
