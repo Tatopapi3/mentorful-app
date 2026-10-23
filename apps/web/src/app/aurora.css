@@ -86,13 +86,13 @@
 .ev :focus-visible { outline: 2px solid var(--ev-teal-deep); outline-offset: 2px; border-radius: 6px; }
 
 /* floating bar (.ev-topbar; .ev-bar is the bar-chart row) */
-.ev-topbar { position: sticky; top: 12px; z-index: 40; margin: 12px auto 0; width: min(1240px, calc(100% - 24px)); display: flex; align-items: center; gap: 18px; padding: 8px 10px 8px 20px; background: var(--ev-panel); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border: 1px solid var(--ev-line); border-radius: 999px; box-shadow: var(--ev-shadow); }
+.ev-topbar { position: sticky; top: 12px; z-index: 40; margin: 12px auto 0; width: min(1240px, calc(100% - 24px)); display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 20px; background: var(--ev-panel); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border: 1px solid var(--ev-line); border-radius: 999px; box-shadow: var(--ev-shadow); }
 .ev-brand { flex: none; font: 600 20px var(--ev-display); letter-spacing: -0.05em; white-space: nowrap; color: var(--ev-ink); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
 .ev-brand .mark { width: 24px; height: 24px; border-radius: 8px; background: var(--ev-grad); display: grid; place-items: center; color: #fff; font-size: 13px; box-shadow: 0 4px 14px -4px rgba(79, 70, 229, 0.6); }
 .ev-school { display: none; }
-.ev-nav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1 1 0; min-width: 0; width: 0; }
+.ev-nav { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; flex: 1 1 0; min-width: 0; width: 0; }
 .ev-nav::-webkit-scrollbar { display: none; }
-.ev-nav a { display: inline-flex; align-items: center; white-space: nowrap; min-height: 36px; padding: 6px 13px; border-radius: 999px; color: var(--ev-muted); font-size: 13px; font-weight: 500; text-decoration: none; transition: background 0.2s, color 0.2s; }
+.ev-nav a { display: inline-flex; align-items: center; white-space: nowrap; min-height: 36px; padding: 6px 10px; border-radius: 999px; color: var(--ev-muted); font-size: 13px; font-weight: 500; text-decoration: none; transition: background 0.2s, color 0.2s; }
 .ev-nav a:hover { color: var(--ev-ink); background: var(--ev-soft); }
 .ev-nav a[aria-current="page"] { color: var(--ev-on-grad); background: var(--ev-grad); box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.7); }
 .ev-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none; }
