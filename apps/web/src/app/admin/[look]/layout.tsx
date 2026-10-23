@@ -18,7 +18,6 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/overview`, label: "Overview" },
     { href: `${base}/constellation`, label: "Constellation" },
     { href: `${base}/insights`, label: "Insights" },
-    { href: `${base}/map`, label: "Faculty map" },
     { href: `${base}/reports`, label: "Reports" },
   ];
   const ACTIONS = [
@@ -29,7 +28,6 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/constellation`, label: "See the faculty as a constellation", hint: "Constellation" },
     { href: `${base}/insights`, label: "Read the insights", hint: "Insights" },
     { href: `${base}/insights#trends`, label: "See how things are changing", hint: "Insights" },
-    { href: `${base}/map`, label: "Open the faculty map", hint: "Faculty map" },
     { href: `${base}/reports`, label: "Download slides, PDF and reports", hint: "Reports" },
     { href: `${base}/summary`, label: "Open the board summary", hint: "Present" },
     { href: `${base}/privacy`, label: "What leadership can and can't see", hint: "Trust" },
