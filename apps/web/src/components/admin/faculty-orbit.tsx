@@ -61,7 +61,7 @@ export function FacultyOrbit({ planets, lenses, directions }: { planets: Planet[
           const c = colour(p.dept);
           return (
             <g key={p.dept} className="fo-planet" style={{ transform: `translate(${pos.x}px, ${pos.y}px)`, cursor: "pointer" }} role="button" tabIndex={0} aria-label={`${p.dept}, ${p.teachers} teachers, ${p.notes[lens]}. Open summary.`} onClick={() => open?.(p.dept)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), open?.(p.dept))}>
-              <g className="fo-float" style={{ "--dx": `${5 + ((i * 3) % 5)}px`, "--dy": `${4 + ((i * 2) % 4)}px`, "--d": `${7 + ((i * 17) % 40) / 10}s`, "--delay": `${-1.3 * i}s` } as React.CSSProperties}>
+              <g className="fo-float" style={{ "--dx": `${8 + ((i * 3) % 6)}px`, "--dy": `${6 + ((i * 2) % 5)}px`, "--d": `${7 + ((i * 17) % 40) / 10}s`, "--delay": `${-1.3 * i}s` } as React.CSSProperties}>
                 <circle className="fo-body" r={r} fill={c} fillOpacity={0.9} stroke={c} />
                 <text y={4} textAnchor="middle" fontSize={12} fontWeight={600} fill="#fff">{p.teachers}</text>
                 <text y={r + 15} textAnchor="middle" fontSize={13} fontWeight={600} fill={ink}>{p.dept}</text>
