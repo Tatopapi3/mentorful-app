@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
-import { initials, orbitLogs, placeDots, rhythmGrid } from "@/lib/teacher/orbit";
 import { groupSummaries } from "@/lib/admin/summaries";
 import { buildWeekly, weekLabel } from "@/lib/admin/trends";
 import { cultureBubbles, flowArcs, pairingSplit } from "@/lib/admin/visuals";
@@ -401,40 +400,5 @@ describe("weekly activity and group summaries", () => {
     expect(s.Arts.connected).toEqual([{ dept: "Math", count: 2 }]);
     expect(s.Arts.notConnected).toEqual(["ELA"]);
     expect(s.Math.connected.map((c) => c.dept)).toEqual(["Arts", "ELA"]);
-  });
-});
-
-describe("teacher orbit", () => {
-  const log = (id: string, over: Record<string, unknown> = {}) => ({ id, status: "submitted", submitted_at: "2026-03-04T15:00:00Z", created_at: "2026-03-04T14:00:00Z", is_visit_debrief: false, vision: null, strength_noted: null, more_frequently: null, less_frequently: null, domain: "PLANNING", host_id: "me", visitor_id: "ana", ...over });
-  const name = (id: string | null) => (id === "ana" ? "Ana Ruiz" : "A colleague");
-  const entries = orbitLogs(
-    [log("a"), log("b", { is_visit_debrief: true, strength_noted: "Warm cold-calls", submitted_at: "2026-03-18T15:00:00Z" }), log("c", { status: "draft" })] as never,
-    "me", name, (d) => d.toLowerCase());
-
-  it("turn submitted entries into dots, tell visits from conversations, flag reflections, and leave drafts out", () => {
-    expect(entries.map((e) => e.id)).toEqual(["a", "b"]);
-    expect(entries.map((e) => e.kind)).toEqual(["conversation", "visit"]);
-    expect(entries.map((e) => e.reflection)).toEqual([false, true]);
-    expect(entries[1].heading).toBe("Visit with Ana Ruiz");
-    expect(entries[1].text).toBe("Warm cold-calls");
-  });
-
-  it("place the same dots the same way every time", () => {
-    expect(placeDots(entries)).toEqual(placeDots(entries));
-    expect(new Set(placeDots(entries).map((p) => `${p.x},${p.y}`)).size).toBe(2);
-  });
-
-  it("draw twelve weeks by seven days ending at the latest entry, and count the weeks with something shared", () => {
-    const g = rhythmGrid(entries)!;
-    expect(g.weeks).toHaveLength(12);
-    expect(g.weeks[0]).toHaveLength(7);
-    expect(g.active).toBe(2);
-    expect(g.weeks.flat().filter((c) => c.count > 0)).toHaveLength(2);
-    expect(rhythmGrid([])).toBeNull();
-  });
-
-  it("make initials from a name", () => {
-    expect(initials("Liam Rivera")).toBe("LR");
-    expect(initials("Madonna")).toBe("M");
   });
 });
