@@ -19,7 +19,8 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/constellation`, label: "Constellation" },
     { href: `${base}/insights`, label: "Insights" },
     { href: `${base}/trends`, label: "Trends" },
-    { href: `${base}/map`, label: "Faculty map" },
+    { href: `${base}/map`, label: "Map" },
+    { href: `${base}/reports`, label: "Reports" },
   ];
   const ACTIONS = [
     { href: `${base}/pulse`, label: "See where the program stands", hint: "Pulse" },
@@ -30,6 +31,7 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/insights`, label: "Read the insights", hint: "Insights" },
     { href: `${base}/trends`, label: "See how things are changing", hint: "Trends" },
     { href: `${base}/map`, label: "Open the faculty map", hint: "Faculty map" },
+    { href: `${base}/reports`, label: "Download slides, PDF and reports", hint: "Reports" },
     { href: `${base}/summary`, label: "Open the board summary", hint: "Present" },
     { href: `${base}/privacy`, label: "What leadership can and can't see", hint: "Trust" },
     ...(lookEnabled("nick") ? [{ href: "/admin/pulse", label: "Switch to Nick’s look", hint: "Look" }] : []),
@@ -47,7 +49,7 @@ export default async function LookAdminLayout({ children, params }: { children: 
   }
   const { data: school } = await admin.supabase.from("schools").select("name").eq("id", admin.schoolId).maybeSingle();
   return (
-    <AuroraChrome look={look} schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<><PresentButton items={NAV} /><SwitchLook current={look} /></>}>
+    <AuroraChrome look={look} schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<><PresentButton items={NAV.filter((n) => !n.href.endsWith("/reports"))} /><SwitchLook current={look} /></>}>
       {children}
     </AuroraChrome>
   );
