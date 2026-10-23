@@ -13,6 +13,7 @@ const TABS = [
   { href: "/admin/insights", label: "Insights" },
   { href: "/admin/trends", label: "Trends" },
   { href: "/admin/map", label: "Faculty map" },
+  { href: "/admin/reports", label: "Reports" },
 ];
 
 /** The leadership tabs in Nick's look, with a switch to the Aurora look on the same tab. */

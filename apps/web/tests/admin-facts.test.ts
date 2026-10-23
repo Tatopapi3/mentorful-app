@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections, headlineSentence, type AdminSnapshot } from "@/lib/admin/facts";
+import { buildDeck } from "@/lib/admin/deck";
 import { facultyOrbit, farness, orbitDirections } from "@/lib/admin/faculty-orbit";
 import { groupSummaries } from "@/lib/admin/summaries";
 import { buildWeekly, weekLabel } from "@/lib/admin/trends";
@@ -442,5 +443,26 @@ describe("faculty orbit", () => {
     expect(conn.some((d) => d.title === "Learn from Math")).toBe(true);
     expect(orbitDirections(o.planets, "participation")[0].title).toBe("Check in with Arts");
     expect(orbitDirections(o.planets, "growth").some((d) => d.title === "Math grew the most")).toBe(true);
+  });
+});
+
+describe("leadership deck", () => {
+  const dept = (d: string, n: number) => Array.from({ length: n }, (_, i) => ({ id: `${d}${i}`, name: `Teacher ${d}${i}`, dept: d }));
+  const people = [...dept("Arts", 5), ...dept("ELA", 5), ...dept("Math", 6), ...dept("PE", 3)];
+  const pr = (a: string, b: string) => ({ id: a + b, a, b, domain: "classroom", tag: null });
+  const snap = { school: { name: "Test School", priority: null }, cycle: { id: "c", name: "Fall", status: "complete" }, cycles: [], people, pairs: [pr("Math0", "ELA0"), pr("Math1", "Arts0"), pr("Math2", "Math3")], requests: [], conversations: 3, scan: null } as never;
+  const deck = buildDeck(snap, null, new Date("2026-10-23T12:00:00Z"));
+  const everything = JSON.stringify(deck);
+
+  it("make a cover, the numbers, the faculty table, next steps and privacy", () => {
+    expect(deck.slides[0].cover).toBe(true);
+    expect(deck.slides.map((s) => s.kicker)).toEqual(expect.arrayContaining(["Where connection stands", "Faculty connection", "Where to head next", "Privacy"]));
+  });
+
+  it("leave out a department under 5 and never name a person", () => {
+    const table = deck.slides.find((s) => s.kicker === "Faculty connection")!.blocks.find((b) => b.kind === "table");
+    expect(table && table.kind === "table" ? table.rows.map((r) => r[0]).sort() : []).toEqual(["Arts", "ELA", "Math"]);
+    expect(everything).not.toContain("Teacher ");
+    expect(everything).toContain("1 group with fewer than 5 teachers is hidden");
   });
 });
