@@ -1,0 +1,13 @@
+{
+  "description": "The six demo journal entries, word for word with their real ids, from mentorful-app scripts/013_demo_enrichment.sql. Domains and dates are assumed.",
+  "source": {
+    "kind": "file",
+    "name": "logs.json",
+    "url": "/_blob/442f9408640d6e8b8552c2dcd3fd4e5a"
+  },
+  "title": "Sample conversation logs",
+  "updated": {
+    "at": "2026-10-22T17:45:00Z",
+    "by": "Claude (from mentorful-app demo data)"
+  }
+}

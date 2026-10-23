@@ -1,0 +1,13 @@
+{
+  "description": "Messages written by Claude for each demo pairing, based on the resources each journal entry says the pair is swapping.",
+  "source": {
+    "kind": "file",
+    "name": "chat.json",
+    "url": "/_blob/7babdf536f6655ad444bfcbd4811e9c7"
+  },
+  "title": "Sample pair chat",
+  "updated": {
+    "at": "2026-10-22T17:45:00Z",
+    "by": "Claude (sample data)"
+  }
+}

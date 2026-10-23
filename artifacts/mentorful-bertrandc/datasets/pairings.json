@@ -1,0 +1,13 @@
+{
+  "description": "Who visits whom, from the 'X observed Y' logs in mentorful-app scripts/013_demo_enrichment.sql. Each pairing's focus domain is assumed from what its log is about.",
+  "source": {
+    "kind": "file",
+    "name": "pairings.json",
+    "url": "/_blob/899ebffb4c32c70e97f3618adf4aba93"
+  },
+  "title": "Sample co-mentor pairings",
+  "updated": {
+    "at": "2026-10-22T17:45:00Z",
+    "by": "Claude (from mentorful-app demo data)"
+  }
+}
