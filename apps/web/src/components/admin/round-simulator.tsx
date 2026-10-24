@@ -153,7 +153,7 @@ export default function RoundSimulator({ skin, people, pairs, requests, cycleId,
 
       {mode === "finish" && asked.length > 0 && (
         <label style={{ display: "flex", gap: 8, alignItems: "center", margin: "0 0 14px", fontSize: 14 }}>
-          <input type="checkbox" checked={countRequests} onChange={(e) => reset("finish", e.target.checked)} />
+          <input type="checkbox" checked={countRequests} onChange={(e) => reset("finish", e.target.checked)} style={{ accentColor: tone.teal }} />
           Count the {asked.length} waiting {asked.length === 1 ? "request" : "requests"} as approved
         </label>
       )}

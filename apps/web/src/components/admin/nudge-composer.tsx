@@ -27,13 +27,13 @@ export default function NudgeComposer({ skin, cooling, cycleId, back }: { skin: 
         <legend style={{ fontSize: 13, marginBottom: 6, color: "var(--ev-muted, var(--muted))" }}>Who is it for?</legend>
         {(Object.keys(AUDIENCE_LABEL) as NudgeAudience[]).map((a) => (
           <label key={a} style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 14 }}>
-            <input type="radio" name="audience" value={a} checked={audience === a} onChange={() => pick(a)} />
+            <input type="radio" name="audience" value={a} checked={audience === a} onChange={() => pick(a)} style={{ accentColor: "var(--ev-teal, var(--teal-dk, #0f766e))" }} />
             {AUDIENCE_LABEL[a]} ({countLabel(audienceSize(cooling, a))})
           </label>
         ))}
       </fieldset>
-      <label style={{ display: "grid", gap: 6, fontSize: 13, color: "var(--ev-muted, var(--muted))" }}>
-        Message to the pairs
+      <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
+        <span style={{ color: "var(--ev-muted, var(--muted))" }}>Message to the pairs</span>
         <textarea
           name="message"
           rows={4}
