@@ -1,17 +1,23 @@
 import type { AdminSnapshot } from "./facts";
 import { buildFacts } from "./facts";
 import { loadCooling } from "./early-warning-data";
+import type { Cooling } from "./early-warning";
 import { buildNarrative, type Narrative } from "./narrative";
 import { departmentMatrix, progress } from "./network";
 import type { AdminContext } from "./require";
 import { loadPreviousSnapshot } from "./snapshot";
 import { momentum, readThemes } from "./themes";
 import { loadActivity } from "./trend-data";
-import { buildWeekly } from "./trends";
+import { buildWeekly, type RawActivity } from "./trends";
 
 /** Gathers what the narrative is written from, the same way the Pulse, Pairing and Insights pages gather it. */
 export async function loadNarrative(admin: AdminContext, snap: AdminSnapshot): Promise<Narrative> {
   const [previous, cooling, raw] = await Promise.all([loadPreviousSnapshot(admin, snap), loadCooling(admin, snap.cycle?.id ?? null, snap.pairs.length), loadActivity(admin, snap.cycle?.id ?? null)]);
+  return narrativeFrom(snap, previous, cooling, raw);
+}
+
+/** The narrative from data already loaded, for pages that load it once and use it in several places. */
+export function narrativeFrom(snap: AdminSnapshot, previous: AdminSnapshot | null, cooling: Cooling | null, raw: RawActivity | null): Narrative {
   const weekly = raw ? buildWeekly(raw) : null;
   return buildNarrative({
     snap,

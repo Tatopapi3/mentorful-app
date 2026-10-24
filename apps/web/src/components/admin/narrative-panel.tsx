@@ -4,10 +4,19 @@ import { narrativeText, type Narrative } from "@/lib/admin/narrative";
 
 /** The board narrative: the cycle told in plain language, each line traceable to a number listed beneath it. */
 export default function NarrativePanel({ skin, narrative, download }: { skin: Skin; narrative: Narrative; download: string }) {
+  return (
+    <Panel skin={skin} title="Board narrative" eyebrow="Written from the numbers" count={`${narrative.sections.length} sections`}>
+      <NarrativeBody skin={skin} narrative={narrative} download={download} />
+    </Panel>
+  );
+}
+
+/** Everything inside the panel, so a page can put it in its own card. */
+export function NarrativeBody({ skin, narrative, download }: { skin: Skin; narrative: Narrative; download: string }) {
   const text = narrativeText(narrative);
   const btn = skin === "nick" ? "nk-btn" : "ev-btn sm";
   return (
-    <Panel skin={skin} title="Board narrative" eyebrow="Written from the numbers" count={`${narrative.sections.length} sections`}>
+    <>
       <p style={{ margin: "0 0 14px", maxWidth: 720, color: "var(--ev-muted, var(--muted))", fontSize: 14.5 }}>
         A plain-language account of the cycle for a board packet or a staff email. Every sentence is built from a figure the dashboard shows, listed at the end, so nothing is said that the data doesn&apos;t support.
       </p>
@@ -35,6 +44,6 @@ export default function NarrativePanel({ skin, narrative, download }: { skin: Sk
         <a href={download} className={btn}>Download as a text file</a>
       </div>
       <Muted skin={skin}>Counts and averages only. Groups under five are left out, survey answers are anonymous, and nothing here shows what teachers said to each other.</Muted>
-    </Panel>
+    </>
   );
 }
