@@ -143,6 +143,12 @@ export function buildTables(surveyId: string, schoolId: string): Tables {
     const base = conversation_logs[i];
     conversation_logs.push({ ...base, id: `${base.id}-debrief`, is_visit_debrief: true });
   }
+  // PREVIEW_RECENT=1 moves every conversation forward so the newest is three days old, which gives the early-warning and
+  // momentum panels a realistic mix of recent, cooling and quiet pairs instead of everything being months old.
+  if (process.env.PREVIEW_RECENT === "1") {
+    const shift = Date.now() - Date.parse("2025-12-28T00:00:00Z") - 3 * 86400000;
+    for (const l of conversation_logs) if (l.submitted_at) l.submitted_at = new Date(Date.parse(String(l.submitted_at)) + shift).toISOString();
+  }
   // One draft for the preview teacher, so the "submit" step is visible.
   const mine = pairings.find((p) => p.host_id === me.id || p.visitor_id === me.id)!;
   conversation_logs.push({
