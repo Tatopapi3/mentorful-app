@@ -26,7 +26,9 @@ export default async function BriefingStudy({ searchParams: sp }: { searchParams
   const warning = cooling ? warningFor(cooling) : null;
   const themeLine = themeSentences(readThemes(snap.people, snap.pairs, snap.school.priority))[0];
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  const [lead, ...rest] = d.narrative.sections;
+  // The first section's heading is the page headline again, so it reads "Where it stands" here.
+  const [first_, ...rest] = d.narrative.sections;
+  const lead = { ...first_, heading: "Where it stands" };
 
   return (
     <div className="ev lab-brief" data-theme="light">
