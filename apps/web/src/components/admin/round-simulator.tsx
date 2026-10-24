@@ -118,7 +118,8 @@ export default function RoundSimulator({ skin, people, pairs, requests, cycleId,
   const proposal = edit?.key === key ? edit.pairs : auto.pairs;
   const leftOut = pool.filter((id) => !proposal.flat().includes(id));
 
-  const impact = useMemo(() => impactOf(people, baseline, proposal, kept), [people, baseline, proposal, kept]);
+  // "Before" is what stands today (approved pairs). "After" adds the proposal, and the waiting requests when they are counted.
+  const impact = useMemo(() => impactOf(people, approved, proposal, kept), [people, approved, proposal, kept]);
   const name = (id: string) => byId.get(id)?.name ?? "A teacher";
   const dept = (id: string) => byId.get(id)?.dept ?? "";
 
@@ -161,7 +162,10 @@ export default function RoundSimulator({ skin, people, pairs, requests, cycleId,
         <p style={{ color: tone.muted }}>{pool.length === 0 ? "Every teacher already has a partner or a request waiting, so there is no round to simulate. Try Plan next cycle." : "Only one teacher is left without a partner, so there is nobody to pair them with."}</p>
       ) : (
         <>
-          <p aria-live="polite" style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 600 }}>{impactSentence(impact)}</p>
+          <p aria-live="polite" style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 600 }}>
+            {impactSentence(impact)}
+            {mode === "finish" && countRequests && asked.length > 0 && <span style={{ fontWeight: 400, color: tone.muted, fontSize: 14 }}> (with the {asked.length} waiting {asked.length === 1 ? "request" : "requests"} approved)</span>}
+          </p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, margin: "0 0 18px" }}>
             <Delta label="Pairs across departments" before={before.crossPct} after={after.crossPct} unit="%" note={`${after.pairs} ${after.pairs === 1 ? "pair" : "pairs"} in all`} />
