@@ -5,7 +5,7 @@ import { audienceSize, type NudgeAudience } from "@/lib/admin/early-warning";
 import { loadCooling } from "@/lib/admin/early-warning-data";
 import { requireAdmin } from "@/lib/admin/require";
 
-const BACK = new Set(["/admin/pairings", "/admin/aurora/pairings", "/admin/blend/pairings"]);
+const BACK = new Set(["/admin/pairings", "/admin/aurora/pairings", "/admin/blend/pairings", "/lab/command", "/lab/briefing", "/lab/map"]);
 
 /**
  * PROTOTYPE. Checks the admin, works out how many pairs the chosen group is, and says what would happen. It sends

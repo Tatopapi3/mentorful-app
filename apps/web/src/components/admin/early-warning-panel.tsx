@@ -9,12 +9,17 @@ const COLOR = { teal: "var(--ev-teal, var(--teal-dk, #0f766e))", amber: "var(--e
  * counts only, a plain sentence about what happens if nothing changes, and a way to write one nudge to a group.
  */
 export default function EarlyWarningPanel({ skin, cooling, cycleId, back }: { skin: Skin; cooling: Cooling | null; cycleId: string; back: string }) {
+  return (
+    <Panel skin={skin} title="Early warning" eyebrow="Pairs drifting quiet" count={cooling ? `${cooling.pairs} pairs` : "needs the participation function"}>
+      <EarlyWarningBody skin={skin} cooling={cooling} cycleId={cycleId} back={back} />
+    </Panel>
+  );
+}
+
+/** Everything inside the panel, so a page can put it in its own card. */
+export function EarlyWarningBody({ skin, cooling, cycleId, back }: { skin: Skin; cooling: Cooling | null; cycleId: string; back: string }) {
   if (!cooling) {
-    return (
-      <Panel skin={skin} title="Early warning" eyebrow="Pairs drifting quiet" count="needs the participation function">
-        <Muted skin={skin}>This reads the same database function as the &ldquo;need a nudge&rdquo; count (script 015, not applied here yet). Until then it stays empty rather than guessing.</Muted>
-      </Panel>
-    );
+    return <Muted skin={skin}>This reads the same database function as the &ldquo;need a nudge&rdquo; count (script 015, not applied here yet). Until then it stays empty rather than guessing.</Muted>;
   }
   const w = warningFor(cooling);
   const parts = [
@@ -24,7 +29,7 @@ export default function EarlyWarningPanel({ skin, cooling, cycleId, back }: { sk
   ];
   const total = cooling.pairs || 1;
   return (
-    <Panel skin={skin} title="Early warning" eyebrow="Pairs drifting quiet" count={`${cooling.pairs} pairs`}>
+    <>
       <p style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 600 }}>{w.title}</p>
       <p style={{ margin: "0 0 14px", maxWidth: 720 }}>{w.detail}</p>
       <div style={{ display: "flex", height: 12, borderRadius: 999, overflow: "hidden", gap: 2, background: "var(--ev-soft, var(--paper-2))" }} role="img" aria-label={parts.map((p) => `${countLabel(p.value)} ${p.label}`).join(", ")}>
@@ -47,6 +52,6 @@ export default function EarlyWarningPanel({ skin, cooling, cycleId, back }: { sk
         </>
       )}
       <Muted skin={skin}>Counts only. You see how many pairs are in each group, never which, and a group under five is shown as &ldquo;fewer than 5&rdquo;.</Muted>
-    </Panel>
+    </>
   );
 }

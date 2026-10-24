@@ -11,12 +11,22 @@ const teal = "var(--ev-teal, var(--teal-dk, #0f766e))";
  * said: a theme with fewer than five pairs is not shown, and the reading says how many pairs that hides.
  */
 export default function ThemesPanel({ skin, snap, raw, base }: { skin: Skin; snap: AdminSnapshot; raw: RawActivity | null; base: string }) {
+  const total = snap.pairs.length;
+  return (
+    <Panel skin={skin} title="Themes" eyebrow="What pairs are working on" count={`${total} ${total === 1 ? "pair" : "pairs"}`}>
+      <ThemesBody skin={skin} snap={snap} raw={raw} base={base} />
+    </Panel>
+  );
+}
+
+/** Everything inside the panel, so a page can put it in its own card. */
+export function ThemesBody({ skin, snap, raw, base }: { skin: Skin; snap: AdminSnapshot; raw: RawActivity | null; base: string }) {
   const r = readThemes(snap.people, snap.pairs, snap.school.priority);
   const weekly = raw ? buildWeekly(raw) : null;
   const pace = weekly ? momentum(weekly.totals) : null;
   const max = Math.max(1, ...r.shown.map((t) => t.pairs));
   return (
-    <Panel skin={skin} title="Themes" eyebrow="What pairs are working on" count={`${r.total} ${r.total === 1 ? "pair" : "pairs"}`}>
+    <>
       <p style={{ margin: "0 0 14px", maxWidth: 720 }}>{themeSentences(r).join(" ")}</p>
       {r.shown.map((t) => (
         <div key={t.domain} style={{ margin: "14px 0" }}>
@@ -39,6 +49,6 @@ export default function ThemesPanel({ skin, snap, raw, base }: { skin: Skin; sna
         </p>
       )}
       <Muted skin={skin}>Themes come from the domain each pair chose, not from anything said in a conversation. Leadership never sees conversation text.</Muted>
-    </Panel>
+    </>
   );
 }
