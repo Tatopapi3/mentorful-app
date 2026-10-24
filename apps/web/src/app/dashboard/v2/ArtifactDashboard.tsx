@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import * as d3 from "d3";
 import { createLog, submitLog } from "../actions";
 import { createDash, type Dash, type Datasets } from "./dash";
+import { createLive } from "./live";
 
 type Saved = { ok: true } | { ok: false; error: string };
 
@@ -51,7 +52,10 @@ export default function ArtifactDashboard({ data, me }: { data: Datasets; me: st
         return { ok: false, error: e instanceof Error ? e.message : "Couldn't submit." };
       }
     };
-    Object.assign(window, { d3, dash, MF_persistLog: persistLog, MF_submitLog: submit });
+    // The visit screen: the pair channel, shared files and live drafts (see live.ts, 016).
+    const live = createLive(() => router.refresh());
+    live.watchLogs();
+    Object.assign(window, { d3, dash, MF_persistLog: persistLog, MF_submitLog: submit, MF_live: live });
 
     fetch("/dashboard-v2/dashboard.html")
       .then((r) => {
@@ -77,6 +81,9 @@ export default function ArtifactDashboard({ data, me }: { data: Datasets; me: st
     return () => {
       cancelled = true;
       dashRef.current = null;
+      // Lets the visit screen stop the camera and leave its pair channel.
+      window.dispatchEvent(new Event("mf-unmount"));
+      void live.close();
       root.replaceChildren();
     };
     // Mount once; fresh server data flows in through the effect below.

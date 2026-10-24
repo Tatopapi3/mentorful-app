@@ -5,7 +5,10 @@
   - the dashboard runtime's --cds-* tokens are defined here;
   - the cohort line shows the cycle (no start date is modelled, so no week bar);
   - Save draft / Submit call the app's server actions via window.MF_persistLog / MF_submitLog;
-  - games, suggestions and chat have no tables yet and say so when empty.
+  - games, suggestions and chat have no tables yet and say so when empty;
+  - the visit screen and log tools (camera icon, upload, download) use window.MF_live:
+    a private pair channel for two-way video and a shared YouTube link, the pair-files
+    bucket for uploads, and live draft refreshes (see dashboard/v2/live.ts and 016).
 -->
 <style>
 #dash-root {
@@ -229,6 +232,49 @@
 .mf-scan-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: #6b6459; }
 .mf-scan-status i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--amber); display: inline-block; }
 .mf-demo-note { font-size: 12.5px; color: var(--muted); margin-top: var(--cds-gap-xs) !important; }
+.mf-ql-tools { display: flex; align-items: center; gap: 6px; margin-top: var(--cds-gap-sm); flex-wrap: wrap; }
+.mf-ql-tools .mf-muted { font-size: 12.5px; }
+.mf-ql-save { display: inline-flex; align-items: center; gap: 6px; }
+.mf-ql-video { color: var(--teal-dk); }
+#mf-ql-files { margin-top: 6px; }
+/* Visit screen, behind the camera icon in "Log a conversation". */
+.mf-cam { margin-top: var(--cds-gap-sm); padding: var(--cds-pad-sm); border: 1px solid var(--line); border-radius: 5px; background: var(--paper); }
+.mf-cam-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.mf-cam-head h3 { font-size: 15px; }
+.mf-cam-with { font-size: 12.5px; margin-right: auto; }
+.mf-cam-dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--cds-chart-muted); flex: none; }
+.mf-cam.live .mf-cam-dot { background: #e5484d; box-shadow: 0 0 8px rgba(229, 72, 77, .7); }
+.mf-cam-head .mf-icon-btn svg { width: 1rem; height: 1rem; }
+.mf-cam-ico-small, .mf-cam.big .mf-cam-ico-big { display: none; }
+.mf-cam.big .mf-cam-ico-small { display: block; }
+.mf-cam-stage { position: relative; aspect-ratio: 1 / 1; max-height: 22rem; width: 100%; margin: 0 auto; border-radius: 5px; overflow: hidden; background: var(--navy); }
+.mf-cam.big .mf-cam-stage { aspect-ratio: 16 / 9; max-height: 75vh; }
+.mf-cam-main { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.mf-cam-main video, .mf-cam-main iframe { width: 100%; height: 100%; object-fit: cover; border: 0; display: block; }
+.mf-cam-msg { margin: 0; padding: 16px; text-align: center; color: #dfe7ee; font-size: 13.5px; line-height: 1.5; max-width: 26rem; }
+.mf-cam-msg a { color: #8fe3d8; }
+.mf-cam-self { position: absolute; right: 8px; bottom: 8px; width: 32%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 4px; border: 2px solid #fff; background: #000; transform: scaleX(-1); }
+.mf-cam-controls, .mf-cam-link { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.mf-cam-link .mf-input { flex: 1 1 12rem; min-width: 0; }
+.mf-cam-live { display: inline-flex; align-items: center; gap: 6px; }
+.mf-cam-livedot { width: .5rem; height: .5rem; border-radius: 50%; background: #fff; }
+.mf-cam-live[aria-pressed="true"] { background: #e5484d !important; border-color: #e5484d !important; }
+.mf-cam-note { margin-top: 6px !important; font-size: 12.5px; }
+.mf-cam:fullscreen { padding: 16px; display: flex; flex-direction: column; }
+.mf-cam:fullscreen .mf-cam-stage { flex: 1; max-height: none; aspect-ratio: auto; }
+/* App only: the co-mentor's video, who is here, and files shared in the pairing. */
+.mf-cam-remote { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; z-index: 1; }
+.mf-cam-remote.pip { inset: 8px auto auto 8px; width: 32%; height: auto; aspect-ratio: 3 / 4; border-radius: 4px; border: 2px solid #fff; }
+.mf-cam-self { z-index: 2; }
+.mf-cam-here { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--teal-dk); margin-right: auto; }
+.mf-cam-here::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: #1fbf7a; }
+.mf-cam-with:has(+ .mf-cam-here:not([hidden])) { margin-right: 6px; }
+.mf-shared { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mf-shared li { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 8px; border-radius: 4px; background: var(--paper); }
+.mf-shared li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mf-shared li small { color: var(--muted); white-space: nowrap; }
+.mf-cam-here[hidden], .mf-shared[hidden] { display: none; }
+.mf-shared button { border: 0; background: none; color: var(--teal); font-weight: 600; font-size: 13px; padding: 4px; }
 .mf-chat-tools { display: flex; align-items: center; gap: var(--cds-gap-xs); }
 .mf-icon-btn { width: 2rem; height: 2rem; display: inline-grid; place-items: center; border: 1px solid var(--line); background: var(--paper); border-radius: 3px; color: var(--teal-dk); flex: none; }
 .mf-icon-btn:hover { border-color: var(--teal); background: var(--teal-bg); }
@@ -341,13 +387,49 @@
         <textarea id="mf-vision" class="mf-input" rows="2" maxlength="400"></textarea>
         <label class="mf-field" for="mf-note"><span class="mono">What you noticed working</span></label>
         <textarea id="mf-note" class="mf-input" rows="2" maxlength="400"></textarea>
+        <div class="mf-ql-tools">
+          <input type="file" id="mf-ql-file" multiple hidden>
+          <input type="file" id="mf-ql-video" accept="video/*" capture="user" hidden>
+          <button class="mf-icon-btn" id="mf-ql-upload" type="button" aria-label="Attach files to this log" title="Attach files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></button>
+          <button class="mf-icon-btn" id="mf-ql-download" type="button" aria-label="Download this log" title="Download this log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></button>
+          <span class="mf-muted" id="mf-ql-files-note">Share files with your co-mentor, or download this log.</span>
+        </div>
+        <div class="mf-pending" id="mf-ql-files" aria-label="Files attached to this log"></div>
+        <ul class="mf-shared" id="mf-ql-shared" aria-label="Files shared in this pairing" hidden></ul>
         <div class="mf-row">
           <span class="mf-lock" tabindex="0" aria-describedby="tip-log">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Pair-private
             <span class="mf-tip" role="tooltip" id="tip-log">Visible ONLY to you and your co-mentor. Admins cannot read this text.</span>
           </span>
-          <button class="mf-btn mf-btn-primary" id="mf-save" disabled>Save draft</button>
+          <span class="mf-ql-save">
+            <button class="mf-icon-btn mf-ql-video" id="mf-ql-video-btn" type="button" aria-label="Open the visit screen" title="Visit screen" aria-controls="mf-cam" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></button>
+            <button class="mf-btn mf-btn-primary" id="mf-save" disabled>Save draft</button>
+          </span>
         </div>
+        <section class="mf-cam" id="mf-cam" aria-labelledby="cam-h" hidden>
+          <div class="mf-cam-head">
+            <span class="mf-cam-dot" id="mf-cam-dot" aria-hidden="true"></span>
+            <h3 id="cam-h">Visit screen</h3>
+            <span class="mf-muted mf-cam-with" id="mf-cam-with"></span><span class="mf-cam-here" id="mf-cam-here" hidden></span>
+            <button class="mf-icon-btn" id="mf-cam-size" type="button" aria-label="Enlarge the visit screen" title="Enlarge"><svg class="mf-cam-ico-big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg><svg class="mf-cam-ico-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg></button>
+            <button class="mf-icon-btn" id="mf-cam-close" type="button" aria-label="Close the visit screen" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <div class="mf-cam-stage" id="mf-cam-stage">
+            <div class="mf-cam-main" id="mf-cam-main"><p class="mf-cam-msg" id="mf-cam-msg">Press Live to start your camera, or add a video link.</p></div>
+            <video class="mf-cam-remote" id="mf-cam-remote" playsinline hidden></video>
+            <video class="mf-cam-self" id="mf-cam-self" muted playsinline hidden></video>
+          </div>
+          <div class="mf-cam-controls">
+            <button class="mf-btn mf-btn-primary mf-cam-live" id="mf-cam-live" type="button" aria-pressed="false"><span class="mf-cam-livedot" aria-hidden="true"></span>Live</button>
+            <button class="mf-btn" id="mf-cam-record" type="button">Record a clip</button>
+          </div>
+          <div class="mf-cam-link">
+            <label class="mf-sr" for="mf-cam-url">YouTube link</label>
+            <input id="mf-cam-url" class="mf-input" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…">
+            <button class="mf-btn" id="mf-cam-play" type="button">Add your video link and play</button>
+          </div>
+          <p class="mf-muted mf-cam-note" id="mf-cam-note" role="status"></p>
+        </section>
         <p class="mf-muted" id="mf-ql-status" role="status" style="margin-top:var(--cds-gap-xs)">Pick one tag to continue.</p>
         <p class="mf-demo-note">Saved as a draft, visible only to the two of you. Submit it from the journal when you’re ready.</p>
       </section>
@@ -1095,4 +1177,291 @@ window.MF_drawAgent = () => {
 };
 
 dash.onData(MF_render);
+</script>
+
+<script>
+// Visit screen and log tools, in the app. With window.MF_live (ArtifactDashboard,
+// live.ts) both teachers in a pairing share one private channel: Live connects
+// their cameras browser to browser, files go to the pair's own bucket, and a
+// YouTube link plays on both screens. Without it, everything stays on this device.
+(() => {
+  const L = window.MF_live || null;
+  const $ = (id) => document.getElementById(id);
+  const cam = $('mf-cam'), btn = $('mf-ql-video-btn'), main = $('mf-cam-main');
+  const self = $('mf-cam-self'), remote = $('mf-cam-remote'), live = $('mf-cam-live');
+  const note = $('mf-cam-note'), size = $('mf-cam-size'), url = $('mf-cam-url'), here = $('mf-cam-here');
+  const withSel = $('mf-with'), fileIn = $('mf-ql-file'), videoIn = $('mf-ql-video');
+  const chips = $('mf-ql-files'), shared = $('mf-ql-shared'), filesNote = $('mf-ql-files-note');
+  const filesNoteText = filesNote.textContent;
+  const MAX = 200 * 1024 * 1024;
+
+  let ch = null, chPair = null, others = 0;
+  let local = null, peer = null, pendingIce = [], youtube = null;
+  MF.logFiles = MF.logFiles || [];
+
+  const me = () => MF_me();
+  const pairId = () => withSel.value || null;
+  const partner = () => (withSel.selectedOptions[0] ? withSel.selectedOptions[0].textContent : 'your co-mentor');
+  const first = () => partner().split(' ')[0];
+  const say = (text) => { note.textContent = text; };
+  const kb = (b) => b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  const message = (text) => {
+    if (youtube) return;
+    main.textContent = '';
+    const p = document.createElement('p'); p.className = 'mf-cam-msg'; p.textContent = text; main.appendChild(p);
+  };
+
+  // ------------------------------------------------------------ pair channel
+
+  function drawPresence() {
+    here.hidden = !(ch && others > 0);
+    here.textContent = `${first()} is here`;
+  }
+
+  async function joinPair() {
+    const pid = pairId();
+    if (!L || !pid || pid === chPair) return;
+    await leavePair();
+    chPair = pid;
+    try {
+      ch = await L.join(pid, {
+        onPresence: (n) => { others = n; drawPresence(); },
+        onSignal,
+        onYoutube: (id) => { if (id) { open(true); play(id, false); say(`${first()} shared a video.`); } },
+        onFiles: refreshFiles,
+        onStatus: (s) => { if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') say(`Couldn’t connect to ${first()}’s screen. Check your connection and try again.`); },
+      });
+    } catch (e) { ch = null; }
+    refreshFiles();
+  }
+  async function leavePair() {
+    hangUp(true);
+    if (ch) { const c = ch; ch = null; await c.leave().catch(() => {}); }
+    chPair = null; others = 0; drawPresence();
+  }
+  const send = (event, payload) => (ch ? ch.send(event, payload).catch(() => {}) : Promise.resolve());
+
+  // --------------------------------------------------------------- the screen
+
+  function open(on) {
+    cam.hidden = !on;
+    btn.setAttribute('aria-expanded', String(on));
+    if (on) { $('mf-cam-with').textContent = 'with ' + partner(); drawPresence(); cam.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+    else { stopCamera(); if (document.fullscreenElement === cam) document.exitFullscreen().catch(() => {}); cam.classList.remove('big'); }
+  }
+  btn.addEventListener('click', () => open(cam.hidden));
+  $('mf-cam-close').addEventListener('click', () => { open(false); btn.focus(); });
+  size.addEventListener('click', async () => {
+    const big = !cam.classList.contains('big');
+    cam.classList.toggle('big', big);
+    size.setAttribute('aria-label', big ? 'Make the visit screen smaller' : 'Enlarge the visit screen');
+    if (big && cam.requestFullscreen) { try { await cam.requestFullscreen(); } catch (e) { /* stays enlarged in the page */ } }
+    else if (!big && document.fullscreenElement === cam) document.exitFullscreen().catch(() => {});
+  });
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) cam.classList.remove('big'); });
+
+  // ------------------------------------------------------------- live video
+
+  function setLiveButton(on) {
+    cam.classList.toggle('live', on);
+    live.setAttribute('aria-pressed', String(on));
+    live.lastChild.textContent = on ? 'End live' : 'Live';
+  }
+  function hangUp(quiet) {
+    if (peer) { peer.ontrack = peer.onicecandidate = peer.onconnectionstatechange = null; peer.close(); }
+    peer = null; pendingIce = [];
+    remote.srcObject = null; remote.hidden = true;
+    if (!quiet) send('signal', { type: 'bye', from: me() });
+  }
+  function stopCamera() {
+    if (local) local.getTracks().forEach((t) => t.stop());
+    local = null; self.srcObject = null; self.hidden = true;
+    hangUp(false); setLiveButton(false);
+  }
+  function makePeer() {
+    hangUp(true);
+    peer = new RTCPeerConnection({ iceServers: L.iceServers() });
+    local.getTracks().forEach((t) => peer.addTrack(t, local));
+    peer.onicecandidate = (e) => { if (e.candidate) send('signal', { type: 'ice', candidate: e.candidate.toJSON(), from: me() }); };
+    peer.ontrack = (e) => {
+      remote.srcObject = e.streams[0]; remote.hidden = false; remote.classList.toggle('pip', !!youtube);
+      remote.play().catch(() => {});
+      say(`You and ${first()} are live.`);
+    };
+    peer.onconnectionstatechange = () => {
+      const s = peer && peer.connectionState;
+      if (s === 'failed') { say(`Couldn’t connect to ${first()}. Strict school networks can block video; ask your admin about a TURN server.`); hangUp(true); }
+      if (s === 'disconnected' || s === 'closed') { remote.hidden = true; message(`${first()} left the visit.`); }
+    };
+  }
+  async function flushIce() {
+    for (const c of pendingIce.splice(0)) await peer.addIceCandidate(c).catch(() => {});
+  }
+  // Whoever has the smaller id makes the offer, so two people pressing Live at
+  // once still end up with one connection.
+  async function onSignal(m) {
+    if (!m || m.from === me()) return;
+    try {
+      if (m.type === 'hello') {
+        if (!local) { open(true); say(`${first()} is live. Press Live to join.`); return; }
+        if (me() < m.from) {
+          makePeer();
+          await peer.setLocalDescription(await peer.createOffer());
+          send('signal', { type: 'offer', sdp: peer.localDescription.toJSON(), from: me() });
+        } else {
+          send('signal', { type: 'hello', from: me() });
+        }
+      } else if (m.type === 'offer') {
+        if (!local) return;
+        makePeer();
+        await peer.setRemoteDescription(m.sdp);
+        await flushIce();
+        await peer.setLocalDescription(await peer.createAnswer());
+        send('signal', { type: 'answer', sdp: peer.localDescription.toJSON(), from: me() });
+      } else if (m.type === 'answer') {
+        if (peer && !peer.currentRemoteDescription) { await peer.setRemoteDescription(m.sdp); await flushIce(); }
+      } else if (m.type === 'ice') {
+        if (peer && peer.remoteDescription) await peer.addIceCandidate(m.candidate).catch(() => {});
+        else pendingIce.push(m.candidate);
+      } else if (m.type === 'bye') {
+        hangUp(true);
+        message(`${first()} ended their camera.`);
+        say(`${first()} ended their camera.`);
+      }
+    } catch (e) {
+      say(`The video connection hit a problem. Press Live again to retry.`);
+    }
+  }
+  live.addEventListener('click', async () => {
+    if (local) { stopCamera(); say('Camera off.'); message('Press Live to start your camera, or add a video link.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { say('This browser can’t open a live camera. Use Record a clip instead.'); return; }
+    try {
+      local = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+    } catch (e) {
+      local = null;
+      say(e && e.name === 'NotAllowedError' ? 'The camera was blocked. Allow camera access in your browser, or use Record a clip.' : 'No camera could be started. Use Record a clip instead.');
+      return;
+    }
+    self.srcObject = local; self.hidden = false; self.play().catch(() => {});
+    setLiveButton(true);
+    if (L && ch) {
+      message(others > 0 ? `Calling ${first()}…` : `Waiting for ${first()} to open the visit screen and press Live.`);
+      say('Your camera is on.');
+      send('signal', { type: 'hello', from: me() });
+    } else {
+      message('You’re live on this device only: your co-mentor’s screen isn’t connected.');
+      say('Your camera is on.');
+    }
+  });
+  $('mf-cam-record').addEventListener('click', () => videoIn.click());
+
+  // ---------------------------------------------------------------- YouTube
+
+  function youtubeId(s) {
+    try {
+      const u = new URL(String(s).trim());
+      const host = u.hostname.replace(/^www\.|^m\./, '');
+      if (host === 'youtu.be') return u.pathname.slice(1, 12);
+      if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+        if (u.searchParams.get('v')) return u.searchParams.get('v').slice(0, 11);
+        const m = u.pathname.match(/^\/(?:shorts|embed|live)\/([\w-]{11})/); if (m) return m[1];
+      }
+    } catch (e) {}
+    return null;
+  }
+  function play(id, share) {
+    if (!/^[\w-]{11}$/.test(id || '')) return;
+    youtube = id;
+    main.textContent = '';
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+    f.title = 'YouTube video'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    main.appendChild(f);
+    remote.classList.add('pip');
+    const a = document.createElement('a'); a.href = 'https://www.youtube.com/watch?v=' + id; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Open on YouTube';
+    note.textContent = share && ch ? `Playing for you and ${first()}. ` : 'Playing in the screen. '; note.appendChild(a);
+    if (share) send('youtube', { id });
+  }
+  $('mf-cam-play').addEventListener('click', () => {
+    const id = youtubeId(url.value);
+    if (!id || !/^[\w-]{11}$/.test(id)) { say('That doesn’t look like a YouTube link. Paste one like https://www.youtube.com/watch?v=…'); url.focus(); return; }
+    play(id, true);
+  });
+  url.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('mf-cam-play').click(); });
+
+  // ------------------------------------------------------------------ files
+
+  async function refreshFiles() {
+    if (!L || !pairId()) { shared.hidden = true; return; }
+    const pid = pairId();
+    let list = [];
+    try { list = await L.listFiles(pid); } catch (e) { list = []; }
+    if (pid !== pairId()) return;
+    shared.textContent = '';
+    shared.hidden = !list.length;
+    list.forEach((f) => {
+      const li = document.createElement('li');
+      const n = document.createElement('span'); n.textContent = (/\.(mp4|mov|webm|m4v)$/i.test(f.label) ? '🎥 ' : '📎 ') + f.label;
+      const s = document.createElement('small'); s.textContent = kb(f.size);
+      const d = document.createElement('button'); d.type = 'button'; d.textContent = 'Download';
+      d.setAttribute('aria-label', 'Download ' + f.label);
+      d.addEventListener('click', async () => {
+        try { const href = await L.downloadUrl(pid, f); const a = document.createElement('a'); a.href = href; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+        catch (e) { filesNote.textContent = 'That file couldn’t be downloaded. Try again.'; }
+      });
+      li.append(n, s, d); shared.appendChild(li);
+    });
+  }
+  function drawChips() {
+    chips.textContent = '';
+    MF.logFiles.forEach((f, i) => {
+      const c = document.createElement('span'); c.className = 'mf-chip';
+      c.textContent = (/^video\//.test(f.type) ? '🎥 ' : '📎 ') + f.name + ' · ' + kb(f.size);
+      const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + f.name);
+      x.addEventListener('click', () => { MF.logFiles.splice(i, 1); drawChips(); });
+      c.appendChild(x); chips.appendChild(c);
+    });
+  }
+  async function add(list) {
+    const all = [...list], big = all.filter((f) => f.size > MAX), ok = all.filter((f) => f.size <= MAX);
+    if (big.length) filesNote.textContent = `${big.map((f) => f.name).join(', ')} ${big.length === 1 ? 'is' : 'are'} over 200 MB and wasn’t added.`;
+    if (!ok.length) return;
+    if (L && pairId()) {
+      filesNote.textContent = `Sharing ${ok.length === 1 ? ok[0].name : ok.length + ' files'} with ${first()}…`;
+      const res = await L.upload(pairId(), ok);
+      filesNote.textContent = res.failed.length ? `Couldn’t share ${res.failed.join(', ')}. Try again.` : `Shared with ${first()}.`;
+      if (res.ok) { send('files', {}); refreshFiles(); }
+    } else {
+      ok.forEach((f) => MF.logFiles.push(f)); drawChips();
+      if (!big.length) filesNote.textContent = filesNoteText;
+    }
+  }
+  $('mf-ql-upload').addEventListener('click', () => fileIn.click());
+  fileIn.addEventListener('change', () => { add(fileIn.files); fileIn.value = ''; });
+  videoIn.addEventListener('change', () => { add(videoIn.files); videoIn.value = ''; });
+
+  // The log as plain text: the form as it is now, and what the pair has shared.
+  $('mf-ql-download').addEventListener('click', () => {
+    const v = (id) => $(id).value.trim();
+    const tag = document.querySelector('#mf-tags [aria-checked="true"]');
+    const lines = ['Mentorful: conversation log', 'Saved ' + new Date().toLocaleString(), '',
+      'With: ' + partner(), 'Domain: ' + (tag ? tag.textContent : '—'),
+      'What they’re working toward: ' + (v('mf-vision') || '—'), 'What you noticed working: ' + (v('mf-note') || '—')];
+    const names = [...shared.querySelectorAll('li span')].map((s) => s.textContent.replace(/^\S+ /, '')).concat(MF.logFiles.map((f) => f.name));
+    if (names.length) lines.push('Files: ' + names.join(', '));
+    lines.push('', 'Private to you and your co-mentor.');
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = href; a.download = 'mentorful-log-' + new Date().toISOString().slice(0, 10) + '.txt';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(href), 2000);
+    filesNote.textContent = 'Log downloaded.';
+  });
+
+  // ------------------------------------------------------------- lifecycle
+
+  withSel.addEventListener('change', () => { $('mf-cam-with').textContent = 'with ' + partner(); joinPair(); });
+  dash.onData(() => { joinPair(); });
+  window.addEventListener('mf-unmount', () => { stopCamera(); leavePair(); }, { once: true });
+})();
 </script>
