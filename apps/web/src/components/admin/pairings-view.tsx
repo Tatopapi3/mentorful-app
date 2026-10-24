@@ -1,4 +1,7 @@
 import { StackBar } from "@/components/admin/diagrams";
+import EarlyWarningPanel from "@/components/admin/early-warning-panel";
+import RoundSimulator from "@/components/admin/round-simulator";
+import { loadCooling } from "@/lib/admin/early-warning-data";
 import { AdminFrame, Chip, CycleSwitcher, LinkBtn, Muted, Notice, Panel, Row, StatGrid, SubmitBtn, basePath, type Skin } from "@/components/admin/kit";
 import { decidePairing, publishRound } from "@/app/admin/pairings/actions";
 import { buildFacts } from "@/lib/admin/facts";
@@ -21,6 +24,7 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
   const cycleParam = one(searchParams.cycle);
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
+  const cooling = await loadCooling(admin, snap.cycle?.id ?? null, snap.pairs.length);
   const byId = new Map(snap.people.map((p) => [p.id, p]));
   const cycleId = snap.cycle?.id ?? "";
 
@@ -79,6 +83,7 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
             <h3 style={{ margin: "18px 0 8px", fontSize: 15 }}>Cross-department mix</h3>
             <StackBar parts={[{ label: "across departments", value: split.crossing, tone: "teal" }, { label: "inside one department", value: split.inside, tone: "grey" }]} />
           </Panel>
+          <EarlyWarningPanel skin={skin} cooling={cooling} cycleId={cycleId} back={path} />
           <Panel skin={skin} title="Waiting for your decision" count={`${snap.requests.length} ${snap.requests.length === 1 ? "request" : "requests"}`} eyebrow="Requests">
             {snap.requests.length === 0 && <Muted skin={skin}>No requests are waiting.</Muted>}
             {snap.requests.map((r) => {
@@ -107,6 +112,10 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
                 </Row>
               );
             })}
+          </Panel>
+
+          <Panel skin={skin} title="Round simulator" eyebrow="See the effect before you pair" count="new">
+            <RoundSimulator skin={skin} people={snap.people} pairs={snap.pairs} requests={snap.requests} cycleId={cycleId} back={path} />
           </Panel>
 
           <Panel skin={skin} title="Everyone still unpaired" count={`${pool.length} ${pool.length === 1 ? "teacher" : "teachers"}`} eyebrow="Randomized round">

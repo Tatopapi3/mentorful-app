@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { AdminFrame, Muted, Panel, Row, basePath, type Skin } from "@/components/admin/kit";
+import NarrativePanel from "@/components/admin/narrative-panel";
+import { loadNarrative } from "@/lib/admin/narrative-data";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 
@@ -26,9 +28,12 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const q = cycleParam ? `?cycle=${encodeURIComponent(cycleParam)}` : "";
   const base = basePath(skin);
+  const narrative = await loadNarrative(admin, snap);
 
   return (
     <AdminFrame skin={skin} eyebrow={`Reports · ${snap.cycle?.name ?? "No cycle"}`} title="Reports you can always take with you" sub="Slides for a staff meeting or the board, a one-page summary, and the numbers as a spreadsheet. Each one is built from the same counts as the dashboard.">
+      <NarrativePanel skin={skin} narrative={narrative} download={`/admin/export/narrative.txt${q}`} />
+
       <Panel skin={skin} title="Leadership deck" eyebrow="Slides" count="7 slides">
         <Row
           skin={skin}

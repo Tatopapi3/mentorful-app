@@ -1,5 +1,6 @@
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
+import ThemesPanel from "@/components/admin/themes-panel";
 import { TrendsSections, loadTrendsData } from "@/components/admin/trends-view";
 import Link from "next/link";
 import { CultureBubbles } from "@/components/admin/diagrams";
@@ -84,6 +85,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       )}
 
       <ParticipationPanel skin="nick" snap={snap} />
+      <ThemesPanel skin="nick" snap={snap} raw={trends.raw} base="/admin" />
 
       <div id="trends" style={{ scrollMarginTop: 24 }}>
         <TrendsSections skin="nick" snap={snap} data={trends} withHeading />
