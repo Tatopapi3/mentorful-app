@@ -4,6 +4,7 @@
  * Aggregates only: counts and rates by school and by department of five or more teachers. No names, no survey
  * answers, no conversation content. Pure: no database, no React.
  */
+import { demoCount, respondentsText } from "@/lib/report/gates";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { DIMENSIONS, DIMENSION_LABEL } from "@/lib/report/stats";
 import { buildFacts, headlineSentence, type AdminSnapshot } from "./facts";
@@ -50,7 +51,7 @@ export function buildDeck(snap: AdminSnapshot, prev: AdminSnapshot | null, today
         items: [
           { value: pct(facts.pairedPct), label: "Have a partner", note: `${facts.paired} of ${facts.faculty} teachers` },
           { value: pct(facts.crossPct), label: "Pairs cross departments", note: `${facts.crossPairs} of ${facts.pairCount} pairs` },
-          { value: String(facts.conversations), label: "Conversations logged", note: facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet" },
+          { value: String(facts.conversations), label: "Logged conversations", note: facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet" },
           { value: facts.scan ? facts.scan.cte.toFixed(1) : "n/a", label: "CTE score", note: facts.scan ? `out of 6 · ${facts.scan.n} responses` : "no scan results" },
         ],
       },
@@ -66,7 +67,7 @@ export function buildDeck(snap: AdminSnapshot, prev: AdminSnapshot | null, today
       lead: facts.scan ? `Teachers rate ${DIMENSION_LABEL[facts.scan.strongest.dimension].toLowerCase()} highest and ${DIMENSION_LABEL[facts.scan.weakest.dimension].toLowerCase()} lowest.` : undefined,
       blocks: [
         { kind: "bars", rows: DIMENSIONS.map((d) => ({ label: DIMENSION_LABEL[d], value: s.means[d], max: 6, text: `${s.means[d].toFixed(1)} of 6` })) },
-        { kind: "note", text: `${s.n} respondents. Answers are anonymous and shown only as school-wide averages.${s.includesSynthetic ? " Includes synthetic demo data." : ""}` },
+        { kind: "note", text: `${respondentsText(s)}. Answers are anonymous and shown only as school-wide averages.${demoCount(s) > 0 ? " Includes synthetic demo data." : ""}` },
       ],
     });
   }

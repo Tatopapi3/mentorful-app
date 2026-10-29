@@ -4,6 +4,7 @@ import { TimeCard } from "@/components/teacher/time-card";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { practiceTotals, suggestionsFrom } from "@/lib/teacher/hub";
+import { FEATURES } from "@/lib/teacher/features";
 
 // Bertrand's "Mentorful products", in his words and his order.
 const PRODUCTS = [
@@ -35,7 +36,7 @@ export default async function GrowthPage() {
       </header>
 
       {!hub.ready ? (
-        <p className="ev-hold">Parts of the hub (chat, games, goals, notes and time) aren&rsquo;t switched on for your school yet. Your school lead needs to apply the update first. Everything else works as usual.</p>
+        <p className="ev-hold">Parts of the hub (chat, goals, notes and time) aren&rsquo;t switched on for your school yet. Your school lead needs to apply the update first. Everything else works as usual.</p>
       ) : null}
 
       <div className="ta-hubgrid">
@@ -43,7 +44,7 @@ export default async function GrowthPage() {
         <SuggestionCard items={suggestions} />
       </div>
 
-      <GamesHub pairs={pairs} games={hub.games} ready={hub.ready} />
+      {FEATURES.games ? <GamesHub pairs={pairs} games={hub.games} ready={hub.ready} /> : null}
 
       <div className="ta-hubgrid">
         <GoalsPanel goals={hub.goals} entries={hub.practice} ready={hub.ready} />

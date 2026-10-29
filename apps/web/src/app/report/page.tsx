@@ -64,11 +64,18 @@ export default async function ReportPage() {
         <SiteHeader />
         <main style={page}>
           <h1>Culture Scan report</h1>
-          <p>
-            {load.n} {load.n === 1 ? "response" : "responses"} so far — below the {load.floor}
-            -response floor. The report stays closed until enough staff have taken the scan to
-            keep individual answers unidentifiable.
-          </p>
+          {load.reason === "no-headcount" ? (
+            <p>
+              {load.n} {load.n === 1 ? "response" : "responses"} so far, but the school record has no faculty headcount.
+              The report opens once 60% of the roster has responded, so it needs the headcount to know what 60% is.
+            </p>
+          ) : (
+            <p>
+              {load.n} {load.n === 1 ? "response" : "responses"} so far, below the {load.floor}
+              {load.reason === "participation" ? " needed (60% of the roster)" : "-response floor"}. The report stays closed
+              until enough staff have taken the scan to keep individual answers unidentifiable and the picture representative.
+            </p>
+          )}
         </main>
       </>
     );

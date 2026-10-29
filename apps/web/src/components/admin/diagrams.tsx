@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NETWORK_MIN_RESPONDENTS, networkAllowed } from "@/lib/report/gates";
 import type { DeptMatrix } from "@/lib/admin/network";
 import { cultureBubbles, flowArcs } from "@/lib/admin/visuals";
 import { DIMENSION_LABEL, type ReportStats } from "@/lib/report/stats";
@@ -19,8 +20,12 @@ const card = "var(--ev-panel-solid, var(--card))";
 const display = "var(--ev-display, var(--font-serif, Georgia, serif))";
 
 /** The four culture dimensions as bubbles: size is the average, lines show which move together, the lowest is the focus. */
-export function CultureBubbles({ stats, synthetic }: { stats: Pick<ReportStats, "dimensions" | "partial">; synthetic?: boolean }) {
-  const { bubbles, ties } = cultureBubbles(stats);
+// The ties between dimensions are partial correlations, which are unstable under 25 respondents (Nick, Oct 29), so below that the
+// averages still show and the ties do not.
+export function CultureBubbles({ stats, synthetic, n }: { stats: Pick<ReportStats, "dimensions" | "partial">; synthetic?: boolean; n?: number }) {
+  const { bubbles, ties: allTies } = cultureBubbles(stats);
+  const tiesShown = n === undefined || networkAllowed(n);
+  const ties = tiesShown ? allTies : [];
   const at = Object.fromEntries(bubbles.map((b) => [b.dimension, b]));
   return (
     <div>
@@ -68,7 +73,9 @@ export function CultureBubbles({ stats, synthetic }: { stats: Pick<ReportStats, 
         ))}
       </svg>
       <p style={{ margin: "6px 0 0", fontSize: 12.5, color: muted, textAlign: "center" }}>
-        Bigger circles mean a higher average. Thicker lines mean two dimensions rise and fall together once the others are held constant; dashed lines are too weak to tell from no tie.
+        {tiesShown
+          ? "Bigger circles mean a higher average. Thicker lines mean two dimensions rise and fall together once the others are held constant; dashed lines are too weak to tell from no tie."
+          : `Bigger circles mean a higher average. The ties between dimensions need at least ${NETWORK_MIN_RESPONDENTS} respondents to be reliable, so they aren't drawn yet.`}
         {synthetic ? " Demo data, not real staff responses." : ""}
       </p>
     </div>

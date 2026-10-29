@@ -9,6 +9,7 @@ import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
 import "@/components/teacher/teacher.css";
+import { FEATURES } from "@/lib/teacher/features";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your dashboard" };
@@ -37,7 +38,7 @@ export default async function TeacherLayout({ children, params }: { children: Re
       <div className="ta">{children}</div>
       {look === "aurora" ? <MobileTabs /> : null}
       <ChatDrawer pairs={chatPairs} initial={hub.messages} />
-      <CallHost pairs={chatPairs} meId={model.me.id} />
+      {FEATURES.videoCalls ? <CallHost pairs={chatPairs} meId={model.me.id} /> : null}
       <TimeTracker />
     </>
   );
@@ -64,7 +65,7 @@ export default async function TeacherLayout({ children, params }: { children: Re
     { href: `${BASE}/pair`, label: "See my co-mentor", hint: "My pair" },
     { href: `${BASE}/growth`, label: "Open the growth hub", hint: "Growth" },
     { href: `${BASE}/growth#goals`, label: "Set or review my goals", hint: "Growth" },
-    { href: `${BASE}/growth#games`, label: "Play a pedagogy game with my co-mentor", hint: "Growth" },
+    ...(FEATURES.games ? [{ href: `${BASE}/growth#games`, label: "Play a pedagogy game with my co-mentor", hint: "Growth" }] : []),
     { href: `${BASE}/growth#practice`, label: "Add to my practice log", hint: "Growth" },
     { href: "/survey", label: "Take the Culture Scan", hint: "Anonymous" },
     { href: "/dashboard/nick", label: "Switch to Nick’s look", hint: "Look" },

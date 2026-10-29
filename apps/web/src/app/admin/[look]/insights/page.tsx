@@ -1,4 +1,5 @@
 import { lookBase, lookOf } from "@/lib/admin/look";
+import { respondentsText } from "@/lib/report/gates";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import GrowthActivityPanel from "@/components/admin/growth-activity-panel";
@@ -71,7 +72,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
             <h2>
               {facts.scan!.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
             </h2>
-            <p className="ev-small">Collective teacher efficacy: the Efficacy average, ±{facts.scan!.cteCi.toFixed(1)} (95%), from {scan.n} respondents.</p>
+            <p className="ev-small">Collective teacher efficacy: the Efficacy average, ±{facts.scan!.cteCi.toFixed(1)} (95%), from {respondentsText(scan)}.</p>
             <div style={{ maxWidth: 640, margin: "16px 0 4px" }}>
               <DimensionBars means={scan.means} ci={scan.ci} />
             </div>
@@ -84,7 +85,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
                 How the four dimensions <em>connect.</em>
               </h2>
               <div style={{ border: "1px solid var(--ev-line)", borderRadius: 14, background: "var(--ev-panel-solid)", marginTop: 12, padding: "18px 18px 14px" }}>
-                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} />
+                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} n={snap.stats.n} />
                 <p style={{ margin: "12px 0 0", textAlign: "center", fontSize: 15 }}>{findings.network.finding.sentence}</p>
               </div>
               <h3 style={{ marginTop: 22 }}>{findings.gap.finding.title}</h3>
@@ -121,7 +122,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
               {PLC_FOR_DOMAIN[d] && <small>Routes to a {PLC_FOR_DOMAIN[d]}</small>}
             </div>
           ))}
-          <p className="ev-small">{facts.conversations} conversations logged{facts.conversationsPerPair !== null ? `, ${facts.conversationsPerPair} per pair` : ""}. Leadership sees counts, never what was said.</p>
+          <p className="ev-small">{facts.conversations} logged conversations{facts.conversationsPerPair !== null ? `, ${facts.conversationsPerPair} per pair` : ""}. Leadership sees counts, never what was said.</p>
         </section>
 
         <section className="ev-panel">

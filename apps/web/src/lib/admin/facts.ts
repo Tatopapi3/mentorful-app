@@ -15,6 +15,8 @@ export type ScanSummary = {
   means: Record<Dimension, number>;
   ci: Record<Dimension, number>;
   includesSynthetic: boolean;
+  /** How many of n are demo rows; unknown means "all of them if includesSynthetic". */
+  demoN?: number;
 };
 
 export type AdminSnapshot = {
@@ -65,6 +67,7 @@ export type Facts = {
         /** Efficacy minus Structural, on the 1 to 6 scale. */
         gap: number;
         includesSynthetic: boolean;
+        demoN?: number;
       };
 };
 
@@ -101,6 +104,7 @@ export function buildFacts(s: AdminSnapshot): Facts {
       weakest: { dimension: weakest, mean: s.scan.means[weakest] },
       gap: s.scan.means.efficacy - s.scan.means.structural,
       includesSynthetic: s.scan.includesSynthetic,
+      demoN: s.scan.demoN,
     };
   }
 

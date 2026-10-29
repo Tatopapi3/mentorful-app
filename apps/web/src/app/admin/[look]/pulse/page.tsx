@@ -1,4 +1,5 @@
 import { lookBase, lookOf } from "@/lib/admin/look";
+import { respondentsText } from "@/lib/report/gates";
 import { FocusBanner } from "@/components/admin/diagrams";
 import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
@@ -57,7 +58,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
         <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />
         <Ring pct={facts.crossPct} label="Cross departments" sub="of all pairs" />
-        <Ring pct={null} display={String(facts.conversations)} label="Conversations" sub={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
+        <Ring pct={null} display={String(facts.conversations)} label="Logged conversations" sub={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
       </div>
 
       <div className="ev-lead-grid" style={{ marginTop: 26 }}>
@@ -68,7 +69,7 @@ export default async function PulsePage({ params: routeParams, searchParams }: {
               <h2>
                 {facts.scan.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
               </h2>
-              <p style={{ fontSize: 13, marginTop: -4 }}>Collective teacher efficacy: the Efficacy dimension average. {scan.includesSynthetic ? "Demo data." : ""}</p>
+              <p style={{ fontSize: 13, marginTop: -4 }}>Collective teacher efficacy: the Efficacy dimension average, from {respondentsText(facts.scan)}.</p>
               <div style={{ margin: "18px 0 22px", maxWidth: 560 }}>
                 <DimensionBars means={scan.means} ci={scan.ci} dark />
               </div>

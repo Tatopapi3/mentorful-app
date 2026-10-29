@@ -73,6 +73,27 @@ npx tsc --noEmit
 npx next build
 ```
 
+## Nick's answers, Oct 29 (what changed, what is still open)
+
+Done on this branch (`Juan-nick-answers`):
+
+| Nick said | What was done |
+|---|---|
+| Game hub is a distraction before Demo Day; embedded video is "after" | Both are built but **off**. `src/lib/teacher/features.ts`; set `NEXT_PUBLIC_FEATURE_GAMES=1` / `NEXT_PUBLIC_FEATURE_VIDEO=1` at build time to bring either back. Off hides the Growth games panel, the "play a game" menu entry and suggestion link, the play route (404), every Video call button, and the call host. Pair chat and file sharing stay. |
+| Floor of 5 on Overview too | Both looks of Overview: counts under 5 show "fewer than 5" (0 too), departments under 5 are left out or combined, **no teacher is named**, the faculty network and the list of who is paired with whom are gone (Constellation covers the network by department), pair crossing is shown only when both sides are 5+. `lib/admin/overview-floor.ts`, tested. |
+| Label it "logged conversations" | Renamed on Pulse, Overview, Summary, Insights, the CSV and the deck. |
+| 60% of the roster; network minimum 25; headcount on the school record; demo never called real | `scripts/020_school_headcount.sql` (not applied) adds `schools.faculty_headcount`. `lib/report/gates.ts` holds the rules. `loadReportStats` applies the 60% gate to real data (no headcount means the report stays closed and says why); data that includes demo rows is labelled demo and not gated. Respondents read "56 respondents (6 real, 50 demo)". The Insights bubbles and the report's network slide hide the ties below 25 respondents. |
+
+Not done, and why:
+
+- **Survey access by one-time codes** and **release results after the survey closes**: both change the survey/report pipeline (`survey_responses`, the service-key path). That is the privacy work Eric is picking up; this branch did not touch it.
+- **Master key**: Nick is rotating it and restricting it. The "reports read from the database, not the master key" item goes on the hardening roadmap.
+- **Profile visibility = name, department, strengths** (admins keep email for roster work): this conflicts with the lookbook card (photo, experience, achievements, "growing in", what I want). The card is opt-in and written by the teacher, but it is more than the fixed minimal set. **Decision needed from Juan/Nick**, so it was left as is.
+- **"Archetype" panel**: Nick wants to discuss whether it should exist. It stays, with the floor applied.
+- **Faculty map page and Pairing page** still show named teachers and pairs (the map, and pairing is roster work). Only Overview was in Nick's ask; worth confirming whether the map should go.
+- **Triads**: after Demo Day (data-model change). **RSS feed**: reshape toward sharing Google Docs and PDFs between co-mentors; pair chat file sharing is the start. Not built.
+- **Hour logging / CTLE**: keep on the list, "design the logging, don't promise the credit". Built and parked on local branch `Juan-ctle-idea`; its SQL is also numbered 020 and must be renumbered if both land.
+
 ## Next steps
 
 1. Apply 017, 018, 019 (and 016) to a project that is not Nick's, then sign in real test teachers (only one profile is

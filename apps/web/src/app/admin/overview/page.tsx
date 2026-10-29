@@ -1,18 +1,18 @@
 import { redirect } from "next/navigation";
+import { demoCount, respondentLabel } from "@/lib/report/gates";
 import { createClient } from "@/lib/supabase/server";
 import AdminTabs from "@/components/nick/admin-tabs";
 import { CycleSwitcher } from "@/components/admin/kit";
 import SiteHeader from "@/components/SiteHeader";
-import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
+import Link from "next/link";
+import { FEWER_THAN_5, floorCell, floorCrossing, floorDepartments, floorRows, floorShare, type Cell } from "@/lib/admin/overview-floor";
 import { loadReportStats } from "@/lib/report/data";
 import {
   CONCERN_DOMAINS,
   DOMAIN_LABEL,
-  ARCHETYPE_LABEL,
   TEACHING_STYLE,
   TEACHING_STYLES,
   domainsForTags,
-  type ConcernDomain,
   type TeachingStyle,
 } from "@/lib/domains";
 
@@ -53,15 +53,6 @@ type Pair = {
   domain: string | null;
   strategic_tag: string | null;
 };
-
-function fullName(p: { first_name: string | null; last_name: string | null }) {
-  return [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || "Unnamed";
-}
-
-/** Sorted count map → array, descending, with a stable tiebreak on label. */
-function ranked(counts: Record<string, number>) {
-  return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-}
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const cycleParam = (await searchParams).cycle;
@@ -165,26 +156,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const cte =
     report.status === "ok" ? report.stats.dimensions.efficacy.mean : null;
   const cteN = report.status === "ok" ? report.stats.n : null;
-  const cteSynthetic = report.status === "ok" ? report.includesSynthetic : false;
-
-  // --- faculty map ---------------------------------------------------------
-  const mapUsers = faculty.map((p) => ({
-    id: p.id,
-    name: fullName(p),
-    department: p.department,
-    strengthTags: p.strength_tags,
-    domains: domainsForTags(p.strength_tags).map((d) => DOMAIN_LABEL[d]),
-    archetype: p.archetype_id ? ARCHETYPE_LABEL[p.archetype_id] : null,
-    teachingStyle: p.teaching_style
-      ? TEACHING_STYLE[p.teaching_style as TeachingStyle]?.label ?? null
-      : null,
-  }));
-  const mapEdges = pairs.map((p) => ({
-    id: p.id,
-    source: p.host_id,
-    target: p.visitor_id,
-    label: (p.strategic_tag || p.domain || "").toString(),
-  }));
+  const cteDemo = report.status === "ok" ? demoCount({ n: report.stats.n, includesSynthetic: report.includesSynthetic, demoN: report.demoN }) : 0;
 
   // --- department / strength-domain / archetype rollups --------------------
   const deptCounts: Record<string, number> = {};
@@ -202,9 +174,19 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     if (p.teaching_style && p.teaching_style in styleCounts) styleCounts[p.teaching_style]++;
   }
 
-  const maxDomain = Math.max(1, ...CONCERN_DOMAINS.map((d) => domainCounts[d]));
-  const maxStrength = Math.max(1, ...CONCERN_DOMAINS.map((d) => strengthCounts[d]));
-  const maxDept = Math.max(1, ...Object.values(deptCounts));
+  // Nothing below may single out a group under 5 (Nick, Oct 29): counts under the floor are withheld, small
+  // departments are left out or combined, and no teacher is named.
+  const domainRows = floorRows(CONCERN_DOMAINS.map((d) => [DOMAIN_LABEL[d], domainCounts[d]] as [string, number]));
+  const strengthRows = floorRows(CONCERN_DOMAINS.map((d) => [DOMAIN_LABEL[d], strengthCounts[d]] as [string, number]));
+  const maxDomain = Math.max(1, ...domainRows.map(([, n]) => n ?? 0));
+  const maxStrength = Math.max(1, ...strengthRows.map(([, n]) => n ?? 0));
+  const departments = floorDepartments(deptCounts);
+  const deptRows: [string, number][] = [
+    ...departments.rows,
+    ...(departments.combined ? ([[`${departments.combined.departments} smaller departments, combined`, departments.combined.teachers]] as [string, number][]) : []),
+  ];
+  const maxDept = Math.max(1, ...deptRows.map(([, n]) => n));
+  const crossing = floorCrossing(pairs.map((p) => ({ host: byId.get(p.host_id)?.department ?? null, visitor: byId.get(p.visitor_id)?.department ?? null })));
 
   return (
     <>
@@ -234,9 +216,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         {/* ---------------------------------------------------- metric strip */}
         <section className="adm-metrics" aria-label="Summary">
           <Metric
-            label="Conversations"
+            label="Logged conversations"
             value={String(conversationCount)}
-            note="logged, content stays private"
+            note="content stays private"
           />
           <Metric label="Active pairs" value={String(pairs.length)} note="approved this cycle" />
           <Metric label="Visits" value={String(pairs.length)} note="one per pair" />
@@ -251,22 +233,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             note={
               cte === null
                 ? "no scan data"
-                : `efficacy · n=${cteN}${cteSynthetic ? " · demo" : ""}`
+                : `efficacy · ${respondentLabel(cteN ?? 0, cteDemo)}`
             }
           />
         </section>
 
         {/* -------------------------------------------------- faculty network */}
-        <section className="adm-card adm-map-card">
+        <section className="adm-card">
           <div className="adm-card-head">
             <h2>Faculty network</h2>
             <span className="mono adm-count">
-              {mapUsers.length} people · {mapEdges.length} pairs
+              {faculty.length} teachers · {pairs.length} pairs
             </span>
           </div>
-          <div className="adm-map">
-            <FacultyMapClient users={mapUsers} edges={mapEdges} />
-          </div>
+          <p className="adm-lede">
+            To protect people, this page doesn’t list teachers or show who is paired with whom, and no group under 5 is shown
+            anywhere on it. The <Link href="/admin/constellation">Constellation</Link> shows the same network by department.
+          </p>
         </section>
 
         {/* ------------------------------------------ what we're working on */}
@@ -277,14 +260,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               <span className="mono adm-count">{cycle?.name ?? "No cycle"}</span>
             </div>
             <ul className="adm-bars">
-              {CONCERN_DOMAINS.map((d) => (
-                <Bar
-                  key={d}
-                  label={DOMAIN_LABEL[d]}
-                  value={domainCounts[d]}
-                  max={maxDomain}
-                  suffix="pairs"
-                />
+              {domainRows.map(([label, n]) => (
+                <Bar key={label} label={label} value={n} max={maxDomain} suffix="pairs" />
               ))}
             </ul>
             <p className="adm-foot">
@@ -299,14 +276,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               <span className="mono adm-count">set membership</span>
             </div>
             <ul className="adm-bars">
-              {CONCERN_DOMAINS.map((d) => (
-                <Bar
-                  key={d}
-                  label={DOMAIN_LABEL[d]}
-                  value={strengthCounts[d]}
-                  max={maxStrength}
-                  suffix="teachers"
-                />
+              {strengthRows.map(([label, n]) => (
+                <Bar key={label} label={label} value={n} max={maxStrength} suffix="teachers" />
               ))}
             </ul>
             <p className="adm-foot">
@@ -322,10 +293,14 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               <span className="mono adm-count">{faculty.length} teachers</span>
             </div>
             <ul className="adm-bars">
-              {ranked(deptCounts).map(([dept, n]) => (
+              {deptRows.map(([dept, n]) => (
                 <Bar key={dept} label={dept} value={n} max={maxDept} suffix="" />
               ))}
             </ul>
+            <p className="adm-foot">
+              Departments with fewer than 5 teachers aren’t listed
+              {departments.notShown ? `, so ${FEWER_THAN_5} teachers are left out of this chart` : departments.combined ? "; the small ones are shown together" : ""}.
+            </p>
           </section>
 
           {/* ------------------------------------------ teaching archetypes */}
@@ -337,15 +312,13 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             <ul className="adm-styles">
               {TEACHING_STYLES.map((s) => {
                 const meta = TEACHING_STYLE[s as TeachingStyle];
-                const n = styleCounts[s];
-                const pct = faculty.length ? Math.round((n / faculty.length) * 100) : 0;
+                const n = floorCell(styleCounts[s]);
+                const pct = n === null ? 0 : floorShare(n, faculty.length) ?? 0;
                 return (
                   <li key={s}>
                     <div className="adm-style-top">
                       <b>{meta.label}</b>
-                      <span className="mono">
-                        {n} · {pct}%
-                      </span>
+                      <span className="mono">{n === null ? FEWER_THAN_5 : `${n} · ${pct}%`}</span>
                     </div>
                     <div className="adm-track">
                       <i style={{ width: `${pct}%` }} />
@@ -365,52 +338,19 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             <span className="mono adm-count">{pairs.length} pairs</span>
           </div>
           <p className="adm-lede">
-            Shared-focus peer coaching: each pair works a domain both are already strong in,
-            bringing different instincts to it.
+            Shared-focus peer coaching: each pair works a domain both are already strong in, bringing different instincts to it.
           </p>
-          <ul className="adm-pairs">
-            {pairs.map((p) => {
-              const host = byId.get(p.host_id);
-              const visitor = byId.get(p.visitor_id);
-              if (!host || !visitor) return null;
-              const shared = domainsForTags(host.strength_tags).filter((d) =>
-                domainsForTags(visitor.strength_tags).includes(d)
-              );
-              const ha = host.archetype_id ? ARCHETYPE_LABEL[host.archetype_id] : null;
-              const va = visitor.archetype_id ? ARCHETYPE_LABEL[visitor.archetype_id] : null;
-              const contrast = ha && va && ha !== va;
-              return (
-                <li key={p.id} className="adm-pair">
-                  <div className="adm-pair-people">
-                    <span>
-                      <b>{fullName(host)}</b>
-                      <em>{host.department}</em>
-                    </span>
-                    <span className="adm-pair-amp">with</span>
-                    <span>
-                      <b>{fullName(visitor)}</b>
-                      <em>{visitor.department}</em>
-                    </span>
-                  </div>
-                  <div className="adm-pair-meta">
-                    {p.domain ? (
-                      <span className="adm-chip">{DOMAIN_LABEL[p.domain] ?? p.domain}</span>
-                    ) : null}
-                    {shared.length > 0 ? (
-                      <span className="adm-why">
-                        both strong in {shared.map((d) => DOMAIN_LABEL[d]).join(" and ")}
-                      </span>
-                    ) : null}
-                    {contrast ? (
-                      <span className="adm-why adm-why-dim">
-                        {ha} · {va}
-                      </span>
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          {crossing ? (
+            <ul className="adm-bars">
+              <Bar label="Pairs across two departments" value={crossing.across} max={Math.max(crossing.across, crossing.within)} suffix="pairs" />
+              <Bar label="Pairs within one department" value={crossing.within} max={Math.max(crossing.across, crossing.within)} suffix="pairs" />
+            </ul>
+          ) : (
+            <p className="adm-foot">
+              Whether pairs cross departments isn’t shown yet: one of the two groups has fewer than 5 pairs, and showing the other would give it away.
+            </p>
+          )}
+          <p className="adm-foot">Who is paired with whom stays with the people managing pairings, not on this overview.</p>
         </section>
 
         <p className="adm-note">
@@ -439,18 +379,18 @@ function Bar({
   suffix,
 }: {
   label: string;
-  value: number;
+  value: Cell;
   max: number;
   suffix: string;
 }) {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  const pct = value === null ? 0 : max > 0 ? Math.round((value / max) * 100) : 0;
   return (
     <li className="adm-bar">
       <div className="adm-bar-top">
         <span>{label}</span>
         <span className="mono">
-          {value}
-          {suffix ? ` ${suffix}` : ""}
+          {value === null ? FEWER_THAN_5 : value}
+          {value !== null && suffix ? ` ${suffix}` : ""}
         </span>
       </div>
       <div className="adm-track">

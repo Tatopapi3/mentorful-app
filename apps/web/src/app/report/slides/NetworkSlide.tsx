@@ -1,4 +1,5 @@
 import SlideShell from "./SlideShell";
+import { NETWORK_MIN_RESPONDENTS, networkAllowed } from "@/lib/report/gates";
 import { PANEL_COPY, SLIDE_COUNT } from "@/lib/report/deck";
 import { DIMENSIONS, DIMENSION_LABEL, type Dimension, type ReportStats } from "@/lib/report/stats";
 import { fmtR, fmtScale } from "@/lib/report/findings";
@@ -41,6 +42,14 @@ export default function NetworkSlide({
       footerLeft={footerLeft}
     >
       {(area) => {
+        // Partial correlations are unstable under 25 respondents, so the network isn't drawn (Nick, Oct 29).
+        if (!networkAllowed(stats.n)) {
+          return (
+            <text x={area.x + area.w / 2} y={area.y + area.h / 2} fontSize={22} fill={T.inkSecondary} textAnchor="middle">
+              {`The network needs at least ${NETWORK_MIN_RESPONDENTS} respondents. This report has ${stats.n}.`}
+            </text>
+          );
+        }
         // Legend sits to the right, so the graph keeps the vertical room.
         const graphW = area.w - 340;
         const cx = area.x + graphW / 2;

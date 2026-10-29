@@ -7,6 +7,7 @@ import type { Message } from "@/lib/teacher/hub-data";
 import { Icon } from "./icons";
 import { OPEN_CHAT, openCall } from "./open-events";
 import { Stamp } from "./stamp";
+import { FEATURES } from "@/lib/teacher/features";
 
 export type ChatPair = { pairingId: string; partnerName: string; partnerFirst: string; initials: string };
 
@@ -122,7 +123,7 @@ export function ChatDrawer({ pairs, initial }: { pairs: ChatPair[]; initial: Mes
     const res = await createLive(() => {}).upload(pair.pairingId, files);
     setSharing(false);
     if (res.failed.length) setError(`Couldn't share ${res.failed.join(", ")}. Files up to 200 MB work.`);
-    if (res.ok) await send(`Shared ${res.ok === 1 ? files[0].name : `${res.ok} files`} in our video call.`);
+    if (res.ok) await send(`Shared ${res.ok === 1 ? files[0].name : `${res.ok} files`} in our chat.`);
   }
 
   let lastDay = "";
@@ -144,9 +145,11 @@ export function ChatDrawer({ pairs, initial }: { pairs: ChatPair[]; initial: Mes
               </small>
             </div>
             <span className="ta-spacer" />
-            <button type="button" className="ta-iconbtn" onClick={() => openCall(pair.pairingId)} aria-label={`Video call ${pair.partnerFirst}`} title="Video call">
-              <Icon name="video" size={16} />
-            </button>
+            {FEATURES.videoCalls ? (
+              <button type="button" className="ta-iconbtn" onClick={() => openCall(pair.pairingId)} aria-label={`Video call ${pair.partnerFirst}`} title="Video call">
+                <Icon name="video" size={16} />
+              </button>
+            ) : null}
             <button type="button" className="ta-iconbtn" onClick={() => setOpen(false)} aria-label="Close chat">
               <Icon name="close" size={16} />
             </button>

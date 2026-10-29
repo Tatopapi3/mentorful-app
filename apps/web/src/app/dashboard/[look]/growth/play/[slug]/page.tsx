@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProtocolPlayer } from "@/components/teacher/protocol-player";
+import { FEATURES } from "@/lib/teacher/features";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { protocolFor } from "@/lib/teacher/protocols";
 import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
 
 export default async function PlayPage({ params, searchParams }: { params: Promise<{ look: string; slug: string }>; searchParams: Promise<{ with?: string }> }) {
+  if (!FEATURES.games) notFound();
   const { slug, look: lookRaw } = await params;
   const base = teacherBase(await teacherLookOf(Promise.resolve({ look: lookRaw })));
   const { with: withPair } = await searchParams;
