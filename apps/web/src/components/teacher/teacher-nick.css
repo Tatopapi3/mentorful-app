@@ -12,7 +12,7 @@
   --ev-line: var(--line);
   --ev-panel: var(--card);
   --ev-panel-solid: var(--card);
-  --ev-soft: var(--paper-2);
+  --ev-soft: #f6f2ea;
   --ev-teal: var(--teal);
   --ev-teal-deep: var(--teal-dk);
   --ev-grad: var(--teal);
