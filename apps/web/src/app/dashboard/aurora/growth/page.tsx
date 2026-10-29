@@ -1,5 +1,5 @@
 import { Icon } from "@/components/teacher/icons";
-import { GamesHub, GoalsPanel, PracticeLog, SuggestionCard } from "@/components/teacher/growth-hub";
+import { GamesHub, GoalsPanel, PracticeLog, SharingCard, SuggestionCard } from "@/components/teacher/growth-hub";
 import { TimeCard } from "@/components/teacher/time-card";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
@@ -39,7 +39,7 @@ export default async function GrowthPage() {
       ) : null}
 
       <div className="ta-hubgrid">
-        <TimeCard rows={hub.time} serverToday={serverToday} ready={hub.ready} />
+        <TimeCard rows={hub.time} serverToday={serverToday} ready={hub.ready} sharing={hub.sharing.on} />
         <SuggestionCard items={suggestions} />
       </div>
 
@@ -49,6 +49,8 @@ export default async function GrowthPage() {
         <GoalsPanel goals={hub.goals} entries={hub.practice} ready={hub.ready} />
         <PracticeLog entries={hub.practice} goals={hub.goals} ready={hub.ready} totals={practiceTotals(hub.practice, new Date())} />
       </div>
+
+      <SharingCard on={hub.sharing.on} ready={hub.sharing.ready} />
 
       <section className="ev-panel" aria-labelledby="ta-more-h">
         <div className="ta-between">

@@ -12,7 +12,7 @@ const noSubscribe = () => () => {};
  * How long the teacher has spent on Mentorful, for their own reflection. Counts only: no target, no streak, no
  * comparison with anyone. Private to them (017 gives no one else a way to read it), and only active time counts.
  */
-export function TimeCard({ rows, serverToday, ready }: { rows: PlatformDay[]; serverToday: string; ready: boolean }) {
+export function TimeCard({ rows, serverToday, ready, sharing }: { rows: PlatformDay[]; serverToday: string; ready: boolean; sharing: boolean }) {
   const today = useSyncExternalStore(noSubscribe, () => localDay(), () => serverToday);
   const visit = useVisitSeconds();
   const bars = weekBars(rows, today);
@@ -42,7 +42,7 @@ export function TimeCard({ rows, serverToday, ready }: { rows: PlatformDay[]; se
       <p className="ta-privnote">
         <Icon name="lock" size={15} />
         <span>
-          <strong>Only you can see this.</strong> It counts the time you are actively using Mentorful, not a tab left open, and your school lead never sees it.
+          <strong>Only you can see this.</strong> It counts the time you are actively using Mentorful, not a tab left open. Your school lead never sees your own figures{sharing ? "; because you chose to be counted, your activity adds to anonymous school-wide totals (never your name or minutes)" : ", and nothing from it is counted unless you choose below"}.
           {!ready ? " (Time tracking isn't switched on for your school yet.)" : ""}
         </span>
       </p>

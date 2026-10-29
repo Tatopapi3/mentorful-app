@@ -499,3 +499,10 @@
 @media (max-width: 650px) {
   .ta-choice-cols, .ta-dominoes { grid-template-columns: 1fr; }
 }
+
+/* anonymous school totals */
+.ta-sharing-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 16px 0; }
+.ta-sharing-cols > div { padding: 14px 16px; border: 1px solid var(--ev-line); border-radius: 18px; background: var(--ev-soft); }
+.ta-sharing-cols ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+.ta-sharing-cols li { margin-bottom: 6px; }
+@media (max-width: 650px) { .ta-sharing-cols { grid-template-columns: 1fr; } }

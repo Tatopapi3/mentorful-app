@@ -163,3 +163,22 @@ export async function addGrowthEntry(kind: GrowthKind, body: string, minutes: nu
   refresh();
   return { ok: true };
 }
+
+/* ------------------------------------------------------ anonymous school totals */
+
+/** The teacher's own choice to be counted in their school's anonymous growth totals (019). Off until they turn it on. */
+export async function setGrowthSharing(share: boolean): Promise<Result> {
+  const { supabase, me } = await session();
+  if (!me) return fail("You need to be signed in.");
+  const { data: prof } = await supabase.from("profiles").select("school_id").eq("id", me).maybeSingle();
+  const school = (prof as { school_id: string | null } | null)?.school_id;
+  if (!school) return fail("Your profile isn't linked to a school yet.");
+  const { data: row } = await supabase.from("growth_sharing").select("profile_id").eq("profile_id", me).maybeSingle();
+  const now = new Date().toISOString();
+  const r = row
+    ? await supabase.from("growth_sharing").update({ share, updated_at: now }).eq("profile_id", me)
+    : await supabase.from("growth_sharing").insert({ profile_id: me, school_id: school, share, updated_at: now });
+  if (r.error) return fail(`Couldn't save: ${r.error.message}`);
+  refresh();
+  return { ok: true };
+}
