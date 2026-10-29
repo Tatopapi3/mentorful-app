@@ -99,7 +99,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
       )}
 
       <ParticipationPanel skin={look} snap={snap} />
-      <GrowthActivityPanel skin={look} data={growth} />
+      <GrowthActivityPanel skin={look} data={growth} ctle={ctle} />
 
       <div id="trends" style={{ scrollMarginTop: 96 }}>
         <TrendsSections skin={look} snap={snap} data={trends} withHeading />
