@@ -12,6 +12,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (s: string, n: number) => iso(new Date(Date.parse(`${s}T00:00:00Z`) + n * 86_400_000));
 const ago = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
 
+const hash = (a: number, b: number) => (Math.imul(a ^ 0x9e3779b9, 2654435761) ^ Math.imul(b + 0x7f4a7c15, 40503)) >>> 0;
+
 export function addGrowthSeeds(t: Tables, meId: string): void {
   const teachers = t.profiles.filter((p) => p.role === "teacher");
   const today = iso(new Date());
@@ -32,9 +34,9 @@ export function addGrowthSeeds(t: Tables, meId: string): void {
     if (opted || heavy) sharing.push({ profile_id: p.id, school_id: p.school_id, share: opted, updated_at: ago(10 + (i % 9)) });
     if (!(opted || heavy)) return;
     // Each teacher has their own level of use, from almost none to most days, so the totals look like a real school.
-    const level = (i * 5) % 9;
+    const level = (i * 37) % 11; // 0..10: roughly 0% to 80% of days
     for (let d = 0; d < 56; d++) {
-      if ((i * 7 + d * 3) % 12 < level) {
+      if (hash(i, d) % 100 < level * 8) {
         pt.push({ id: `pt-x-${i}-${d}`, profile_id: p.id, day: addDays(today, -d), seconds: heavy ? 3000 + ((i * 131 + d * 57) % 5000) : 420 + ((i * 131 + d * 57) % 2400), updated_at: ago(d) });
       }
     }
