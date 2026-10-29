@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Icon } from "./icons";
 
 // The same keys the survey writes, so the card knows where the teacher is without asking the server. The scan is
@@ -11,16 +11,18 @@ const COMPLETED_KEY = "mentorful:culture-scan-v2:completed";
 
 type Status = "unknown" | "not-started" | "in-progress" | "completed";
 
+const read = (): Status => {
+  try {
+    return localStorage.getItem(COMPLETED_KEY) ? "completed" : localStorage.getItem(PROGRESS_KEY) ? "in-progress" : "not-started";
+  } catch {
+    return "not-started";
+  }
+};
+const noSubscribe = () => () => {};
+
 export function useScanStatus(): Status {
-  const [status, setStatus] = useState<Status>("unknown");
-  useEffect(() => {
-    try {
-      setStatus(localStorage.getItem(COMPLETED_KEY) ? "completed" : localStorage.getItem(PROGRESS_KEY) ? "in-progress" : "not-started");
-    } catch {
-      setStatus("not-started");
-    }
-  }, []);
-  return status;
+  // Stays "unknown" on the server and until hydrated, then reads this device's own progress.
+  return useSyncExternalStore(noSubscribe, read, () => "unknown" as const);
 }
 
 const WORDS: Record<Status, { label: string; cta: string | null }> = {

@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-/**
- * "Good morning" only means something in the teacher's own time zone, which the server doesn't know. It renders a
- * neutral "Hello" first and settles on the hour once it is in the browser, so nobody is told good morning at 4pm.
- */
+// The hour and the date only mean something in the teacher's own time zone, which the server doesn't know. The server
+// snapshot is neutral ("Hello", "Today"); the browser's real values replace it once hydrated, so nobody is told good
+// morning at 4pm and there is no hydration mismatch.
+const noSubscribe = () => () => {};
+
 export function Greeting({ first }: { first: string }) {
-  const [word, setWord] = useState("Hello");
-  useEffect(() => {
-    const h = new Date().getHours();
-    setWord(h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
-  }, []);
+  const word = useSyncExternalStore(
+    noSubscribe,
+    () => {
+      const h = new Date().getHours();
+      return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+    },
+    () => "Hello",
+  );
   return (
     <>
       {word}, <em>{first}</em>.
@@ -20,9 +24,10 @@ export function Greeting({ first }: { first: string }) {
 }
 
 export function Today() {
-  const [text, setText] = useState("");
-  useEffect(() => {
-    setText(new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date()));
-  }, []);
-  return <span suppressHydrationWarning>{text || "Today"}</span>;
+  const text = useSyncExternalStore(
+    noSubscribe,
+    () => new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date()),
+    () => "Today",
+  );
+  return <>{text}</>;
 }
