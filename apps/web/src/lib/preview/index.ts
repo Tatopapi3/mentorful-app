@@ -29,6 +29,9 @@ export function previewTables(): Tables {
   if (!(g.__previewTables as Tables).pair_messages) {
     const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addHubTables(g.__previewTables, me.id);
+  }
+  if (!(g.__previewTables as Tables).teacher_cards) {
+    const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addLookbookTables(g.__previewTables, me.id);
   }
   return g.__previewTables;
