@@ -45,7 +45,7 @@ export const loadHub = cache(async (): Promise<Hub> => {
   const none = Promise.resolve({ data: [] as never[], error: null });
   const [msgs, games, notes, time, goals, practice] = await Promise.all([
     pairIds.length ? supabase.from("pair_messages").select("id, pairing_id, sender_id, body, created_at").in("pairing_id", pairIds).order("created_at", { ascending: false }).limit(300) : none,
-    pairIds.length ? supabase.from("pair_game_sessions").select("id, pairing_id, module, logged_by, minutes, completed, note, created_at").in("pairing_id", pairIds).order("created_at", { ascending: false }).limit(300) : none,
+    pairIds.length ? supabase.from("pair_game_sessions").select("id, pairing_id, module, logged_by, minutes, completed, note, outputs, created_at").in("pairing_id", pairIds).order("created_at", { ascending: false }).limit(300) : none,
     supabase.from("future_notes").select("id, body, open_on, opened_at, created_at").eq("profile_id", me).order("created_at", { ascending: false }).limit(100),
     supabase.from("platform_time").select("day, seconds").eq("profile_id", me).order("day", { ascending: false }).limit(60),
     supabase.from("growth_goals").select("id, title, area, why, target_date, status, created_at").eq("profile_id", me).order("created_at", { ascending: false }).limit(50),

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { toMessage, type Message } from "@/lib/teacher/hub-data";
 import { MODULES, type GrowthKind } from "@/lib/teacher/hub";
+import { cleanOutputs, protocolByName } from "@/lib/teacher/protocols";
 
 /**
  * The hub's write paths. Like ../actions.ts, every one runs on the caller's SESSION client, so the policies in
@@ -56,13 +57,15 @@ export async function sendMessage(pairingId: string, text: string): Promise<{ ok
 
 /* -------------------------------------------------------------- games hub */
 
-export async function logGameSession(pairingId: string, module: string, minutes: number | null, completed: boolean, note: string): Promise<Result> {
+export async function logGameSession(pairingId: string, module: string, minutes: number | null, completed: boolean, note: string, outputs?: Record<string, string>): Promise<Result> {
   const { supabase, me } = await session();
   if (!me) return fail("You need to be signed in.");
   if (!MODULES.some((m) => m.name === module)) return fail("That isn't one of the modules.");
   if (!(await inPair(supabase, me, pairingId))) return fail("That pairing isn't one of yours.");
   const mins = minutes && Number.isFinite(minutes) ? Math.min(600, Math.max(1, Math.round(minutes))) : null;
-  const { error } = await supabase.from("pair_game_sessions").insert({ pairing_id: pairingId, module, logged_by: me, minutes: mins, completed, note: note.trim().slice(0, 500) || null });
+  const proto = protocolByName(module);
+  const clean = proto && outputs ? cleanOutputs(proto, outputs) : {};
+  const { error } = await supabase.from("pair_game_sessions").insert({ pairing_id: pairingId, module, logged_by: me, minutes: mins, completed, note: note.trim().slice(0, 500) || null, outputs: Object.keys(clean).length ? clean : null });
   if (error) return fail(`Couldn't save: ${error.message}`);
   refresh();
   return { ok: true };
