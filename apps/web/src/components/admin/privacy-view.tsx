@@ -14,7 +14,7 @@ export default async function PrivacyView({ skin }: { skin: Skin }) {
   if (!admin) return null;
   const { supabase } = admin;
   // The growth and chat tables only exist once 017 is applied; a missing table is skipped rather than shown as a reassuring 0.
-  const [logs, answers, pairs, time, practice, notes, chat] = await Promise.all([
+  const [logs, answers, pairs, time, practice, notes, chat, ctle] = await Promise.all([
     supabase.from("conversation_logs").select("id", { count: "exact", head: true }),
     supabase.from("survey_responses").select("id", { count: "exact", head: true }),
     supabase.from("pairings").select("id", { count: "exact", head: true }),
@@ -22,6 +22,7 @@ export default async function PrivacyView({ skin }: { skin: Skin }) {
     supabase.from("growth_entries").select("id", { count: "exact", head: true }),
     supabase.from("future_notes").select("id", { count: "exact", head: true }),
     supabase.from("pair_messages").select("id", { count: "exact", head: true }),
+    supabase.from("ctle_hours").select("id", { count: "exact", head: true }),
   ]);
   const checks = [
     { label: "Conversation logs your account can read", n: logs.count ?? 0, private: true, why: "Conversations belong to the pair. There is no leadership read access." },
@@ -31,6 +32,7 @@ export default async function PrivacyView({ skin }: { skin: Skin }) {
     ...(practice.error ? [] : [{ label: "Practice-log entries your account can read", n: practice.count ?? 0, private: true, why: "A teacher's practice log is theirs alone." }]),
     ...(notes.error ? [] : [{ label: "Notes to a future self your account can read", n: notes.count ?? 0, private: true, why: "Private to the teacher who wrote them." }]),
     ...(chat.error ? [] : [{ label: "Pair chat messages your account can read", n: chat.count ?? 0, private: true, why: "Chat belongs to the two people in the pair." }]),
+    ...(ctle.error ? [] : [{ label: "Teachers' professional-development hours your account can read", n: ctle.count ?? 0, private: true, why: "A teacher's CTLE count is theirs alone. You see only a rounded share of teachers on pace, from those who opted in." }]),
   ];
 
   return (
