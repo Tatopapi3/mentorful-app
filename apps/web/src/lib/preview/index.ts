@@ -10,6 +10,7 @@ import { buildTables, IDS } from "./fixtures";
 import { buildNickTables } from "./nickTables";
 import { overlay } from "./journal";
 import { addHubTables } from "./hubTables";
+import { addLookbookTables, lookbookRows } from "./lookbookTables";
 import { createMockClient, type Row, type Tables, type Visibility, type Write } from "./mockQuery";
 
 export type PreviewRole = "admin" | "teacher";
@@ -28,6 +29,7 @@ export function previewTables(): Tables {
   if (!(g.__previewTables as Tables).pair_messages) {
     const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addHubTables(g.__previewTables, me.id);
+    if (me) addLookbookTables(g.__previewTables, me.id);
   }
   return g.__previewTables;
 }
@@ -51,6 +53,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
       const mine = new Set(tables.pairings.filter((p: Row) => p.status === "approved" && (p.host_id === me.id || p.visitor_id === me.id)).map((p: Row) => p.id));
       return role === "teacher" ? rows.filter((r: Row) => mine.has(r.pairing_id)) : [];
     }
+    if (table === "teacher_cards") return rows.filter((r: Row) => r.profile_id === me.id);
     if (["future_notes", "platform_time", "growth_goals", "growth_entries"].includes(table)) return rows.filter((r: Row) => r.profile_id === me.id);
     return rows;
   };
@@ -60,6 +63,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
     visible,
     user: { id: me.auth_user_id, email: me.email },
     rpc: {
+      lookbook_cards: () => (role === "teacher" ? lookbookRows(tables) : []),
       // Admins can't read conversation rows by design; they get a count.
       participation_summary: (args: { p_cycle: string }) => {
         const pr = tables.pairings.filter((p) => p.cycle_id === args.p_cycle && p.status === "approved");
