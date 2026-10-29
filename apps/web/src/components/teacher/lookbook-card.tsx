@@ -27,7 +27,7 @@ const pill = (n: number, total: number) => (total > n ? `+${total - n}` : null);
 
 /** The card as it appears in the grid. Used for real cards and for the editor's live preview. */
 export function LookbookCard({ card, badge, onOpen, selected }: { card: Card; badge?: string; onOpen?: () => void; selected?: boolean }) {
-  const doms = card.domains.slice(0, 3);
+  const doms = card.domains.slice(0, 2);
   return (
     <button type="button" className="ta-lb-card" onClick={onOpen} aria-label={`${card.name}${card.headline ? `, ${card.headline}` : ""}. Open card`} data-selected={selected} disabled={!onOpen}>
       <CardPhoto card={card} className="fill" />
@@ -44,15 +44,15 @@ export function LookbookCard({ card, badge, onOpen, selected }: { card: Card; ba
             {doms.map((d) => (
               <span key={d}>{DOMAIN_LABEL[d]}</span>
             ))}
-            {pill(3, card.domains.length) ? <span>{pill(3, card.domains.length)}</span> : null}
+            {pill(2, card.domains.length) ? <span>{pill(2, card.domains.length)}</span> : null}
           </div>
         ) : null}
         {card.wants.length ? (
           <div className="ta-lb-wants" aria-label="Looking for">
-            {card.wants.slice(0, 2).map((w) => (
+            {card.wants.slice(0, 1).map((w) => (
               <span key={w}>{w}</span>
             ))}
-            {pill(2, card.wants.length) ? <span>{pill(2, card.wants.length)}</span> : null}
+            {pill(1, card.wants.length) ? <span>{pill(1, card.wants.length)}</span> : null}
           </div>
         ) : null}
       </div>
