@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "./icons";
+import { Overlay } from "./overlay";
 
 /**
  * A graceful way out of a pairing that is not working, kept private from the partner. PREVIEW: nothing is sent yet.
@@ -37,6 +38,7 @@ export function AdjustRequest({ partnerFirst }: { partnerFirst: string }) {
       <small className="ev-muted">Preview: requests aren&rsquo;t delivered yet.</small>
 
       {open && (
+        <Overlay>
         <div className="ev-scrim" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && close()}>
           <div className="ta-modal" role="dialog" aria-modal="true" aria-labelledby="ta-adjust-title">
             <button className="ta-modal-x" type="button" aria-label="Close" onClick={close}>
@@ -72,6 +74,7 @@ export function AdjustRequest({ partnerFirst }: { partnerFirst: string }) {
             )}
           </div>
         </div>
+        </Overlay>
       )}
     </aside>
   );

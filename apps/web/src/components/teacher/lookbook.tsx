@@ -7,6 +7,7 @@ import { NO_FILTERS, WANTS, YEARS_BANDS, activeFilters, facetCounts, filterCards
 import { Icon } from "./icons";
 import { CardDetail, CardPhoto, LookbookCard } from "./lookbook-card";
 import { OpenChat, OpenVisit } from "./open-events";
+import { Overlay } from "./overlay";
 
 const PER_PAGE = 9;
 const STYLES = ["Nurturer", "Activator", "Architect"];
@@ -182,6 +183,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
       </section>
 
       {current ? (
+        <Overlay>
         <div className="ev-scrim" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setOpen(null)}>
           <div className="ta-lb-detail" role="dialog" aria-modal="true" aria-label={`${current.name}'s card`}>
             <div className="ta-lb-detail-bar">
@@ -224,6 +226,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
             />
           </div>
         </div>
+        </Overlay>
       ) : null}
     </div>
   );
