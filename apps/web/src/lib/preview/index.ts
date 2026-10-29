@@ -9,6 +9,7 @@
 import { buildTables, IDS } from "./fixtures";
 import { buildNickTables } from "./nickTables";
 import { overlay } from "./journal";
+import { addHubTables } from "./hubTables";
 import { createMockClient, type Row, type Tables, type Visibility, type Write } from "./mockQuery";
 
 export type PreviewRole = "admin" | "teacher";
@@ -24,22 +25,37 @@ const g = globalThis as unknown as { __previewTables?: Tables };
 export function previewTables(): Tables {
   if (!g.__previewTables && process.env.PREVIEW_DATASET === "nick") g.__previewTables = buildNickTables();
   if (!g.__previewTables) g.__previewTables = buildTables(process.env.NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID ?? "preview-survey", process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID ?? IDS.school);
+  if (!(g.__previewTables as Tables).pair_messages) {
+    const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
+    if (me) addHubTables(g.__previewTables, me.id);
+  }
   return g.__previewTables;
 }
 
 export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boolean; journal?: Write[]; onWrite?: (w: Write) => void | Promise<void> } = {}) {
   // With a journal the visitor gets their own copy of the data; without one they share the process's data (the local preview).
-  const tables = opts.journal ? overlay(previewTables(), opts.journal) : previewTables();
+  const base = previewTables();
+  const journaled = opts.journal ? overlay(base, opts.journal) : base;
+  // Time on the platform is written every half minute, which would swamp a visitor's cookie journal, so it lives in
+  // the shared tables and is never journaled (it is only harmless demo numbers).
+  const tables = opts.journal ? (new Proxy(journaled, { get: (t, n) => (n === "platform_time" ? base.platform_time : (t as Tables)[n as string]), set: (t, n, v) => ((t as Tables)[n as string] = v, true) }) as Tables) : base;
+  const onWrite = opts.onWrite ? (w: Write) => (w.table === "platform_time" ? undefined : opts.onWrite!(w)) : undefined;
   const me = tables.profiles.find((p) => p.auth_user_id === (role === "admin" ? IDS.authAdmin : IDS.authTeacher))!;
   const visible: Visibility = (table, rows) => {
     if (opts.bypassRls) return rows;
     // The few row-level rules that shape what each page can show. The real ones live in Nick's scripts 009 and 011.
     if (table === "conversation_logs") return role === "teacher" ? rows.filter((r: Row) => r.host_id === me.id || r.visitor_id === me.id) : [];
     if (table === "survey_responses") return [];
+    // The hub's tables: pair tables for the two people in the pairing, the rest for their owner only.
+    if (table === "pair_messages" || table === "pair_game_sessions") {
+      const mine = new Set(tables.pairings.filter((p: Row) => p.status === "approved" && (p.host_id === me.id || p.visitor_id === me.id)).map((p: Row) => p.id));
+      return role === "teacher" ? rows.filter((r: Row) => mine.has(r.pairing_id)) : [];
+    }
+    if (["future_notes", "platform_time", "growth_goals", "growth_entries"].includes(table)) return rows.filter((r: Row) => r.profile_id === me.id);
     return rows;
   };
   return createMockClient({
-    onWrite: opts.onWrite,
+    onWrite,
     tables,
     visible,
     user: { id: me.auth_user_id, email: me.email },
