@@ -3,7 +3,7 @@ import { FutureNoteList } from "@/components/teacher/future-notes";
 import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { Icon } from "@/components/teacher/icons";
-import { submitEntry } from "../actions";
+import { submitEntry } from "@/lib/teacher/actions";
 import { loadTeacher } from "@/lib/teacher/load";
 import type { Entry } from "@/lib/teacher/model";
 

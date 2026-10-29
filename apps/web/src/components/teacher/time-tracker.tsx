@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { recordTime } from "@/app/dashboard/aurora/hub-actions";
+import { recordTime } from "@/lib/teacher/hub-actions";
 import { localDay } from "./stamp";
 
 /**

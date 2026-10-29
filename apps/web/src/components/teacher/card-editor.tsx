@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { removePhoto, saveCard, uploadPhoto } from "@/app/dashboard/aurora/pair/card-actions";
+import { removePhoto, saveCard, uploadPhoto } from "@/lib/teacher/card-actions";
 import { LIMITS, WANTS, type Card, type CardInput, type Experience } from "@/lib/teacher/lookbook";
 import { Icon } from "./icons";
 import { LookbookCard } from "./lookbook-card";

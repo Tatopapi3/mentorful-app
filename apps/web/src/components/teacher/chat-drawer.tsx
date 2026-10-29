@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { fetchMessages, sendMessage } from "@/app/dashboard/aurora/hub-actions";
+import { fetchMessages, sendMessage } from "@/lib/teacher/hub-actions";
 import { createLive, liveAvailable } from "@/lib/teacher/live";
 import type { Message } from "@/lib/teacher/hub-data";
 import { Icon } from "./icons";

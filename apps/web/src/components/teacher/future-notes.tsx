@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { openFutureNote, saveFutureNote } from "@/app/dashboard/aurora/hub-actions";
+import { openFutureNote, saveFutureNote } from "@/lib/teacher/hub-actions";
 import { dayLabel, deliveryOptions, noteState, type FutureNote } from "@/lib/teacher/hub";
 import { Icon } from "./icons";
 import { Stamp, localDay } from "./stamp";

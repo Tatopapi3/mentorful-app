@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { saveEntry } from "@/app/dashboard/aurora/actions";
-import { addGrowthEntry, logGameSession } from "@/app/dashboard/aurora/hub-actions";
+import { saveEntry } from "@/lib/teacher/actions";
+import { addGrowthEntry, logGameSession } from "@/lib/teacher/hub-actions";
 import { CONCERN_DOMAINS, DOMAIN_LABEL, type ConcernDomain } from "@/lib/domains";
 import { MODULES } from "@/lib/teacher/hub";
 import { journalFields, summarize, totalMinutes, type Outputs, type Protocol, type Step } from "@/lib/teacher/protocols";
 import { Icon } from "./icons";
 import { Stamp } from "./stamp";
+import { useBase } from "./use-base";
 
 type Pair = { pairingId: string; partnerFirst: string; partnerName: string; domain: string | null };
 type Phase = "intro" | "play" | "done";
@@ -21,6 +22,7 @@ const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2,
  * draft conversation entry while an Efficacy Quest can add the win to the teacher's own practice log.
  */
 export function ProtocolPlayer({ protocol, ready, pair, myDomains, theirDomains, others, last }: { protocol: Protocol; ready: boolean; pair: Pair; myDomains: ConcernDomain[]; theirDomains: ConcernDomain[]; others: { pairingId: string; first: string }[]; last: { note: string; at: string } | null }) {
+  const base = useBase();
   const [phase, setPhase] = useState<Phase>("intro");
   const [idx, setIdx] = useState(0);
   const [outputs, setOutputs] = useState<Outputs>({});
@@ -109,7 +111,7 @@ export function ProtocolPlayer({ protocol, ready, pair, myDomains, theirDomains,
           <p className="ev-small">
             Playing with {pair.partnerFirst}. Switch to:{" "}
             {others.filter((o) => o.pairingId !== pair.pairingId).map((o) => (
-              <Link key={o.pairingId} href={`/dashboard/aurora/growth/play/${protocol.slug}?with=${o.pairingId}`}>{o.first}</Link>
+              <Link key={o.pairingId} href={`${base}/growth/play/${protocol.slug}?with=${o.pairingId}`}>{o.first}</Link>
             ))}
           </p>
         ) : null}
@@ -145,7 +147,7 @@ export function ProtocolPlayer({ protocol, ready, pair, myDomains, theirDomains,
           <button className="ev-btn primary" type="button" onClick={() => setPhase("play")}>
             Start <Icon name="play" size={15} />
           </button>
-          <Link className="ev-btn quiet" href="/dashboard/aurora/growth#games">Back to the games</Link>
+          <Link className="ev-btn quiet" href={`${base}/growth#games`}>Back to the games</Link>
         </div>
       </div>
     );
@@ -212,8 +214,8 @@ export function ProtocolPlayer({ protocol, ready, pair, myDomains, theirDomains,
           {error ? <p className="ev-alert" role="alert">{error}</p> : null}
         </section>
         <div className="ta-row">
-          <Link className="ev-btn quiet" href="/dashboard/aurora/growth#games">Back to the games</Link>
-          {protocol.logMap && saved.draft ? <Link className="ev-btn quiet" href="/dashboard/aurora/journal#notebook">Open my journal</Link> : null}
+          <Link className="ev-btn quiet" href={`${base}/growth#games`}>Back to the games</Link>
+          {protocol.logMap && saved.draft ? <Link className="ev-btn quiet" href={`${base}/journal#notebook`}>Open my journal</Link> : null}
         </div>
       </div>
     );

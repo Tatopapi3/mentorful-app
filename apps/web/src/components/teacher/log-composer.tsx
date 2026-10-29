@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
-import { saveEntry } from "@/app/dashboard/aurora/actions";
+import { saveEntry } from "@/lib/teacher/actions";
 import { CONCERN_DOMAINS, DOMAIN_LABEL } from "@/lib/domains";
 import { Icon } from "./icons";
 import { openCall } from "./open-events";

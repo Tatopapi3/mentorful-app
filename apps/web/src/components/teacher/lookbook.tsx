@@ -8,6 +8,7 @@ import { Icon } from "./icons";
 import { CardDetail, CardPhoto, LookbookCard } from "./lookbook-card";
 import { OpenCall, OpenChat } from "./open-events";
 import { Overlay } from "./overlay";
+import { useBase } from "./use-base";
 
 const PER_PAGE = 9;
 const STYLES = ["Nurturer", "Activator", "Architect"];
@@ -19,6 +20,7 @@ function toggle<T>(list: T[], v: T): T[] {
 }
 
 export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card[]; meId: string; partnerByProfile: Record<string, string>; ready: boolean }) {
+  const base = useBase();
   const [f, setF] = useState<Filters>(NO_FILTERS);
   const [view, setView] = useState<View>("grid");
   const [page, setPage] = useState(1);
@@ -61,7 +63,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
       <section className="ev-empty">
         <h3>Nobody has shared a card yet</h3>
         <p className="ev-muted">A card is a short, friendly introduction: a photo, what you&rsquo;re good at, your experience, and what you hope to get out of working with a co-mentor. Sharing is always your choice.</p>
-        <Link className="ev-btn primary" href="/dashboard/aurora/pair/card">
+        <Link className="ev-btn primary" href={`${base}/pair/card`}>
           Make my card <Icon name="arrow" size={16} />
         </Link>
       </section>
@@ -217,7 +219,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
                 ) : current.profileId === meId ? (
                   <div className="ta-lb-actions">
                     <span className="ev-badge">This is your card</span>
-                    <Link className="ev-btn" href="/dashboard/aurora/pair/card">
+                    <Link className="ev-btn" href={`${base}/pair/card`}>
                       <Icon name="pen" size={16} /> Edit
                     </Link>
                   </div>

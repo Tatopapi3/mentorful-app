@@ -54,7 +54,7 @@ export async function saveCard(raw: unknown): Promise<Result> {
     published: c.published,
   });
   if (err) return fail(err);
-  revalidatePath("/dashboard/aurora", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }
 
@@ -73,7 +73,7 @@ export async function uploadPhoto(form: FormData): Promise<Result> {
   if (up.error) return fail(`Couldn't upload: ${up.error.message}`);
   const err = await ensureRow(supabase, me, { photo_path: path });
   if (err) return fail(err);
-  revalidatePath("/dashboard/aurora", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }
 
@@ -84,6 +84,6 @@ export async function removePhoto(): Promise<Result> {
   if (storage) await storage.from(BUCKET).remove([`${me.school}/${me.id}.jpg`]);
   const err = await ensureRow(supabase, me, { photo_path: null });
   if (err) return fail(err);
-  revalidatePath("/dashboard/aurora", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }

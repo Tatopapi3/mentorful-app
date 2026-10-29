@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { sendMessage } from "@/app/dashboard/aurora/hub-actions";
+import { sendMessage } from "@/lib/teacher/hub-actions";
 import { createLive, iceServers, liveAvailable, type Live, type PairChannel, type PairFile } from "@/lib/teacher/live";
 import { Icon } from "./icons";
 import { DEMO_INCOMING, OPEN_CALL } from "./open-events";

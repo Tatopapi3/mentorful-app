@@ -14,7 +14,7 @@ import { cleanOutputs, protocolByName } from "@/lib/teacher/protocols";
 
 type Result = { ok: true } | { ok: false; error: string };
 const fail = (error: string): { ok: false; error: string } => ({ ok: false, error });
-const refresh = () => revalidatePath("/dashboard/aurora", "layout");
+const refresh = () => revalidatePath("/dashboard", "layout");
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 async function session() {

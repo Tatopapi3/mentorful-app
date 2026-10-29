@@ -5,14 +5,15 @@ import { ScanEntry } from "@/components/teacher/scan-card";
 import { OpenCall, OpenChat } from "@/components/teacher/open-events";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
+import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
 import { agoLabel, daysSince, nextStep } from "@/lib/teacher/model";
 import { formatDuration, noteState, timeTotals } from "@/lib/teacher/hub";
 
-const BASE = "/dashboard/aurora";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-export default async function TeacherHome() {
+export default async function TeacherHome({ params }: { params: Promise<{ look: string }> }) {
+  const BASE = teacherBase(await teacherLookOf(params));
   const data = await loadTeacher();
   if (!data.model) return null;
   const { model } = data;
