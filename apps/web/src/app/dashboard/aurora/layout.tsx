@@ -2,7 +2,7 @@ import { AuroraChrome } from "@/components/aurora/chrome";
 import { ChatDrawer } from "@/components/teacher/chat-drawer";
 import { MobileTabs } from "@/components/teacher/mobile-tabs";
 import { TimeTracker } from "@/components/teacher/time-tracker";
-import { VisitHost } from "@/components/teacher/visit-screen";
+import { CallHost } from "@/components/teacher/video-call";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import "@/components/teacher/teacher.css";
@@ -57,7 +57,7 @@ export default async function TeacherAuroraLayout({ children }: { children: Reac
       <div className="ta">{children}</div>
       <MobileTabs />
       <ChatDrawer pairs={chatPairs} initial={hub.messages} />
-      <VisitHost pairs={chatPairs} meId={model.me.id} />
+      <CallHost pairs={chatPairs} meId={model.me.id} />
       <TimeTracker />
     </AuroraChrome>
   );

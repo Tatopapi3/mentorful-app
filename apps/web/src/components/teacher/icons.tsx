@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export type IconName =
   | "home" | "users" | "book" | "scan" | "lock" | "check" | "arrow" | "clock" | "shield" | "heart" | "message" | "sliders" | "close" | "spark"
-  | "growth" | "chat" | "send" | "paperclip" | "video" | "upload" | "file" | "expand" | "shrink" | "mail" | "target" | "play" | "grid" | "compass" | "eye" | "trophy" | "swap" | "plus" | "pen" | "external" | "list" | "search" | "left" | "right" | "camera" | "filter";
+  | "growth" | "chat" | "send" | "paperclip" | "video" | "upload" | "file" | "expand" | "shrink" | "mail" | "target" | "play" | "grid" | "compass" | "eye" | "trophy" | "swap" | "plus" | "pen" | "external" | "list" | "search" | "left" | "right" | "camera" | "filter" | "phone" | "mic" | "micoff" | "videooff";
 
 const PATHS: Record<IconName, ReactNode> = {
   home: (<><path d="m3 10.8 9-7.3 9 7.3" /><path d="M5.5 9.8V21h13V9.8M9.5 21v-6.5h5V21" /></>),
@@ -44,6 +44,10 @@ const PATHS: Record<IconName, ReactNode> = {
   right: <path d="m9 18 6-6-6-6" />,
   camera: (<><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13" r="3.5" /></>),
   filter: <path d="M3 5h18l-7 8v6l-4-2v-4z" />,
+  phone: <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" transform="rotate(135 12 12)" />,
+  mic: (<><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></>),
+  micoff: (<><path d="m3 3 18 18" /><path d="M9 9v2a3 3 0 0 0 5 2.2M15 9.3V6a3 3 0 0 0-5.9-.7M5 11a7 7 0 0 0 11 5.7M19 11a7 7 0 0 1-.6 2.8M12 18v3" /></>),
+  videooff: (<><path d="m3 3 18 18" /><path d="M10.7 6H14a2 2 0 0 1 2 2v3.3l5 3.2a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 10.7M2 8v8a2 2 0 0 0 2 2h9" /></>),
   external: (<><path d="M14 4h6v6M20 4 10 14" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>),
 };
 

@@ -5,7 +5,7 @@ import { fetchMessages, sendMessage } from "@/app/dashboard/aurora/hub-actions";
 import { createLive, liveAvailable } from "@/lib/teacher/live";
 import type { Message } from "@/lib/teacher/hub-data";
 import { Icon } from "./icons";
-import { OPEN_CHAT, openVisit } from "./open-events";
+import { OPEN_CHAT, openCall } from "./open-events";
 import { Stamp } from "./stamp";
 
 export type ChatPair = { pairingId: string; partnerName: string; partnerFirst: string; initials: string };
@@ -122,7 +122,7 @@ export function ChatDrawer({ pairs, initial }: { pairs: ChatPair[]; initial: Mes
     const res = await createLive(() => {}).upload(pair.pairingId, files);
     setSharing(false);
     if (res.failed.length) setError(`Couldn't share ${res.failed.join(", ")}. Files up to 200 MB work.`);
-    if (res.ok) await send(`Shared ${res.ok === 1 ? files[0].name : `${res.ok} files`} in our visit screen.`);
+    if (res.ok) await send(`Shared ${res.ok === 1 ? files[0].name : `${res.ok} files`} in our video call.`);
   }
 
   let lastDay = "";
@@ -144,7 +144,7 @@ export function ChatDrawer({ pairs, initial }: { pairs: ChatPair[]; initial: Mes
               </small>
             </div>
             <span className="ta-spacer" />
-            <button type="button" className="ta-iconbtn" onClick={() => openVisit(pair.pairingId)} aria-label={`Start a visit with ${pair.partnerFirst}`} title="Visit screen">
+            <button type="button" className="ta-iconbtn" onClick={() => openCall(pair.pairingId)} aria-label={`Video call ${pair.partnerFirst}`} title="Video call">
               <Icon name="video" size={16} />
             </button>
             <button type="button" className="ta-iconbtn" onClick={() => setOpen(false)} aria-label="Close chat">

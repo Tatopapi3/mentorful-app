@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AdjustRequest } from "@/components/teacher/adjust-request";
 import { Icon } from "@/components/teacher/icons";
-import { OpenChat, OpenVisit } from "@/components/teacher/open-events";
+import { OpenCall, OpenChat } from "@/components/teacher/open-events";
 import { PairTabs } from "@/components/teacher/pair-tabs";
 import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadTeacher } from "@/lib/teacher/load";
@@ -50,7 +50,7 @@ export default async function PairPage() {
                       <Icon name="message" size={16} /> Log a conversation
                     </Link>
                     <OpenChat pairingId={p.pairingId}><Icon name="chat" size={16} /> Message {p.first}</OpenChat>
-                    <OpenVisit pairingId={p.pairingId}><Icon name="video" size={16} /> Visit screen</OpenVisit>
+                    <OpenCall pairingId={p.pairingId}><Icon name="video" size={16} /> Video call</OpenCall>
                   </div>
                 </div>
 

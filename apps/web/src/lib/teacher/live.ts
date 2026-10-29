@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 
 /**
  * Ported from Bertrand's src/app/dashboard/v2/live.ts (branch mentortrdash-bc), unchanged apart from this header and
- * `liveAvailable`. It is what the visit screen and shared files use to reach the other teacher in a pairing. When his
+ * `liveAvailable`. It is what the video call and shared files use to reach the other teacher in a pairing. When his
  * branch merges, keep one of the two copies.
  *
  * Everything is scoped to one pairing and enforced by 016's policies, not by
