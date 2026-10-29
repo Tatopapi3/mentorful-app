@@ -20,6 +20,7 @@ import {
 import { Icon, type IconName } from "./icons";
 import { Stamp } from "./stamp";
 import { useBase } from "./use-base";
+import { FEATURES } from "@/lib/teacher/features";
 
 const NotReady = () => <p className="ev-hold">This part of the hub isn&rsquo;t switched on for your school yet. Your school lead needs to apply the update first.</p>;
 
@@ -50,9 +51,11 @@ export function SuggestionCard({ items }: { items: Suggestion[] }) {
       <h3 className="ta-focus-h">{s.focus}</h3>
       <p className="ev-muted">{s.why}</p>
       <blockquote className="ta-quote sm">{s.prompt}</blockquote>
-      <p className="ev-small">
-        Try it with: <a href={`${base}/growth/play/${MODULES.find((m) => m.name === s.module)?.slug ?? ""}`}>{s.module}</a>
-      </p>
+      {FEATURES.games ? (
+        <p className="ev-small">
+          Try it with: <a href={`${base}/growth/play/${MODULES.find((m) => m.name === s.module)?.slug ?? ""}`}>{s.module}</a>
+        </p>
+      ) : null}
       <div className="ta-row">
         {items.length > 1 ? (
           <button type="button" className="ev-btn" onClick={() => setI((n) => n + 1)}>
@@ -504,7 +507,7 @@ export function SharingCard({ on: initial, ready }: { on: boolean; ready: boolea
           <ul>
             <li>Your name, your department, or whether you chose this</li>
             <li>How long <em>you</em> spent, or any figure about you</li>
-            <li>Your goals, practice log, notes, chat, or anything you write in a game</li>
+            <li>Your goals, practice log, notes, chat{FEATURES.games ? ", or anything you write in a game" : ""}</li>
           </ul>
         </div>
       </div>

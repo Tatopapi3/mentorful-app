@@ -1,4 +1,5 @@
 import { CycleSwitcher } from "@/components/admin/kit";
+import { respondentsText } from "@/lib/report/gates";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import GrowthActivityPanel from "@/components/admin/growth-activity-panel";
 import { loadGrowthActivity } from "@/lib/admin/growth";
@@ -60,7 +61,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <section className="adm-card">
             <div className="adm-card-head">
               <h2>Culture Scan · {facts.scan.cte.toFixed(1)} CTE score</h2>
-              <span className="mono adm-count">{scan.n} respondents{scan.includesSynthetic ? " · demo" : ""}</span>
+              <span className="mono adm-count">{respondentsText(scan)}</span>
             </div>
             <p className="nk-lead">Collective teacher efficacy: the Efficacy average, ±{facts.scan.cteCi.toFixed(1)} (95%), out of 6.</p>
             <NickDimensionBars means={scan.means} ci={scan.ci} />
@@ -73,7 +74,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                 <span className="mono adm-count">the structure underneath</span>
               </div>
               <div style={{ border: "1px solid var(--line)", borderRadius: 4, background: "var(--card)", padding: "18px 18px 14px" }}>
-                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} />
+                <CultureBubbles stats={snap.stats} synthetic={scan.includesSynthetic} n={snap.stats.n} />
                 <p style={{ margin: "12px 0 0", textAlign: "center", fontSize: 15 }}>{findings.network.finding.sentence}</p>
               </div>
               <h3 style={{ fontFamily: "var(--font-serif), Georgia, serif", margin: "20px 0 4px" }}>{findings.gap.finding.title}</h3>

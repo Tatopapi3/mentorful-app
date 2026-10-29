@@ -7,6 +7,7 @@ import { CONCERN_DOMAINS, DOMAIN_LABEL } from "@/lib/domains";
 import { Icon } from "./icons";
 import { openCall } from "./open-events";
 import { useNowStamp } from "./stamp";
+import { FEATURES } from "@/lib/teacher/features";
 
 export type PairOption = { id: string; partnerName: string; partnerFirst: string; domain: string | null; visitsMe: boolean };
 type State = { ok: boolean; error?: string; n?: number } | null;
@@ -128,9 +129,11 @@ export function LogComposer({ pairs, defaultPairing, prefill }: { pairs: PairOpt
           <span className="ev-privacy">
             <Icon name="lock" size={14} /> Only you and {start.partnerFirst} can read this
           </span>
-          <button className="ev-btn" type="button" onClick={() => openCall(start.id)} title="Video call">
-            <Icon name="video" size={16} /> Video call
-          </button>
+          {FEATURES.videoCalls ? (
+            <button className="ev-btn" type="button" onClick={() => openCall(start.id)} title="Video call">
+              <Icon name="video" size={16} /> Video call
+            </button>
+          ) : null}
           <button className="ev-btn primary" type="submit" disabled={pending}>
             {pending ? "Saving…" : "Save draft"}
             <Icon name="check" size={16} />

@@ -1,4 +1,5 @@
 import NickDimensionBars from "@/components/nick/dimension-bars";
+import { demoCount, respondentLabel, respondentsText } from "@/lib/report/gates";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { AdminFrame, Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
 import { buildActions } from "@/lib/admin/actions";
@@ -34,13 +35,13 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
         items={[
           { label: "Have a partner", value: facts.pairedPct === null ? "n/a" : `${facts.pairedPct}%`, note: `${facts.paired} of ${facts.faculty} teachers` },
           { label: "Cross departments", value: facts.crossPct === null ? "n/a" : `${facts.crossPct}%`, note: `${facts.crossPairs} of ${facts.pairCount} pairs` },
-          { label: "Conversations", value: String(facts.conversations), note: facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet" },
-          { label: "CTE score", value: facts.scan ? facts.scan.cte.toFixed(1) : "n/a", note: facts.scan ? `out of 6 · n=${facts.scan.n}${facts.scan.includesSynthetic ? " · demo" : ""}` : "no scan results" },
+          { label: "Logged conversations", value: String(facts.conversations), note: facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet" },
+          { label: "CTE score", value: facts.scan ? facts.scan.cte.toFixed(1) : "n/a", note: facts.scan ? `out of 6 · ${respondentLabel(facts.scan.n, demoCount(facts.scan))}` : "no scan results" },
         ]}
       />
 
       {snap.scan && (
-        <Panel skin={skin} title="Culture Scan" eyebrow="School-wide averages" count={`${snap.scan.n} respondents`}>
+        <Panel skin={skin} title="Culture Scan" eyebrow="School-wide averages" count={respondentsText(snap.scan)}>
           {skin === "nick" ? <NickDimensionBars means={snap.scan.means} ci={snap.scan.ci} /> : <DimensionBars means={snap.scan.means} ci={snap.scan.ci} />}
         </Panel>
       )}

@@ -21,6 +21,7 @@ import {
   type ReportStats,
   type ResponseRow,
 } from "./stats.ts";
+import { participation } from "./gates.ts";
 
 if (typeof window !== "undefined") {
   throw new Error(
@@ -37,16 +38,20 @@ if (typeof window !== "undefined") {
 const INCLUDE_SYNTHETIC = true;
 
 /**
- * TODO: the real participation floor is >= 30 respondents OR 60% of faculty,
- * whichever is higher. Faculty headcount isn't modelled yet, so for now the
- * report only requires that responses exist.
+ * Participation floor (Nick, Oct 29): 60% of the roster, the roster being
+ * schools.faculty_headcount (script 020). It applies to REAL responses. While
+ * synthetic demo rows are in the data the report is a demo and is labelled as
+ * one (`demoN` says how many of the n are demo), so the gate is not enforced
+ * on it; the moment the data is all real, the gate is. With no headcount on
+ * the school record the report stays closed: there is nothing to measure 60% of.
+ * Any response at all is still required.
  */
 export const MIN_RESPONDENTS = 1;
 
 export type ReportLoad =
-  | { status: "ok"; stats: ReportStats; surveyId: string; includesSynthetic: boolean }
+  | { status: "ok"; stats: ReportStats; surveyId: string; includesSynthetic: boolean; /** How many of stats.n are demo rows. */ demoN: number }
   | { status: "no-data"; surveyId: string }
-  | { status: "below-floor"; surveyId: string; n: number; floor: number }
+  | { status: "below-floor"; surveyId: string; n: number; floor: number; /** "no-headcount": the school record has no faculty headcount, so floor is 0. */ reason?: "participation" | "no-headcount" }
   | { status: "misconfigured"; message: string };
 
 function serviceClient(url: string, key: string) {
@@ -81,21 +86,31 @@ async function fetchItems(db: Db): Promise<ReportItem[]> {
   return items;
 }
 
+/** The roster size, for the 60% gate. Null when it is not recorded (or script 020 is not applied). */
+async function fetchHeadcount(db: Db): Promise<number | null> {
+  const schoolId = process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID;
+  if (!schoolId) return null;
+  const { data, error } = await db.from("schools").select("faculty_headcount").eq("id", schoolId).maybeSingle();
+  if (error || !data) return null;
+  const n = (data as { faculty_headcount?: number | null }).faculty_headcount;
+  return typeof n === "number" && n > 0 ? n : null;
+}
+
 /** PostgREST caps a response at 1000 rows, so page explicitly. */
-async function fetchResponses(db: Db, surveyId: string): Promise<ResponseRow[]> {
+async function fetchResponses(db: Db, surveyId: string): Promise<(ResponseRow & { synthetic?: boolean })[]> {
   const PAGE = 1000;
-  const all: ResponseRow[] = [];
+  const all: (ResponseRow & { synthetic?: boolean })[] = [];
   for (let from = 0; ; from += PAGE) {
     let q = db
       .from("survey_responses")
-      .select("respondent, item_id, scored_value")
+      .select("respondent, item_id, scored_value, synthetic")
       .eq("survey_id", surveyId);
     if (!INCLUDE_SYNTHETIC) q = q.eq("synthetic", false);
 
     const { data, error } = await q.range(from, from + PAGE - 1);
     if (error) throw new Error(`survey_responses read failed: ${error.message}`);
 
-    const page = (data ?? []) as ResponseRow[];
+    const page = (data ?? []) as (ResponseRow & { synthetic?: boolean })[];
     all.push(...page);
     if (page.length < PAGE) return all;
   }
@@ -125,7 +140,7 @@ export async function loadReportStats(): Promise<ReportLoad> {
   }
 
   const db = serviceClient(url, key);
-  const [items, rows] = await Promise.all([fetchItems(db), fetchResponses(db, surveyId)]);
+  const [items, rows, headcount] = await Promise.all([fetchItems(db), fetchResponses(db, surveyId), fetchHeadcount(db)]);
 
   if (rows.length === 0) return { status: "no-data", surveyId };
 
@@ -134,5 +149,14 @@ export async function loadReportStats(): Promise<ReportLoad> {
     return { status: "below-floor", surveyId, n: stats.n, floor: MIN_RESPONDENTS };
   }
 
-  return { status: "ok", stats, surveyId, includesSynthetic: INCLUDE_SYNTHETIC };
+  // How many of the respondents are demo rows. Only these may be called demo; the rest are real.
+  const demoN = new Set(rows.filter((r) => r.synthetic === true).map((r) => r.respondent)).size;
+
+  if (demoN === 0) {
+    const gate = participation(stats.n, headcount);
+    if (gate.status === "no-headcount") return { status: "below-floor", surveyId, n: stats.n, floor: 0, reason: "no-headcount" };
+    if (gate.status === "below") return { status: "below-floor", surveyId, n: stats.n, floor: gate.required, reason: "participation" };
+  }
+
+  return { status: "ok", stats, surveyId, includesSynthetic: INCLUDE_SYNTHETIC, demoN };
 }

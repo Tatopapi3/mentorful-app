@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FEATURES } from "@/lib/teacher/features";
 
 // The chat drawer and the video call live once in the layout; any page can open them with an event, so no page has
 // to know where they are mounted.
@@ -22,6 +23,7 @@ export function OpenChat({ pairingId, className = "ev-btn", children }: { pairin
 }
 
 export function OpenCall({ pairingId, className = "ev-btn", children }: { pairingId?: string; className?: string; children: ReactNode }) {
+  if (!FEATURES.videoCalls) return null;
   return (
     <button type="button" className={className} onClick={() => openCall(pairingId)}>
       {children}

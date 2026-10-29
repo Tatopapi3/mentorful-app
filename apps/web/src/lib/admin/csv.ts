@@ -1,4 +1,5 @@
 import { DIMENSIONS, DIMENSION_LABEL } from "@/lib/report/stats";
+import { demoCount, respondentsText } from "@/lib/report/gates";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { participationRates } from "./participation";
 import type { AdminSnapshot, Facts } from "./facts";
@@ -33,14 +34,14 @@ export function resultsCsv(snap: AdminSnapshot, facts: Facts): string {
         for (let j = i + 1; j < DIMENSIONS.length; j++) add("partial correlation", `${DIMENSION_LABEL[DIMENSIONS[i]]} and ${DIMENSION_LABEL[DIMENSIONS[j]]}`, snap.stats.partial[i][j].toFixed(2));
       add("note", "Partial correlations", `Each is accurate to about plus or minus ${(1 / Math.sqrt(snap.scan.n)).toFixed(2)} with ${snap.scan.n} respondents.`);
     }
-    if (snap.scan.includesSynthetic) add("note", "Data", "Includes synthetic demo data.");
+    if (demoCount(snap.scan) > 0) add("note", "Data", `Includes synthetic demo data: ${respondentsText(snap.scan)}.`);
   }
 
   add("pairs", "Approved pairs", facts.pairCount);
   add("pairs", "Teachers with a partner (%)", facts.pairedPct);
   add("pairs", "Pairs that cross departments (%)", facts.crossPct);
   add("pairs", "Pairing requests waiting", facts.pendingRequests);
-  add("conversations", "Conversations logged", facts.conversations);
+  add("conversations", "Logged conversations", facts.conversations);
   for (const [d, n] of Object.entries(facts.domainCounts).sort((a, b) => b[1] - a[1])) add("pairs by domain", DOMAIN_LABEL[d] ?? d, n);
 
   if (snap.participation) {

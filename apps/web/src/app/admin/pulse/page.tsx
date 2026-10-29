@@ -1,4 +1,5 @@
 import { FocusBanner } from "@/components/admin/diagrams";
+import { demoCount, respondentLabel } from "@/lib/report/gates";
 import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import NickDimensionBars from "@/components/nick/dimension-bars";
@@ -46,8 +47,8 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
         <Metric label="Took the scan" value={pctText(facts.scan?.completionPct ?? null)} note={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty} teachers`) : "no results yet"} />
         <Metric label="Have a partner" value={pctText(facts.pairedPct)} note={`${facts.pairCount} pairs`} />
         <Metric label="Cross departments" value={pctText(facts.crossPct)} note="of all pairs" />
-        <Metric label="Conversations" value={String(facts.conversations)} note={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
-        <Metric label="CTE score" value={facts.scan ? facts.scan.cte.toFixed(2) : "n/a"} note={facts.scan ? `efficacy · n=${facts.scan.n}${facts.scan.includesSynthetic ? " · demo" : ""}` : "no scan data"} />
+        <Metric label="Logged conversations" value={String(facts.conversations)} note={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
+        <Metric label="CTE score" value={facts.scan ? facts.scan.cte.toFixed(2) : "n/a"} note={facts.scan ? `efficacy · ${respondentLabel(facts.scan.n, demoCount(facts.scan))}` : "no scan data"} />
       </section>
 
       <div className="nk-two">

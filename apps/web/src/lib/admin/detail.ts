@@ -43,7 +43,7 @@ export async function loadOverviewDetail({ supabase, schoolId }: AdminContext, o
   const pairs = (pairings ?? []) as PairRow[];
 
   const report = await loadReportStats();
-  const cte = report.status === "ok" ? { value: report.stats.dimensions.efficacy.mean, n: report.stats.n, synthetic: report.includesSynthetic } : null;
+  const cte = report.status === "ok" ? { value: report.stats.dimensions.efficacy.mean, n: report.stats.n, synthetic: report.includesSynthetic, demoN: report.demoN } : null;
 
   const domainCounts: Record<string, number> = {};
   const strengthCounts: Record<string, number> = {};

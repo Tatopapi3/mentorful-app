@@ -44,7 +44,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
       means[d] = report.stats.dimensions[d].mean;
       ci[d] = report.stats.dimensions[d].ciHalfWidth;
     }
-    scan = { n: report.stats.n, means, ci, includesSynthetic: report.includesSynthetic };
+    scan = { n: report.stats.n, means, ci, includesSynthetic: report.includesSynthetic, demoN: report.demoN };
   }
 
   return {
