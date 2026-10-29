@@ -469,12 +469,15 @@ export function SharingCard({ on: initial, ready }: { on: boolean; ready: boolea
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function change(next: boolean) {
+    setOn(next); // flip at once; put it back if saving fails
     setBusy(true);
     setMsg(null);
     const r = await setGrowthSharing(next);
     setBusy(false);
-    if (!r.ok) return setMsg({ ok: false, text: r.error });
-    setOn(next);
+    if (!r.ok) {
+      setOn(!next);
+      return setMsg({ ok: false, text: r.error });
+    }
     setMsg({ ok: true, text: next ? "Thanks. You'll be counted in your school's anonymous totals from the next reading." : "Done. You're no longer counted." });
   }
 
