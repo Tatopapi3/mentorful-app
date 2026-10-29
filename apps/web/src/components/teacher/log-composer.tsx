@@ -5,6 +5,8 @@ import { useActionState, useEffect, useRef } from "react";
 import { saveEntry } from "@/app/dashboard/aurora/actions";
 import { CONCERN_DOMAINS, DOMAIN_LABEL } from "@/lib/domains";
 import { Icon } from "./icons";
+import { openVisit } from "./open-events";
+import { useNowStamp } from "./stamp";
 
 export type PairOption = { id: string; partnerName: string; partnerFirst: string; domain: string | null; visitsMe: boolean };
 type State = { ok: boolean; error?: string; n?: number } | null;
@@ -15,7 +17,8 @@ type State = { ok: boolean; error?: string; n?: number } | null;
  * the form never looks like homework. It saves as a draft because the database's insert rule requires it, and the
  * draft shows at the top of the notebook beside this form with its Submit button.
  */
-export function LogComposer({ pairs, defaultPairing }: { pairs: PairOption[]; defaultPairing?: string }) {
+export function LogComposer({ pairs, defaultPairing, prefill }: { pairs: PairOption[]; defaultPairing?: string; prefill?: string }) {
+  const now = useNowStamp();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<State, FormData>(async (_prev, fd) => {
     const r = await saveEntry(fd);
@@ -46,8 +49,11 @@ export function LogComposer({ pairs, defaultPairing }: { pairs: PairOption[]; de
         Log a <em>conversation</em>.
       </h2>
       <p className="ev-muted">A short record of connection, not another form. About a minute.</p>
+      <p className="ta-stampnote">
+        <Icon name="clock" size={14} /> Time-stamped <strong>{now}</strong> when you save
+      </p>
 
-      <form action={action} ref={formRef} key={start.id}>
+      <form action={action} ref={formRef} key={`${start.id}:${prefill ?? ""}`}>
         <div className="ta-step">
           <span className="ta-num">1</span>
           <div>
@@ -94,7 +100,7 @@ export function LogComposer({ pairs, defaultPairing }: { pairs: PairOption[]; de
             <h3>What stood out?</h3>
             <div className="ev-field">
               <label htmlFor="ta-vision">What they&rsquo;re working toward</label>
-              <textarea id="ta-vision" name="vision" rows={2} maxLength={400} placeholder="The outcome or focus that is driving them" />
+              <textarea id="ta-vision" name="vision" rows={2} maxLength={400} defaultValue={prefill} placeholder="The outcome or focus that is driving them" />
             </div>
             <div className="ev-field">
               <label htmlFor="ta-strength">What you noticed working</label>
@@ -122,6 +128,9 @@ export function LogComposer({ pairs, defaultPairing }: { pairs: PairOption[]; de
           <span className="ev-privacy">
             <Icon name="lock" size={14} /> Only you and {start.partnerFirst} can read this
           </span>
+          <button className="ev-btn" type="button" onClick={() => openVisit(start.id)} title="Open the visit screen">
+            <Icon name="video" size={16} /> Visit screen
+          </button>
           <button className="ev-btn primary" type="submit" disabled={pending}>
             {pending ? "Saving…" : "Save draft"}
             <Icon name="check" size={16} />

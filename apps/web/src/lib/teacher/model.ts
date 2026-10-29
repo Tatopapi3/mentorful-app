@@ -79,7 +79,10 @@ export type Entry = {
   domain: string;
   domainLabel: string;
   status: "draft" | "submitted";
+  /** The best single moment for the entry: when it was submitted, or when the draft was started. */
   at: string;
+  createdAt: string;
+  submittedAt: string | null;
   vision: string | null;
   strength: string | null;
   more: string | null;
@@ -205,6 +208,8 @@ export function buildModel(input: {
       domainLabel: DOMAIN_LABEL[l.domain] ?? l.domain,
       status: l.status === "draft" ? "draft" : "submitted",
       at: whenOf(l),
+      createdAt: l.created_at,
+      submittedAt: l.submitted_at,
       vision: l.vision,
       strength: l.strength_noted,
       more: l.more_frequently,

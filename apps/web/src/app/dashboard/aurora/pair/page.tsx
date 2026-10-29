@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { AdjustRequest } from "@/components/teacher/adjust-request";
 import { Icon } from "@/components/teacher/icons";
+import { OpenChat, OpenVisit } from "@/components/teacher/open-events";
+import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadTeacher } from "@/lib/teacher/load";
 import { agoLabel, daysSince } from "@/lib/teacher/model";
 import { DOMAIN_LABEL } from "@/lib/domains";
 
 const BASE = "/dashboard/aurora";
-const shortDay = (iso: string) => {
-  const d = new Date(iso);
-  return { m: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(), d: d.getDate() };
-};
 
 export default async function PairPage() {
   const data = await loadTeacher();
@@ -45,9 +43,13 @@ export default async function PairPage() {
                     <h2>{p.name}</h2>
                     <p className="ev-muted">{p.department}</p>
                   </div>
-                  <Link className="ev-btn primary" href={`${BASE}/journal?with=${p.pairingId}#log`}>
-                    <Icon name="message" size={16} /> Log a conversation
-                  </Link>
+                  <div className="ta-pair-actions">
+                    <Link className="ev-btn primary" href={`${BASE}/journal?with=${p.pairingId}#log`}>
+                      <Icon name="message" size={16} /> Log a conversation
+                    </Link>
+                    <OpenChat pairingId={p.pairingId}><Icon name="chat" size={16} /> Message {p.first}</OpenChat>
+                    <OpenVisit pairingId={p.pairingId}><Icon name="video" size={16} /> Visit screen</OpenVisit>
+                  </div>
                 </div>
 
                 <dl className="ta-facts">
@@ -88,13 +90,12 @@ export default async function PairPage() {
                   ) : (
                     <ul>
                       {together.map((e) => {
-                        const d = shortDay(e.at);
                         return (
                           <li key={e.id}>
-                            <span className="ev-date"><strong>{d.d}</strong>{d.m}</span>
+                            <DateBlock iso={e.at} />
                             <div>
                               <strong>{e.domainLabel}</strong>
-                              <small className="ev-muted">{e.direction === "visitsMe" ? "They observed you" : "You observed them"}</small>
+                              <small className="ev-muted">{e.direction === "visitsMe" ? "They observed you" : "You observed them"} · <Stamp iso={e.at} kind="time" /></small>
                             </div>
                           </li>
                         );

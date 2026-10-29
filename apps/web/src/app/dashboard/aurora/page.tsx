@@ -2,8 +2,11 @@ import Link from "next/link";
 import { Greeting, Today } from "@/components/teacher/greeting";
 import { Icon } from "@/components/teacher/icons";
 import { ScanEntry } from "@/components/teacher/scan-card";
+import { OpenChat, OpenVisit } from "@/components/teacher/open-events";
+import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { agoLabel, daysSince, nextStep } from "@/lib/teacher/model";
+import { formatDuration, noteState, timeTotals } from "@/lib/teacher/hub";
 
 const BASE = "/dashboard/aurora";
 
@@ -18,6 +21,12 @@ export default async function TeacherHome() {
   const partner = "partner" in step ? step.partner : model.partners[0];
   const ends = model.cycle?.ends ? new Date(model.cycle.ends).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
   const last = daysSince(model.lastAt, now);
+  const hub = await loadHub();
+  const serverToday = now.toISOString().slice(0, 10);
+  const arrived = hub.notes.filter((n) => noteState(n, serverToday) === "arrived").length;
+  const sealed = hub.notes.filter((n) => noteState(n, serverToday) === "sealed").length;
+  const activeGoals = hub.goals.filter((g) => g.status === "active");
+  const week = timeTotals(hub.time, serverToday).week;
 
   return (
     <main className="ev-main">
@@ -143,10 +152,52 @@ export default async function TeacherHome() {
                     </small>
                     <small>{p.visitsMe ? "Visits your classroom" : "You visit their classroom"}</small>
                   </div>
-                  <span className="ev-badge">Active</span>
+                  <div className="ta-people-actions">
+                    <OpenChat pairingId={p.pairingId} className="ta-iconbtn"><Icon name="chat" size={16} /><span className="sr-only">Message {p.first}</span></OpenChat>
+                    <OpenVisit pairingId={p.pairingId} className="ta-iconbtn"><Icon name="video" size={16} /><span className="sr-only">Start a visit with {p.first}</span></OpenVisit>
+                  </div>
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        <section className="ev-panel">
+          <p className="ev-eyebrow">Your growth</p>
+          <h3>{activeGoals.length ? (activeGoals.length === 1 ? "One goal in progress" : `${activeGoals.length} goals in progress`) : "Set a goal for yourself"}</h3>
+          <p className="ev-muted">
+            {activeGoals[0] ? <>Right now: <strong>{activeGoals[0].title}</strong>. </> : "One small thing you want to get better at, just for you. "}
+            {week > 0 ? <>You&rsquo;ve spent {formatDuration(week)} on Mentorful this week.</> : null}
+          </p>
+          <div className="ta-row">
+            <Link className="ev-btn" href={`${BASE}/growth`}>
+              Open the growth hub <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+        </section>
+
+        <section className="ev-panel" data-arrived={arrived > 0}>
+          <p className="ev-eyebrow">Note to future self</p>
+          {arrived > 0 ? (
+            <>
+              <h3>{arrived === 1 ? "A note from past you has arrived" : `${arrived} notes from past you have arrived`}</h3>
+              <p className="ev-muted">You asked to be reminded. Open it when you have a minute.</p>
+              <div className="ta-row">
+                <Link className="ev-btn primary" href={`${BASE}/journal?tab=future#notebook`}>
+                  Read {arrived === 1 ? "it" : "them"} <Icon name="mail" size={16} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3>{sealed ? `${sealed} ${sealed === 1 ? "note is" : "notes are"} on the way` : "Write to the you of next month"}</h3>
+              <p className="ev-muted">{sealed ? "Sealed until the day you chose. You can add another." : "What do you want to remember, try, or tell yourself? It stays sealed until the day you pick."}</p>
+              <div className="ta-row">
+                <Link className="ev-btn" href={`${BASE}/journal?tab=future#future`}>
+                  Write a note <Icon name="pen" size={16} />
+                </Link>
+              </div>
+            </>
           )}
         </section>
 

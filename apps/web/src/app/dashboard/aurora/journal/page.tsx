@@ -1,4 +1,7 @@
-import { LogComposer } from "@/components/teacher/log-composer";
+import { Composers } from "@/components/teacher/composers";
+import { FutureNoteList } from "@/components/teacher/future-notes";
+import { DateBlock, Stamp } from "@/components/teacher/stamp";
+import { loadHub } from "@/lib/teacher/hub-data";
 import { Icon } from "@/components/teacher/icons";
 import { submitEntry } from "../actions";
 import { loadTeacher } from "@/lib/teacher/load";
@@ -7,13 +10,8 @@ import type { Entry } from "@/lib/teacher/model";
 // The notebook opens on the latest few entries; the rest are one tap away.
 const RECENT = 4;
 
-const dateBlock = (iso: string) => {
-  const d = new Date(iso);
-  return { m: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(), d: d.getDate(), y: d.getFullYear() };
-};
-
 function EntryView({ e }: { e: Entry }) {
-  const d = dateBlock(e.at);
+  const submittedLater = e.submittedAt && Math.abs(Date.parse(e.submittedAt) - Date.parse(e.createdAt)) > 120_000;
   const fields: [string, string | null][] = [
     ["Working toward", e.vision],
     ["Noticed working", e.strength],
@@ -23,15 +21,24 @@ function EntryView({ e }: { e: Entry }) {
   ];
   return (
     <article className="ev-entry" data-draft={e.status === "draft"}>
-      {e.status === "draft" ? <span className="ev-date"><strong>…</strong>DRAFT</span> : <span className="ev-date"><strong>{d.d}</strong>{d.m}</span>}
+      {e.status === "draft" ? <span className="ev-date"><strong>…</strong>DRAFT</span> : <DateBlock iso={e.at} />}
       <div>
         <div className="ta-entry-head">
           <span className="ev-badge">{e.domainLabel}</span>
           <small className="ev-muted">
             {e.direction === "visitsMe" ? "They observed you" : "You observed them"} · {e.partnerName}
-            {e.status === "submitted" ? ` · ${d.y}` : ""}
           </small>
         </div>
+        <p className="ta-stamps">
+          {e.status === "draft" ? (
+            <>Started <Stamp iso={e.createdAt} kind="long" /></>
+          ) : (
+            <>
+              Logged <Stamp iso={e.createdAt} kind="long" />
+              {submittedLater ? <> · submitted <Stamp iso={e.submittedAt!} kind="datetime" /></> : null}
+            </>
+          )}
+        </p>
         {fields.filter(([, v]) => v).map(([k, v]) => (
           <div className="ta-field" key={k}>
             <span className="ta-label">{k}</span>
@@ -49,11 +56,13 @@ function EntryView({ e }: { e: Entry }) {
   );
 }
 
-export default async function JournalPage({ searchParams }: { searchParams: Promise<{ with?: string }> }) {
+export default async function JournalPage({ searchParams }: { searchParams: Promise<{ with?: string; prefill?: string; tab?: string }> }) {
   const data = await loadTeacher();
   if (!data.model) return null;
   const { model } = data;
-  const { with: withPair } = await searchParams;
+  const { with: withPair, prefill, tab } = await searchParams;
+  const hub = await loadHub();
+  const serverToday = new Date().toISOString().slice(0, 10);
 
   return (
     <main className="ev-main ev-wide">
@@ -66,11 +75,18 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
       </header>
 
       <div className="ta-journal">
-        <LogComposer
+        <Composers
           pairs={model.partners.map((p) => ({ id: p.pairingId, partnerName: p.name, partnerFirst: p.first, domain: p.domain, visitsMe: p.visitsMe }))}
           defaultPairing={withPair}
+          prefill={prefill?.slice(0, 400)}
+          initialTab={tab === "future" ? "future" : "log"}
+          serverToday={serverToday}
+          cycleEnds={model.cycle?.ends?.slice(0, 10) ?? null}
+          hubReady={hub.ready}
         />
 
+        <div className="ta-journal-side">
+        <FutureNoteList notes={hub.notes} serverToday={serverToday} />
         <section className="ev-notebook" id="notebook" aria-labelledby="ta-nb">
           <div className="ev-notebook-head">
             <div>
@@ -101,6 +117,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
             </>
           )}
         </section>
+        </div>
       </div>
     </main>
   );
