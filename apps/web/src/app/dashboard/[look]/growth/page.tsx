@@ -1,6 +1,8 @@
 import { Icon } from "@/components/teacher/icons";
 import { GamesHub, GoalsPanel, PracticeLog, SharingCard, SuggestionCard } from "@/components/teacher/growth-hub";
+import { CtlePanel } from "@/components/teacher/ctle-panel";
 import { TimeCard } from "@/components/teacher/time-card";
+import { loadCtle } from "@/lib/teacher/ctle-data";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { practiceTotals, suggestionsFrom } from "@/lib/teacher/hub";
@@ -20,6 +22,7 @@ export default async function GrowthPage() {
   if (!data.model) return null;
   const { model } = data;
   const hub = await loadHub();
+  const ctle = await loadCtle();
   const serverToday = new Date().toISOString().slice(0, 10);
   const suggestions = suggestionsFrom(model.entries);
   const pairs = model.partners.map((p) => ({ pairingId: p.pairingId, partnerFirst: p.first }));
@@ -42,6 +45,8 @@ export default async function GrowthPage() {
         <TimeCard rows={hub.time} serverToday={serverToday} ready={hub.ready} sharing={hub.sharing.on} />
         <SuggestionCard items={suggestions} />
       </div>
+
+      <CtlePanel settings={ctle.settings} entries={ctle.entries} ready={ctle.ready} today={serverToday} />
 
       <GamesHub pairs={pairs} games={hub.games} ready={hub.ready} />
 
