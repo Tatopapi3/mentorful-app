@@ -1,5 +1,9 @@
 import { AuroraChrome } from "@/components/aurora/chrome";
+import { ChatDrawer } from "@/components/teacher/chat-drawer";
 import { MobileTabs } from "@/components/teacher/mobile-tabs";
+import { TimeTracker } from "@/components/teacher/time-tracker";
+import { VisitHost } from "@/components/teacher/visit-screen";
+import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import "@/components/teacher/teacher.css";
 
@@ -11,12 +15,18 @@ const NAV = [
   { href: BASE, label: "Home", exact: true },
   { href: `${BASE}/pair`, label: "My pair" },
   { href: `${BASE}/journal`, label: "Journal" },
+  { href: `${BASE}/growth`, label: "Growth" },
   { href: `${BASE}/scan`, label: "Culture Scan" },
 ];
 const ACTIONS = [
   { href: `${BASE}/journal#log`, label: "Log a conversation", hint: "Journal" },
   { href: `${BASE}/journal#notebook`, label: "Read my private notebook", hint: "Journal" },
+  { href: `${BASE}/journal?tab=future#future`, label: "Write a note to my future self", hint: "Journal" },
   { href: `${BASE}/pair`, label: "See my co-mentor", hint: "My pair" },
+  { href: `${BASE}/growth`, label: "Open the growth hub", hint: "Growth" },
+  { href: `${BASE}/growth#goals`, label: "Set or review my goals", hint: "Growth" },
+  { href: `${BASE}/growth#games`, label: "Play a pedagogy game with my co-mentor", hint: "Growth" },
+  { href: `${BASE}/growth#practice`, label: "Add to my practice log", hint: "Growth" },
   { href: "/survey", label: "Take the Culture Scan", hint: "Anonymous" },
 ];
 
@@ -33,6 +43,8 @@ export default async function TeacherAuroraLayout({ children }: { children: Reac
     );
   }
   const { model, schoolName } = data;
+  const hub = await loadHub();
+  const chatPairs = model.partners.map((p) => ({ pairingId: p.pairingId, partnerName: p.name, partnerFirst: p.first, initials: p.initials }));
   return (
     <AuroraChrome
       schoolName={schoolName}
@@ -44,6 +56,9 @@ export default async function TeacherAuroraLayout({ children }: { children: Reac
     >
       <div className="ta">{children}</div>
       <MobileTabs />
+      <ChatDrawer pairs={chatPairs} initial={hub.messages} />
+      <VisitHost pairs={chatPairs} meId={model.me.id} />
+      <TimeTracker />
     </AuroraChrome>
   );
 }

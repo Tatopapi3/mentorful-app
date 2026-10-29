@@ -8,6 +8,7 @@ const TABS: { href: string; label: string; icon: IconName; exact?: boolean }[] =
   { href: "/dashboard/aurora", label: "Home", icon: "home", exact: true },
   { href: "/dashboard/aurora/pair", label: "My pair", icon: "users" },
   { href: "/dashboard/aurora/journal", label: "Journal", icon: "book" },
+  { href: "/dashboard/aurora/growth", label: "Growth", icon: "growth" },
   { href: "/dashboard/aurora/scan", label: "Scan", icon: "scan" },
 ];
 
