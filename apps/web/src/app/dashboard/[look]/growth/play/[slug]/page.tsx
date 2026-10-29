@@ -4,9 +4,11 @@ import { ProtocolPlayer } from "@/components/teacher/protocol-player";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { protocolFor } from "@/lib/teacher/protocols";
+import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
 
-export default async function PlayPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ with?: string }> }) {
-  const { slug } = await params;
+export default async function PlayPage({ params, searchParams }: { params: Promise<{ look: string; slug: string }>; searchParams: Promise<{ with?: string }> }) {
+  const { slug, look: lookRaw } = await params;
+  const base = teacherBase(await teacherLookOf(Promise.resolve({ look: lookRaw })));
   const { with: withPair } = await searchParams;
   const protocol = protocolFor(slug);
   if (!protocol) notFound();
@@ -26,7 +28,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
         <section className="ev-empty">
           <h3>You play this one with a co-mentor</h3>
           <p className="ev-muted">When your school lead confirms your pairing, you can run it together here.</p>
-          <Link className="ev-btn" href="/dashboard/aurora/growth#games">Back to the games</Link>
+          <Link className="ev-btn" href={`${base}/growth#games`}>Back to the games</Link>
         </section>
       </main>
     );

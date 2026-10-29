@@ -3,24 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "./icons";
+import { useBase } from "./use-base";
 
-const TABS: { href: string; label: string; icon: IconName; exact?: boolean }[] = [
-  { href: "/dashboard/aurora", label: "Home", icon: "home", exact: true },
-  { href: "/dashboard/aurora/pair", label: "My pair", icon: "users" },
-  { href: "/dashboard/aurora/journal", label: "Journal", icon: "book" },
-  { href: "/dashboard/aurora/growth", label: "Growth", icon: "growth" },
-  { href: "/dashboard/aurora/scan", label: "Scan", icon: "scan" },
+const TABS: { path: string; label: string; icon: IconName; exact?: boolean }[] = [
+  { path: "", label: "Home", icon: "home", exact: true },
+  { path: "/pair", label: "My pair", icon: "users" },
+  { path: "/journal", label: "Journal", icon: "book" },
+  { path: "/growth", label: "Growth", icon: "growth" },
+  { path: "/scan", label: "Scan", icon: "scan" },
 ];
 
 /** Between classes a teacher is on a phone, so the four tabs move to the thumb on narrow screens. */
 export function MobileTabs() {
   const path = usePathname();
+  const base = useBase();
   return (
     <nav aria-label="Primary, mobile" className="ta-tabs">
       {TABS.map((t) => {
-        const on = t.exact ? path === t.href : path === t.href || path.startsWith(`${t.href}/`);
+        const href = `${base}${t.path}`;
+        const on = t.exact ? path === href : path === href || path.startsWith(`${href}/`);
         return (
-          <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}>
+          <Link key={t.path} href={href} aria-current={on ? "page" : undefined}>
             <Icon name={t.icon} size={20} />
             <span>{t.label}</span>
           </Link>

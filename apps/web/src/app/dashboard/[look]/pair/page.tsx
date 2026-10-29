@@ -5,12 +5,13 @@ import { OpenCall, OpenChat } from "@/components/teacher/open-events";
 import { PairTabs } from "@/components/teacher/pair-tabs";
 import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadTeacher } from "@/lib/teacher/load";
+import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
 import { agoLabel, daysSince } from "@/lib/teacher/model";
 import { DOMAIN_LABEL } from "@/lib/domains";
 
-const BASE = "/dashboard/aurora";
 
-export default async function PairPage() {
+export default async function PairPage({ params }: { params: Promise<{ look: string }> }) {
+  const BASE = teacherBase(await teacherLookOf(params));
   const data = await loadTeacher();
   if (!data.model) return null;
   const { model } = data;
@@ -25,7 +26,7 @@ export default async function PairPage() {
         </h1>
         <p className="ev-lead">A quiet place to understand and look after your mentoring partnership.</p>
       </header>
-      <PairTabs current="partnership" />
+      <PairTabs current="partnership" base={BASE} />
 
       {model.partners.length === 0 ? (
         <section className="ev-empty">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { addGrowthEntry, logGameSession, saveGoal, setGoalStatus, setGrowthSharing } from "@/app/dashboard/aurora/hub-actions";
+import { addGrowthEntry, logGameSession, saveGoal, setGoalStatus, setGrowthSharing } from "@/lib/teacher/hub-actions";
 import {
   GOAL_AREAS,
   MODULES,
@@ -19,12 +19,14 @@ import {
 } from "@/lib/teacher/hub";
 import { Icon, type IconName } from "./icons";
 import { Stamp } from "./stamp";
+import { useBase } from "./use-base";
 
 const NotReady = () => <p className="ev-hold">This part of the hub isn&rsquo;t switched on for your school yet. Your school lead needs to apply the update first.</p>;
 
 /* ------------------------------------------------------------ suggestions */
 
 export function SuggestionCard({ items }: { items: Suggestion[] }) {
+  const base = useBase();
   const [i, setI] = useState(0);
   if (items.length === 0) {
     return (
@@ -49,7 +51,7 @@ export function SuggestionCard({ items }: { items: Suggestion[] }) {
       <p className="ev-muted">{s.why}</p>
       <blockquote className="ta-quote sm">{s.prompt}</blockquote>
       <p className="ev-small">
-        Try it with: <a href={`/dashboard/aurora/growth/play/${MODULES.find((m) => m.name === s.module)?.slug ?? ""}`}>{s.module}</a>
+        Try it with: <a href={`${base}/growth/play/${MODULES.find((m) => m.name === s.module)?.slug ?? ""}`}>{s.module}</a>
       </p>
       <div className="ta-row">
         {items.length > 1 ? (
@@ -57,7 +59,7 @@ export function SuggestionCard({ items }: { items: Suggestion[] }) {
             Next suggestion
           </button>
         ) : null}
-        <Link className="ev-btn primary" href={`/dashboard/aurora/journal?prefill=${encodeURIComponent(prefillFor(s))}#log`}>
+        <Link className="ev-btn primary" href={`${base}/journal?prefill=${encodeURIComponent(prefillFor(s))}#log`}>
           Use in a log <Icon name="arrow" size={16} />
         </Link>
       </div>
@@ -70,6 +72,7 @@ export function SuggestionCard({ items }: { items: Suggestion[] }) {
 type PairLite = { pairingId: string; partnerFirst: string };
 
 export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: GameSession[]; ready: boolean }) {
+  const base = useBase();
   const [pairId, setPairId] = useState(pairs[0]?.pairingId ?? "");
   const [openMod, setOpenMod] = useState<string | null>(null);
   const [minutes, setMinutes] = useState("");
@@ -161,7 +164,7 @@ export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: Ga
               </small>
             ) : null}
             {lastNote ? <p className="ta-game-last">{lastNote}</p> : null}
-            <Link className="ev-btn sm primary ta-game-play" href={`/dashboard/aurora/growth/play/${m.slug}?with=${pair.pairingId}`}>
+            <Link className="ev-btn sm primary ta-game-play" href={`${base}/growth/play/${m.slug}?with=${pair.pairingId}`}>
               <Icon name="play" size={13} /> {state === "new" ? "Play" : "Play again"}
             </Link>
             {ready ? (
