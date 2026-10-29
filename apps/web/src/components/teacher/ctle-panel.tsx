@@ -154,7 +154,6 @@ export function CtlePanel({ settings, entries, ready, today }: { settings: CtleS
 
   const p = ctleProgress(entries, settings, today);
   const live = entries.filter((e) => !e.voided_at).sort((a, b) => (a.taken_on < b.taken_on ? 1 : -1));
-  const years5 = settings.period_years === 1 ? "year" : "years";
 
   return (
     <section className="ev-panel" id="ctle" aria-labelledby="ta-ctle-h">
@@ -170,7 +169,7 @@ export function CtlePanel({ settings, entries, ready, today }: { settings: CtleS
       <Meter label="Language acquisition" value={p.language} of={p.languageRequired} tone="lang" />
       <p className="ta-ctle-says">{paceSentence(p)}</p>
       <p className="ev-muted">
-        Your {settings.period_years}-{years5} period runs {dateLabel(p.periodStart)} to {dateLabel(p.periodEnd)}. Language acquisition hours count toward the total, not on top of it.
+        Your {settings.period_years}-year period runs {dateLabel(p.periodStart)} to {dateLabel(p.periodEnd)}. Language acquisition hours count toward the total, not on top of it.
         {p.personal ? <> {hoursLabel(p.personal)} personal-record {p.personal === 1 ? "hour isn't" : "hours aren't"} counted because {p.personal === 1 ? "it" : "they"} didn&rsquo;t come from an approved sponsor.</> : null}
       </p>
 

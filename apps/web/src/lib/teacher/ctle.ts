@@ -124,9 +124,9 @@ export function paceSentence(p: CtleProgress): string {
   if (p.pace === "complete") return "You have everything this period asks for. Keep your certificates; you may be asked for them.";
   if (p.daysLeft === 0) return `The period has ended and ${hoursLabel(p.remaining)} hours are still missing${p.languageRemaining ? `, ${hoursLabel(p.languageRemaining)} of them language acquisition` : ""}. Check with your district about your options.`;
   const left = p.daysLeft >= 60 ? `${Math.round(p.daysLeft / 30.44)} months` : `${p.daysLeft} days`;
-  const base = `${hoursLabel(p.remaining)} hours to go with ${left} left`;
-  const lang = p.languageRemaining ? `, including ${hoursLabel(p.languageRemaining)} of language acquisition` : "";
-  const rate = p.perMonth ? `. About ${hoursLabel(p.perMonth)} hours a month gets you there` : "";
+  const base = `${hoursLabel(p.remaining)} ${p.remaining === 1 ? "hour" : "hours"} to go with ${left} left`;
+  const lang = p.languageRemaining ? `, including ${hoursLabel(p.languageRemaining)} ${p.languageRemaining === 1 ? "hour" : "hours"} of language acquisition` : "";
+  const rate = p.perMonth ? `. About ${Math.round(p.perMonth * 10) / 10} hours a month gets you there` : "";
   return `${base}${lang}${rate}.`;
 }
 
