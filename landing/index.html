@@ -156,7 +156,7 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
 // The dashboards sit behind a private key. The key travels in this page's own link (?k=…) and is added to each button,
 // so nobody can open a dashboard without the link they were given.
 (function () {
-  var APP = "https://mentorful-aurora-juan-fernandezs-projects-7b6fcd46.vercel.app";
+  var APP = "https://team-mentorful-app.vercel.app";
   var k = new URLSearchParams(location.search).get("k");
   document.querySelectorAll("[data-path]").forEach(function (a) {
     if (!k) { a.classList.add("off"); a.setAttribute("aria-disabled", "true"); return; }
