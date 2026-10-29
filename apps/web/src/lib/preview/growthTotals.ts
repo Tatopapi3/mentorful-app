@@ -31,8 +31,10 @@ export function addGrowthSeeds(t: Tables, meId: string): void {
     if (opted) shares.add(p.id);
     if (opted || heavy) sharing.push({ profile_id: p.id, school_id: p.school_id, share: opted, updated_at: ago(10 + (i % 9)) });
     if (!(opted || heavy)) return;
-    for (let d = 0; d < 30; d++) {
-      if ((i * 7 + d * 3) % 5 < 2 + (i % 3) && !(opted && i % 6 === 1 && d < 7 && d % 2)) {
+    // Each teacher has their own level of use, from almost none to most days, so the totals look like a real school.
+    const level = (i * 5) % 9;
+    for (let d = 0; d < 56; d++) {
+      if ((i * 7 + d * 3) % 12 < level) {
         pt.push({ id: `pt-x-${i}-${d}`, profile_id: p.id, day: addDays(today, -d), seconds: heavy ? 3000 + ((i * 131 + d * 57) % 5000) : 420 + ((i * 131 + d * 57) % 2400), updated_at: ago(d) });
       }
     }
