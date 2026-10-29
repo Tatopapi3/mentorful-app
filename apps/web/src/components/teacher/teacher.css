@@ -94,6 +94,7 @@
 .ta-recent ul { list-style: none; padding: 0; margin: 8px 0 0; }
 .ta-recent li { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-top: 1px solid var(--ev-line); }
 .ta-recent li small { display: block; }
+.ta-between small { display: inline-flex; align-items: center; gap: 5px; }
 .ta-recent .ev-date { width: 54px; flex: none; padding: 6px 0; }
 .ta-recent .ev-date strong { font-size: 18px; }
 .ta-you { margin-top: 8px; }
@@ -111,7 +112,10 @@
 
 /* journal */
 .ta-journal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 24px; align-items: start; }
-.ta-composer { scroll-margin-top: 90px; }
+.ta-composer { scroll-margin-top: 90px; position: sticky; top: 92px; }
+.ta-older > summary { cursor: pointer; padding: 16px 26px; font-size: 13px; font-weight: 600; color: var(--ev-teal); border-top: 1px solid var(--ev-line); list-style: none; }
+.ta-older > summary::-webkit-details-marker { display: none; }
+.ta-older[open] > summary { display: none; }
 .ta-step { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 14px; margin-top: 22px; }
 .ta-step h3 { margin: 4px 0 10px; font-size: 16px; }
 .ta-num { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ev-grad); color: #fff; font: 600 13px var(--ev-display); margin-top: 2px; }
@@ -157,7 +161,7 @@
   .ta-hero { grid-template-columns: 1fr; padding: 30px 26px; }
   .ta-orbit { max-width: 190px; }
   .ta-grid, .ta-pairgrid, .ta-journal, .ta-scan { grid-template-columns: 1fr; }
-  .ta-adjust { position: static; }
+  .ta-adjust, .ta-composer { position: static; }
   .ta-scan-art { min-height: 200px; }
 }
 @media (max-width: 650px) {

@@ -4,7 +4,6 @@ import { Icon } from "@/components/teacher/icons";
 import { ScanEntry } from "@/components/teacher/scan-card";
 import { loadTeacher } from "@/lib/teacher/load";
 import { agoLabel, daysSince, nextStep } from "@/lib/teacher/model";
-import { DOMAIN_LABEL } from "@/lib/domains";
 
 const BASE = "/dashboard/aurora";
 
@@ -149,11 +148,6 @@ export default async function TeacherHome() {
               ))}
             </ul>
           )}
-          {partner && partner.shared.length > 0 ? (
-            <p className="ta-insight">
-              You&rsquo;re both strong in <b>{partner.shared.map((d) => DOMAIN_LABEL[d]).join(" and ")}</b>, so this is peer coaching rather than teaching.
-            </p>
-          ) : null}
         </section>
 
         <ScanEntry />
