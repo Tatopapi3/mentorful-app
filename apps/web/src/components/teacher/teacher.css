@@ -348,8 +348,9 @@
 .ta-photo-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.22); }
 .ta-photo-ring.r1 { width: 120%; aspect-ratio: 1; left: -30%; top: -35%; }
 .ta-photo-ring.r2 { width: 80%; aspect-ratio: 1; right: -25%; top: 5%; border-color: rgba(127, 240, 220, 0.3); }
-.ta-monogram { position: absolute; inset: 0; display: grid; place-items: center; padding-bottom: 28%; font: 600 clamp(64px, 9vw, 110px) var(--ev-display); letter-spacing: -0.06em; color: rgba(255, 255, 255, 0.92); text-shadow: 0 8px 30px rgba(0, 0, 0, 0.25); }
-.ta-photo.sm .ta-monogram { font-size: 17px; padding: 0; }
+.ta-monogram { position: absolute; inset: 0; display: grid; place-items: start center; padding-top: 12%; font: 600 clamp(58px, 6.4vw, 92px) var(--ev-display); letter-spacing: -0.06em; color: rgba(255, 255, 255, 0.92); text-shadow: 0 8px 30px rgba(0, 0, 0, 0.25); }
+.ta-photo.sm .ta-monogram { font-size: 17px; padding: 0; place-items: center; }
+.ta-photo.tall .ta-monogram { padding-top: 22%; font-size: clamp(70px, 8vw, 110px); }
 .ta-photo.sm .ta-photo-ring { display: none; }
 
 .ta-lb-card { position: relative; display: block; width: 100%; aspect-ratio: 3 / 4.15; padding: 0; border: 0; border-radius: 26px; overflow: hidden; text-align: left; color: #fff; cursor: pointer; background: #17143a; box-shadow: var(--ev-shadow); transition: transform 0.18s, box-shadow 0.18s; }
@@ -453,3 +454,5 @@
   .ta-ed-row.one .ta-iconbtn { grid-column: auto; }
   .ta-lb-pager span { min-width: 0; }
 }
+
+.ev-field > label small { display: inline; margin: 0 0 0 8px; font-weight: 400; }
