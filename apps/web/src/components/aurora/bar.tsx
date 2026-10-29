@@ -138,7 +138,7 @@ export function AtlasBar({
           <span className="mark" aria-hidden>
             <MentorfulMark size={30} />
           </span>
-          <span className="word">mentorful</span>
+          <span className="word">Mentorful</span>
         </Link>
         <nav className="ev-nav" aria-label="Primary">
           {items.map((item) => (
