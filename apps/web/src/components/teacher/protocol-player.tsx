@@ -139,7 +139,7 @@ export function ProtocolPlayer({ protocol, ready, pair, myDomains, theirDomains,
         ) : null}
 
         <p className="ev-note">
-          <Icon name="lock" size={14} /> Shared with {pair.partnerFirst} only. Nothing here is rated, and your school lead never sees what you write. This is a first draft of the game, written for Mentorful&rsquo;s team to review.
+          <Icon name="lock" size={14} /> Shared with {pair.partnerFirst} only. Nothing here is rated, and your school lead never sees what you write. These games are new and still being refined, so tell us what would make this one better.
         </p>
         <div className="ta-row">
           <button className="ev-btn primary" type="button" onClick={() => setPhase("play")}>

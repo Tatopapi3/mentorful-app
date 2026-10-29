@@ -3,13 +3,16 @@ import { MODULES } from "./hub";
 /**
  * The six pedagogy games as playable protocols.
  *
- * DRAFT CONTENT. Bertrand's games hub had only a name, a focus, a length and a progress number for each module; there
- * was no workflow anywhere (his cards were display-only). These flows are written here from standard peer-learning
- * practice (a debrief protocol, the four PLC questions, a feedback reframe) and from Mentorful's own rules: developmental
- * not evaluative, strengths first, nothing rated or scored. They are meant to be reviewed and rewritten by whoever owns
- * Mentorful's pedagogy (Nick, Bertrand), which is why every step is plain data and the player has no content of its own.
+ * CONTENT OWNER: Juan. Bertrand's games hub had only a name, a focus, a length and a progress number for each module
+ * (his cards were display-only), so these flows were first drafted from standard peer-learning practice (a debrief
+ * protocol, the four PLC questions, a feedback reframe) and Mentorful's own rules: developmental not evaluative,
+ * strengths first, nothing rated or scored. From here they are Juan's to rewrite.
  *
- * A session is played by the two teachers together, on one screen (in the room, or on the visit screen). The player
+ * TO EDIT A GAME: change its entry in PROTOCOLS below. Every step is plain data (title, minutes, who, instruction,
+ * sentence stems, notes to capture), and the player has no content of its own. `npm test` checks that each game's steps
+ * add up to its listed minutes, that the keys line up, and that nothing asks anyone to rate or score.
+ *
+ * A session is played by the two teachers together, on one screen (in the room, or on a video call). The player
  * keeps time and takes notes; the two people do the talking.
  */
 

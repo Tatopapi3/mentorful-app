@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Greeting, Today } from "@/components/teacher/greeting";
 import { Icon } from "@/components/teacher/icons";
 import { ScanEntry } from "@/components/teacher/scan-card";
-import { OpenChat, OpenVisit } from "@/components/teacher/open-events";
+import { OpenCall, OpenChat } from "@/components/teacher/open-events";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { agoLabel, daysSince, nextStep } from "@/lib/teacher/model";
@@ -154,7 +154,7 @@ export default async function TeacherHome() {
                   </div>
                   <div className="ta-people-actions">
                     <OpenChat pairingId={p.pairingId} className="ta-iconbtn"><Icon name="chat" size={16} /><span className="sr-only">Message {p.first}</span></OpenChat>
-                    <OpenVisit pairingId={p.pairingId} className="ta-iconbtn"><Icon name="video" size={16} /><span className="sr-only">Start a visit with {p.first}</span></OpenVisit>
+                    <OpenCall pairingId={p.pairingId} className="ta-iconbtn"><Icon name="video" size={16} /><span className="sr-only">Video call {p.first}</span></OpenCall>
                   </div>
                 </li>
               ))}

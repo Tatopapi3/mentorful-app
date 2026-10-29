@@ -5,7 +5,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { saveEntry } from "@/app/dashboard/aurora/actions";
 import { CONCERN_DOMAINS, DOMAIN_LABEL } from "@/lib/domains";
 import { Icon } from "./icons";
-import { openVisit } from "./open-events";
+import { openCall } from "./open-events";
 import { useNowStamp } from "./stamp";
 
 export type PairOption = { id: string; partnerName: string; partnerFirst: string; domain: string | null; visitsMe: boolean };
@@ -128,8 +128,8 @@ export function LogComposer({ pairs, defaultPairing, prefill }: { pairs: PairOpt
           <span className="ev-privacy">
             <Icon name="lock" size={14} /> Only you and {start.partnerFirst} can read this
           </span>
-          <button className="ev-btn" type="button" onClick={() => openVisit(start.id)} title="Open the visit screen">
-            <Icon name="video" size={16} /> Visit screen
+          <button className="ev-btn" type="button" onClick={() => openCall(start.id)} title="Video call">
+            <Icon name="video" size={16} /> Video call
           </button>
           <button className="ev-btn primary" type="submit" disabled={pending}>
             {pending ? "Saving…" : "Save draft"}

@@ -297,29 +297,46 @@
 .ta-compose { display: flex; gap: 8px; align-items: center; padding: 12px 14px 14px; border-top: 1px solid var(--ev-line); }
 .ta-compose .ev-input { flex: 1; min-width: 0; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--ev-line); background: var(--ev-panel-solid); font-size: 14px; }
 
-/* visit screen */
-.ta-visit { width: min(720px, calc(100% - 24px)); max-height: calc(100vh - 28px); overflow: auto; margin-top: -9vh; padding: 20px; background: var(--ev-panel-solid); color: var(--ev-ink); border: 1px solid var(--ev-line); border-radius: 26px; box-shadow: 0 40px 90px -20px rgba(0, 0, 0, 0.55); }
-.ta-visit.big { width: min(1120px, 96vw); margin-top: -10vh; }
-.ta-visit-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-.ta-visit-head h3 { margin: 0; font-size: 18px; }
-.ta-visit-head select { width: auto; padding: 6px 12px; border-radius: 12px; border: 1px solid var(--ev-line); background: var(--ev-panel-solid); font-size: 13px; }
-.ta-livedot { width: 10px; height: 10px; border-radius: 50%; background: var(--ev-muted); flex: none; opacity: 0.6; }
-.ta-visit.live .ta-livedot:not(.solid) { background: #ef4444; opacity: 1; box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); }
-.ta-livedot.solid { background: currentColor; opacity: 1; width: 8px; height: 8px; }
-.ta-here { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ev-teal); }
-.ta-here::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #1fbf7a; }
-.ta-stage { position: relative; aspect-ratio: 16 / 9; max-height: 58vh; width: 100%; border-radius: 18px; overflow: hidden; background: radial-gradient(120% 140% at 0% 0%, #2a2a8a 0%, #17143a 55%, #0d0b27 100%); display: grid; place-items: center; }
-.ta-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.ta-stage-msg { margin: 0; padding: 20px; max-width: 28rem; text-align: center; color: #e4e3ff; font-size: 14px; }
+/* video call */
+.ta-incoming { position: fixed; z-index: 95; top: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; width: min(440px, calc(100vw - 24px)); padding: 12px 14px 12px 12px; border-radius: 999px; background: rgba(20, 18, 43, 0.96); color: #fff; box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); animation: ta-drop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.ta-incoming > div { flex: 1; min-width: 0; display: grid; }
+.ta-incoming small { color: rgba(255, 255, 255, 0.7); }
+.ta-incoming-av { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--ev-grad); font: 600 15px var(--ev-display); animation: ta-ping 1.6s ease-out infinite; }
+@keyframes ta-drop { from { opacity: 0; transform: translate(-50%, -16px); } }
+@keyframes ta-ping { 0% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.55); } 100% { box-shadow: 0 0 0 16px rgba(94, 234, 212, 0); } }
+.ta-callbtn { display: inline-grid; place-items: center; flex: none; width: 52px; height: 52px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.16); color: #fff; cursor: pointer; transition: transform 0.12s, background 0.15s; }
+.ta-callbtn:hover { transform: scale(1.06); background: rgba(255, 255, 255, 0.26); }
+.ta-callbtn[data-off="true"] { background: #fff; color: #17143a; }
+.ta-callbtn.accept { background: #22c55e; }
+.ta-callbtn.accept:hover { background: #16a34a; }
+.ta-callbtn.decline { background: #ef4444; }
+.ta-callbtn.decline:hover { background: #dc2626; }
+.ta-callbtn.decline svg { transform: none; }
+.ta-call { position: fixed; inset: 0; z-index: 96; display: flex; flex-direction: column; background: radial-gradient(120% 140% at 0% 0%, #2a2a8a 0%, #14123a 55%, #0a0a22 100%); color: #fff; }
+.ta-call-top { position: absolute; z-index: 4; top: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 20px 16px; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45), transparent); text-align: center; }
+.ta-call-top div { display: grid; }
+.ta-call-top strong { font: 600 18px var(--ev-display); }
+.ta-call-top small { color: rgba(255, 255, 255, 0.75); font-variant-numeric: tabular-nums; }
+.ta-call-stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; }
+.ta-call-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .ta-remote { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; z-index: 1; }
-.ta-remote.pip { inset: 10px auto auto 10px; width: 30%; height: auto; aspect-ratio: 4 / 3; border-radius: 12px; border: 2px solid #fff; z-index: 3; }
-.ta-self { position: absolute; right: 10px; bottom: 10px; width: 26%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; border: 2px solid #fff; background: #000; z-index: 2; transform: scaleX(-1); }
-.ta-visit-controls, .ta-visit-link { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-.ta-visit-link .ev-input { flex: 1 1 220px; min-width: 0; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--ev-line); background: var(--ev-panel-solid); font-size: 14px; }
+.ta-remote.pip { inset: 84px auto auto 14px; width: min(26vw, 220px); height: auto; aspect-ratio: 3 / 4; border-radius: 16px; border: 2px solid #fff; z-index: 3; }
+.ta-self { position: absolute; z-index: 3; right: 16px; bottom: 112px; width: min(26vw, 190px); aspect-ratio: 3 / 4; object-fit: cover; border-radius: 16px; border: 2px solid rgba(255, 255, 255, 0.9); background: #000; transform: scaleX(-1); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5); }
+.ta-call-wait { display: grid; justify-items: center; gap: 14px; padding: 24px; text-align: center; }
+.ta-call-wait p { margin: 0; font-size: 18px; }
+.ta-call-av { display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: var(--ev-grad); font: 600 44px var(--ev-display); box-shadow: 0 0 60px rgba(94, 234, 212, 0.3); }
+.ta-call-av[data-ring="true"] { animation: ta-ping 1.8s ease-out infinite; }
+.ta-call-note { max-width: 34rem; font-size: 14px !important; color: rgba(255, 255, 255, 0.78); }
+.ta-call-bar { position: absolute; z-index: 5; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; gap: 16px; padding: 12px 18px; border-radius: 999px; background: rgba(10, 10, 31, 0.6); backdrop-filter: blur(16px); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.ta-call-ended { position: absolute; z-index: 5; left: 50%; bottom: 40px; transform: translateX(-50%); width: min(460px, calc(100vw - 24px)); padding: 18px 20px; border-radius: 24px; background: rgba(10, 10, 31, 0.7); backdrop-filter: blur(16px); text-align: center; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.ta-call-ended p { margin: 0 0 12px; }
+.ta-call-panel { position: absolute; z-index: 6; top: 76px; right: 14px; bottom: 112px; width: min(330px, calc(100vw - 28px)); overflow: auto; padding: 16px; border-radius: 22px; background: var(--ev-panel-solid); color: var(--ev-ink); box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.6); }
+.ta-call-panel h3 { margin: 0; font-size: 16px; }
+.ta-visit-link { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.ta-visit-link .ev-input { flex: 1 1 200px; min-width: 0; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--ev-line); background: var(--ev-panel-solid); font-size: 14px; }
 .ta-visit-files { list-style: none; margin: 12px 0 0; padding: 0; }
 .ta-visit-files li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--ev-line); font-size: 13px; }
 .ta-visit-files li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.ta-visit-note { margin: 12px 0 0; }
 
 @media (max-width: 900px) {
   .ta-hubgrid { grid-template-columns: 1fr; }
@@ -332,8 +349,9 @@
   .ta-chatfab { right: 14px; bottom: 98px; height: 48px; padding: 0 16px; }
   .ta-chatfab-label { display: none; }
   .ta-chat { left: 8px; right: 8px; bottom: 8px; top: 72px; width: auto; height: auto; z-index: 70; }
-  .ta-visit, .ta-visit.big { margin-top: 0; padding: 16px; }
-  .ta-stage { aspect-ratio: 4 / 3; }
+  .ta-self { bottom: 120px; width: 28vw; right: 12px; }
+  .ta-call-bar { gap: 10px; padding: 10px 12px; bottom: 20px; }
+  .ta-call-panel { top: 70px; bottom: 100px; right: 10px; }
 }
 
 /* ===================================================================== lookbook (inside My pair) */

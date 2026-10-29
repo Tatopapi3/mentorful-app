@@ -6,7 +6,7 @@ import { DOMAIN_LABEL, CONCERN_DOMAINS, type ConcernDomain } from "@/lib/domains
 import { NO_FILTERS, WANTS, YEARS_BANDS, activeFilters, facetCounts, filterCards, paginate, type Card, type Filters } from "@/lib/teacher/lookbook";
 import { Icon } from "./icons";
 import { CardDetail, CardPhoto, LookbookCard } from "./lookbook-card";
-import { OpenChat, OpenVisit } from "./open-events";
+import { OpenCall, OpenChat } from "./open-events";
 import { Overlay } from "./overlay";
 
 const PER_PAGE = 9;
@@ -210,9 +210,9 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
                     <OpenChat pairingId={partnerByProfile[current.profileId]}>
                       <Icon name="chat" size={16} /> Message
                     </OpenChat>
-                    <OpenVisit pairingId={partnerByProfile[current.profileId]}>
-                      <Icon name="video" size={16} /> Visit screen
-                    </OpenVisit>
+                    <OpenCall pairingId={partnerByProfile[current.profileId]}>
+                      <Icon name="video" size={16} /> Video call
+                    </OpenCall>
                   </div>
                 ) : current.profileId === meId ? (
                   <div className="ta-lb-actions">
