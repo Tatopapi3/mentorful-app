@@ -22,11 +22,11 @@ The brand badge (the spiked M in the Aurora gradient) is `components/aurora/ment
 - **My pair**: partnership (chat, video call, private partner-change request), **Lookbook** of colleagues' cards (search,
   filters, grid and list, detail view), **My card** editor (opt-in, self-authored).
 - **Journal**: log a conversation (exact timestamps), **note to future self** (sealed until a chosen date), private notebook.
-- **Growth**: **CTLE hours tracker** (New York's 100 hours per 5 years, 15% language acquisition; settings, so other requirements work), time on Mentorful (private), suggested focus, six **pedagogy games** you play with your co-mentor, goals,
+- **Growth**: time on Mentorful (private), suggested focus, six **pedagogy games** you play with your co-mentor, goals,
   practice log, an opt-in to anonymous school totals, Mentorful products.
 - **Culture Scan**, a **pair chat** drawer and a **video call** (rings your co-mentor) on every tab.
 
-Logic is pure and tested: `src/lib/teacher/` (model, hub, lookbook, protocols, ctle). The CTLE pace rule exists twice, in `ctle.ts` and in `ctle_progress()`; change both together. Mentorful is a teacher's own record, not NYSED's: only hours from an approved sponsor count, and the screen says so. Whether the district becomes an approved sponsor, and so can sign off Mentorful activity, is Nick's decision. UI: `src/components/teacher/`.
+Logic is pure and tested: `src/lib/teacher/` (model, hub, lookbook, protocols). UI: `src/components/teacher/`.
 
 ## Database scripts (written, NOT applied)
 
@@ -37,7 +37,6 @@ Order matters. All are additive (new tables, functions, buckets; no existing tab
 | `017_teacher_hub.sql` | pair chat, game sessions, notes to future self, time on platform, goals, practice log | pair tables: the two teachers only; own tables: the owner only; no admin read path |
 | `018_teacher_lookbook.sql` | `teacher_cards`, `lookbook_cards()`, private `teacher-photos` bucket | opt-in; only the teacher writes; "growing in" hidden unless they switch it on; admins get nothing |
 | `019_growth_activity.sql` | `growth_sharing`, `growth_activity()` | consent; anonymous, rounded to 5, floor of 5 (10 for distributions), admin only |
-| `020_ctle_hours.sql` | `ctle_settings`, `ctle_hours`, `ctle_progress()` | owner-only hours (no admin read path); leadership gets only a rounded share complete / on pace / behind, from teachers who opted in (019) and set the tracker up, floor of 5. Needs 019 first |
 
 Checked on a throwaway Postgres (PGlite) with stand-ins for Nick's helper functions (`my_profile_id`, `my_school_id`,
 `is_school_admin`), not against his real schema. A read-only look at the real `mentorful-app` project confirmed those
@@ -69,14 +68,14 @@ around locally: merge `juan-preview` into a scratch branch, then `npm run previe
 
 ```
 cd apps/web
-npm test          # 127 tests
+npm test          # 107 tests
 npx tsc --noEmit
 npx next build
 ```
 
 ## Next steps
 
-1. Apply 017, 018, 019, 020 (and 016) to a project that is not Nick's, then sign in real test teachers (only one profile is
+1. Apply 017, 018, 019 (and 016) to a project that is not Nick's, then sign in real test teachers (only one profile is
    linked to a login today).
 2. Try a video call between two real devices.
 3. Review the game content and the lookbook fields with Nick.

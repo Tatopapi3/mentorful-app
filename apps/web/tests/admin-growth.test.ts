@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ctleNotEnough, notEnough, readCtle, readGrowth, type GrowthActivity } from "@/lib/admin/growth";
+import { notEnough, readGrowth, type GrowthActivity } from "@/lib/admin/growth";
 
 const full: GrowthActivity = {
   teachers: 50, window_days: 30, enough: true, contributors: 15, share_pct: 30, active_week_pct: 65, typical_week_minutes: 25,
@@ -37,23 +37,5 @@ describe("reading the growth totals", () => {
   it("never produces a per-person sentence", () => {
     const text = JSON.stringify(readGrowth(full)).toLowerCase();
     expect(text).not.toMatch(/\b(she|he)\b|named|ranked|lowest|highest|least active|most active/);
-  });
-});
-
-describe("reading the CTLE totals", () => {
-  const c = { teachers: 50, enough: true, contributors: 15, tracking_pct: 30, complete_pct: 20, on_pace_pct: 35, behind_pct: 45 };
-  it("says nothing below the floor and doesn't point at anyone", () => {
-    expect(readCtle({ teachers: 50, enough: false })).toBeNull();
-    expect(ctleNotEnough({ teachers: 50, enough: false })).toMatch(/Fewer than 5 of your 50 teachers/);
-    expect(ctleNotEnough({ teachers: 50, enough: false })).not.toMatch(/which|who /i);
-  });
-  it("gives the headline as 'about', by choice, with complete-or-on-pace combined", () => {
-    const r = readCtle(c)!;
-    expect(r.headline[0]).toMatchObject({ value: "about 15", note: "30% of 50 teachers, by choice" });
-    expect(r.headline[1].value).toBe("55%");
-  });
-  it("lists the three states and caps the combined figure at 100", () => {
-    expect(readCtle(c)!.rows).toEqual([{ label: "Complete", value: 20 }, { label: "On pace", value: 35 }, { label: "Behind pace", value: 45 }]);
-    expect(readCtle({ ...c, complete_pct: 60, on_pace_pct: 55 })!.headline[1].value).toBe("100%");
   });
 });

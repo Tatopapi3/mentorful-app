@@ -12,7 +12,6 @@ import { overlay } from "./journal";
 import { addHubTables } from "./hubTables";
 import { addLookbookTables, lookbookRows } from "./lookbookTables";
 import { addGrowthSeeds, growthActivity } from "./growthTotals";
-import { addCtleTables, ctleReading } from "./ctleTables";
 import { createMockClient, type Row, type Tables, type Visibility, type Write } from "./mockQuery";
 
 export type PreviewRole = "admin" | "teacher";
@@ -40,10 +39,6 @@ export function previewTables(): Tables {
     const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addGrowthSeeds(g.__previewTables, me.id);
   }
-  if (!(g.__previewTables as Tables).ctle_settings) {
-    const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
-    if (me) addCtleTables(g.__previewTables, me.id);
-  }
   return g.__previewTables;
 }
 
@@ -67,7 +62,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
       return role === "teacher" ? rows.filter((r: Row) => mine.has(r.pairing_id)) : [];
     }
     if (table === "teacher_cards" || table === "growth_sharing") return rows.filter((r: Row) => r.profile_id === me.id);
-    if (["future_notes", "platform_time", "growth_goals", "growth_entries", "ctle_settings", "ctle_hours"].includes(table)) return rows.filter((r: Row) => r.profile_id === me.id);
+    if (["future_notes", "platform_time", "growth_goals", "growth_entries"].includes(table)) return rows.filter((r: Row) => r.profile_id === me.id);
     return rows;
   };
   return createMockClient({
@@ -77,7 +72,6 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
     user: { id: me.auth_user_id, email: me.email },
     rpc: {
       growth_activity: (args: { p_days?: number }) => (role === "admin" ? growthActivity(tables, args?.p_days ?? 30) : null),
-      ctle_progress: () => (role === "admin" ? ctleReading(tables) : null),
       lookbook_cards: () => (role === "teacher" ? lookbookRows(tables) : []),
       // Admins can't read conversation rows by design; they get a count.
       participation_summary: (args: { p_cycle: string }) => {

@@ -66,34 +66,3 @@ export function readGrowth(g: GrowthActivity): Reading | null {
 /** The sentence the panel shows when there is nothing to report yet, and why (never which teachers). */
 export const notEnough = (g: GrowthActivity) =>
   `Fewer than 5 of your ${g.teachers} teachers have chosen to share their activity, so nothing is shown. This is on purpose: with so few, a figure could point at a person.`;
-
-/* ------------------------------------------------------------- CTLE hours (020) */
-
-/** What ctle_progress() in 020 returns: rounded school-wide shares, never a person. */
-export type CtleReadingRaw = { teachers: number; enough: boolean; contributors?: number; tracking_pct?: number; complete_pct?: number; on_pace_pct?: number; behind_pct?: number };
-
-/** null when the function isn't there yet (020 not applied) or the caller isn't an admin. */
-export async function loadCtleProgress(admin: AdminContext): Promise<CtleReadingRaw | null> {
-  const { data, error } = await admin.supabase.rpc("ctle_progress");
-  if (error || !data || typeof data !== "object") return null;
-  return data as CtleReadingRaw;
-}
-
-export function readCtle(c: CtleReadingRaw) {
-  if (!c.enough) return null;
-  const rows = [
-    { label: "Complete", value: c.complete_pct ?? 0 },
-    { label: "On pace", value: c.on_pace_pct ?? 0 },
-    { label: "Behind pace", value: c.behind_pct ?? 0 },
-  ];
-  return {
-    headline: [
-      { label: "Tracking CTLE hours", value: `about ${c.contributors ?? 0}`, note: `${c.tracking_pct ?? 0}% of ${c.teachers} teachers, by choice` },
-      { label: "Complete or on pace", value: `${Math.min(100, (c.complete_pct ?? 0) + (c.on_pace_pct ?? 0))}%`, note: "of those tracking" },
-    ],
-    rows,
-  };
-}
-
-export const ctleNotEnough = (c: CtleReadingRaw) =>
-  `Fewer than 5 of your ${c.teachers} teachers are tracking CTLE hours and sharing their activity, so nothing is shown. This is on purpose: with so few, a figure could point at a person.`;
