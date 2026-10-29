@@ -532,9 +532,9 @@ export function CallHost({ pairs, meId }: { pairs: CallPair[]; meId: string }) {
               {!remoteOn && !yt ? (
                 <div className="ta-call-wait">
                   <span className="ta-call-av" data-ring={call.phase === "calling" || call.phase === "connecting"}>{callPair.initials}</span>
-                  {call.phase === "ended" ? null : <p>{call.phase === "calling" ? `Calling ${callPair.partnerFirst}…` : "Connecting…"}</p>}
+                  {call.phase === "calling" ? <p>Calling {callPair.partnerFirst}…</p> : call.phase === "connecting" ? <p>Connecting…</p> : null}
                   {call.note ? <p className="ta-call-note" role="status">{call.note}</p> : null}
-                  {!connected && call.phase !== "ended" ? <p className="ta-call-note">Preview: no live connection here.</p> : null}
+                  {!connected && (call.phase === "calling" || call.phase === "connecting") ? <p className="ta-call-note">Preview: no live connection here.</p> : null}
                 </div>
               ) : null}
               {call.phase === "ended" ? null : <video ref={attachSelf} className="ta-self" muted playsInline hidden={camOff} />}
