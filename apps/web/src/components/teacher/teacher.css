@@ -26,7 +26,7 @@
 .ta-hero .ev-eyebrow { color: #7ff0dc; }
 .ta-hero h2 { color: #fff; font-size: clamp(26px, 3.2vw, 40px); }
 .ta-hero p { opacity: 0.86; max-width: 480px; }
-.ta-hero .ev-btn { background: #fff; color: #17143a; border: 0; }
+.ev .ta-hero a.ev-btn { background: #fff; color: #17143a; border: 0; }
 .ta-hero .ev-btn:hover { box-shadow: 0 12px 28px -10px rgba(255, 255, 255, 0.5); }
 .ta-orbit { position: relative; z-index: 1; width: 100%; max-width: 250px; aspect-ratio: 1; margin: 0 auto; }
 .ta-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.2); animation: ta-spin 40s linear infinite; }
