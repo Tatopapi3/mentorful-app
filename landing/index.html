@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mentorful dashboards: the new design and Nick's</title>
+<meta name="description" content="The teacher and leadership dashboards, in the new Aurora design and in Nick's design. Sample school, invented data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --paper:#f7f4ed; --card:#fffefb; --ink:#2c2416; --muted:#6b6459; --line:rgba(22,40,60,.14); --teal:#00897b; --indigo:#4f46e5; --navy:#16283c; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 "Public Sans", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+main { max-width:1120px; margin:0 auto; padding:56px 24px 72px; }
+.eyebrow { font:600 12px/1 "Public Sans"; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); margin:0 0 18px; display:flex; align-items:center; gap:10px; }
+.eyebrow svg { flex:none; }
+h1, h2, h3 { font-family:"Lora", Georgia, serif; font-weight:600; letter-spacing:-.01em; line-height:1.15; margin:0; }
+h1 { font-size:clamp(34px,5.2vw,60px); margin-bottom:18px; }
+.lead { font-size:18px; color:var(--muted); max-width:46em; margin:0 0 8px; }
+section.block { margin-top:56px; }
+.tag { display:inline-block; font:600 11px/1 "Public Sans"; letter-spacing:.14em; text-transform:uppercase; padding:6px 11px; border-radius:999px; margin-bottom:12px; }
+.tag.new { background:linear-gradient(135deg,#0ea5a4,#4f46e5); color:#fff; }
+.tag.nick { background:var(--navy); color:#f7f4ed; }
+h2 { font-size:clamp(26px,3.4vw,36px); margin-bottom:6px; }
+.sub { color:var(--muted); margin:0 0 22px; max-width:46em; }
+.cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:20px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 1px 0 rgba(22,40,60,.04), 0 18px 36px -26px rgba(22,40,60,.35); }
+.card img { display:block; width:100%; aspect-ratio:16/10; object-fit:cover; object-position:top; border-bottom:1px solid var(--line); background:#e9e4d8; }
+.card .body { padding:22px 24px 26px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.card .for { font:600 11px/1 "Public Sans"; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); }
+.card h3 { font-size:24px; }
+.card ul { margin:2px 0 8px; padding-left:18px; color:var(--muted); font-size:15px; }
+.card li { margin:3px 0; }
+.btn { margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:999px; font:600 15px/1 "Public Sans"; color:#fff; text-decoration:none; background:linear-gradient(135deg,#00897b,#4f46e5); box-shadow:0 10px 22px -12px rgba(79,70,229,.8); transition:transform .15s; }
+.btn:hover { transform:translateY(-1px); }
+.btn.nick { background:var(--navy); box-shadow:0 10px 22px -14px rgba(22,40,60,.9); }
+.btn.off { opacity:.4; pointer-events:none; }
+.note { margin-top:48px; padding:22px 26px; border-left:4px solid var(--teal); background:rgba(0,137,123,.07); border-radius:0 14px 14px 0; }
+.note h3 { font-size:20px; margin-bottom:8px; }
+.note ul { margin:0; padding-left:20px; }
+.note li { margin:6px 0; }
+.ask { margin-top:36px; }
+.ask h3 { font-size:22px; margin-bottom:10px; }
+.ask ol { margin:0; padding-left:22px; } .ask li { margin:8px 0; }
+.nokey { margin:26px 0 0; padding:14px 18px; border-radius:12px; background:#fff3e0; border:1px solid #f0c987; color:#7a4a00; }
+footer { margin-top:44px; color:var(--muted); font-size:13px; }
+@media (max-width:760px){ main{padding:36px 18px 56px} .cards{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">
+    <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="g" x1="8%" y1="0%" x2="92%" y2="100%"><stop offset="0" stop-color="#0ea5a4"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><polygon points="37,1 47,10 59,0.5 65,16 82,15.5 82,31 93,36.5 84,47.5 94.5,58 82,64 82,84 66,83 48,99.5 32,83 15,84 15,64 2,58 15,48 1.5,36 15,31 15,15.5 32,16" fill="url(#g)" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/><text x="48.5" y="66" text-anchor="middle" font-size="46" font-weight="700" fill="#fff" font-family="Georgia, serif">M</text></svg>
+    Mentorful · teacher and leadership dashboards
+  </p>
+  <h1>Two designs for the Mentorful dashboards</h1>
+  <p class="lead">The same two dashboards, one for teachers and one for school leaders, shown in two designs: the new one, and Nick&rsquo;s. Open each and tell us which you prefer. It&rsquo;s a sample school with invented conversations, and nothing you click is saved.</p>
+  <p class="nokey" id="nokey" hidden>This page needs its private link to open the dashboards. Use the full link you were sent (it ends in <code>?k=…</code>).</p>
+
+  <section class="block" aria-labelledby="new">
+    <span class="tag new">The new design</span>
+    <h2 id="new">Aurora: one calm look for teachers and leaders</h2>
+    <p class="sub">Soft gradients, rounded cards and the Mentorful badge in teal and indigo, with a Night mode. Teachers and leaders get the same bar, the same type and the same feel.</p>
+    <div class="cards">
+      <article class="card">
+        <img src="img/teacher-new.jpg" alt="The new teacher dashboard: a greeting, one next step, and a row of cards" loading="lazy">
+        <div class="body">
+          <span class="for">For teachers</span>
+          <h3>Teacher dashboard</h3>
+          <ul>
+            <li>Home with one clear next step</li>
+            <li>My pair: your partner, a lookbook of colleagues, your own card</li>
+            <li>Journal with exact timestamps, and notes to your future self</li>
+            <li>Growth: pedagogy games, goals, a practice log and your time on Mentorful</li>
+            <li>Pair chat and video calls, and the Culture Scan</li>
+          </ul>
+          <a class="btn" data-path="/preview/as/teacher?next=/dashboard/aurora">Open the teacher dashboard &rarr;</a>
+        </div>
+      </article>
+      <article class="card">
+        <img src="img/admin-new.jpg" alt="The new leadership dashboard: Pulse, with four progress rings" loading="lazy">
+        <div class="body">
+          <span class="for">For school leaders</span>
+          <h3>Admin dashboard</h3>
+          <ul>
+            <li>Pulse, Pairing, Overview, Constellation, Insights and Reports</li>
+            <li>School-wide numbers only; groups under 5 are hidden</li>
+            <li>Growth-tool use shown as anonymous totals, from teachers who choose to share</li>
+            <li>Leaders see counts, never what teachers said</li>
+          </ul>
+          <a class="btn" data-path="/preview/as/admin?next=/admin/aurora/pulse">Open the admin dashboard &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="nick">
+    <span class="tag nick">Nick&rsquo;s design</span>
+    <h2 id="nick">Nick&rsquo;s look: paper, serif type and teal</h2>
+    <p class="sub">The same two dashboards as they are in Nick&rsquo;s own design, with his navy badge and warm paper.</p>
+    <div class="cards">
+      <article class="card">
+        <img src="img/teacher-nick.jpg" alt="Nick's teacher dashboard: profile, co-mentors and conversation journal" loading="lazy">
+        <div class="body">
+          <span class="for">For teachers</span>
+          <h3>Teacher dashboard</h3>
+          <ul>
+            <li>Profile, strengths and teaching style</li>
+            <li>Your co-mentors and what you have in common</li>
+            <li>The private conversation journal, and the Culture Scan</li>
+          </ul>
+          <a class="btn nick" data-path="/preview/as/teacher?next=/dashboard">Open Nick&rsquo;s teacher dashboard &rarr;</a>
+        </div>
+      </article>
+      <article class="card">
+        <img src="img/admin-nick.jpg" alt="Nick's leadership dashboard: Pulse, with the Culture Scan averages" loading="lazy">
+        <div class="body">
+          <span class="for">For school leaders</span>
+          <h3>Admin dashboard</h3>
+          <ul>
+            <li>Pulse, Pairing, Overview, Constellation, Insights and Reports</li>
+            <li>The same numbers and the same privacy rules</li>
+            <li>The switch at the top right hops between the looks on the same page</li>
+          </ul>
+          <a class="btn nick" data-path="/preview/as/admin?next=/admin/pulse">Open Nick&rsquo;s admin dashboard &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="note">
+    <h3>Good to know while you look around</h3>
+    <ul>
+      <li>It&rsquo;s a sample school built from Nick&rsquo;s sandbox data. Every name and conversation is invented, and nothing you do is kept.</li>
+      <li>Video calls, photo upload and shared files need the live database, so here they show how they look but can&rsquo;t connect.</li>
+      <li>Teachers choose what to share. A teacher&rsquo;s card, goals, notes and time on the platform are private to them unless they decide otherwise.</li>
+      <li>The pedagogy games are first drafts and still being refined.</li>
+    </ul>
+  </div>
+
+  <div class="ask">
+    <h3>Three questions</h3>
+    <ol>
+      <li>For teachers, which feels more welcoming and easier to use between classes?</li>
+      <li>For school leaders, which makes the numbers easier to read and act on?</li>
+      <li>Is anything missing, or anything you&rsquo;d take out?</li>
+    </ol>
+  </div>
+
+  <footer>Sample school. Invented data. Built by the Pursuit capstone team.</footer>
+</main>
+<script>
+// The dashboards sit behind a private key. The key travels in this page's own link (?k=…) and is added to each button,
+// so nobody can open a dashboard without the link they were given.
+(function () {
+  var APP = "https://mentorful-aurora-juan-fernandezs-projects-7b6fcd46.vercel.app";
+  var k = new URLSearchParams(location.search).get("k");
+  document.querySelectorAll("[data-path]").forEach(function (a) {
+    if (!k) { a.classList.add("off"); a.setAttribute("aria-disabled", "true"); return; }
+    var p = a.getAttribute("data-path");
+    a.href = APP + p + (p.indexOf("?") >= 0 ? "&" : "?") + "key=" + encodeURIComponent(k);
+    a.target = "_blank"; a.rel = "noopener";
+  });
+  if (!k) document.getElementById("nokey").hidden = false;
+})();
+</script>
+</body>
+</html>
