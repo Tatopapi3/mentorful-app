@@ -235,6 +235,7 @@ export function VisitHost({ pairs, meId }: { pairs: VisitPair[]; meId: string })
           say("This browser can't open a live camera. Use Record a clip instead.");
           return;
         }
+        say("Allow camera and microphone access in your browser to go live…");
         try {
           local = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
         } catch (e) {
