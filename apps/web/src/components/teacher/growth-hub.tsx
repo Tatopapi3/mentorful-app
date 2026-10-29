@@ -5,6 +5,7 @@ import { useState } from "react";
 import { addGrowthEntry, logGameSession, saveGoal, setGoalStatus } from "@/app/dashboard/aurora/hub-actions";
 import {
   GOAL_AREAS,
+  MODULES,
   KIND_LABEL,
   dayLabel,
   formatDuration,
@@ -48,7 +49,7 @@ export function SuggestionCard({ items }: { items: Suggestion[] }) {
       <p className="ev-muted">{s.why}</p>
       <blockquote className="ta-quote sm">{s.prompt}</blockquote>
       <p className="ev-small">
-        Try it with: <a href="#games">{s.module}</a>
+        Try it with: <a href={`/dashboard/aurora/growth/play/${MODULES.find((m) => m.name === s.module)?.slug ?? ""}`}>{s.module}</a>
       </p>
       <div className="ta-row">
         {items.length > 1 ? (
@@ -118,7 +119,7 @@ export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: Ga
           {finished} of {statuses.length} complete
         </span>
       </div>
-      <p className="ev-muted">Short protocols the two of you run together. Log a session each time you do one; either of you can mark it complete. Shared with {pair.partnerFirst} only.</p>
+      <p className="ev-muted">Short guided protocols the two of you play together: a timer, prompts, and notes you keep. Each one ends with something you made. Shared with {pair.partnerFirst} only.</p>
 
       {pairs.length > 1 ? (
         <div className="ev-tabs" role="tablist" aria-label="Choose a co-mentor">
@@ -138,7 +139,7 @@ export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: Ga
       ) : null}
 
       <div className="ta-games">
-        {statuses.map(({ module: m, state, sessions, minutes: mins, lastAt }) => (
+        {statuses.map(({ module: m, state, sessions, minutes: mins, lastAt, lastNote }) => (
           <article key={m.slug} className="ta-game" data-state={state}>
             <span className="ta-iconchip" aria-hidden>
               <Icon name={ICON[m.icon]} size={20} />
@@ -159,6 +160,10 @@ export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: Ga
                 Last played <Stamp iso={lastAt} kind="date" />
               </small>
             ) : null}
+            {lastNote ? <p className="ta-game-last">{lastNote}</p> : null}
+            <Link className="ev-btn sm primary ta-game-play" href={`/dashboard/aurora/growth/play/${m.slug}?with=${pair.pairingId}`}>
+              <Icon name="play" size={13} /> {state === "new" ? "Play" : "Play again"}
+            </Link>
             {ready ? (
               openMod === m.name ? (
                 <form
@@ -191,7 +196,7 @@ export function GamesHub({ pairs, games, ready }: { pairs: PairLite[]; games: Ga
                 </form>
               ) : (
                 <button className="ev-btn sm" type="button" onClick={() => { setOpenMod(m.name); setMsg(null); }}>
-                  <Icon name="plus" size={14} /> Log a session
+                  <Icon name="plus" size={14} /> Log one you played offline
                 </button>
               )
             ) : null}

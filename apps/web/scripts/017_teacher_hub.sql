@@ -86,6 +86,9 @@ create table if not exists public.pair_game_sessions (
   minutes     integer check (minutes is null or minutes between 1 and 600),
   completed   boolean not null default false,
   note        text check (note is null or char_length(note) <= 500),
+  -- What the pair produced while playing (the norms they agreed, the next steps they chose), as {prompt key: text}.
+  -- Shared with the pair only, like the rest of the row.
+  outputs     jsonb check (outputs is null or (jsonb_typeof(outputs) = 'object' and char_length(outputs::text) <= 6000)),
   created_at  timestamptz not null default now()
 );
 create index if not exists pair_game_sessions_pair on public.pair_game_sessions (pairing_id, module, created_at);

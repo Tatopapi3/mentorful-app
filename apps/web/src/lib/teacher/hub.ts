@@ -29,9 +29,9 @@ const MODULE_FOR_DOMAIN: Record<string, string> = {
   CELEBRATIONS: "Efficacy Quest",
 };
 
-export type GameSession = { id: string; pairing_id: string; module: string; logged_by: string; minutes: number | null; completed: boolean; note: string | null; created_at: string };
+export type GameSession = { id: string; pairing_id: string; module: string; logged_by: string; minutes: number | null; completed: boolean; note: string | null; outputs?: Record<string, string> | null; created_at: string };
 
-export type ModuleStatus = { module: Module; state: "new" | "started" | "done"; sessions: number; minutes: number; lastAt: string | null };
+export type ModuleStatus = { module: Module; state: "new" | "started" | "done"; sessions: number; minutes: number; lastAt: string | null; lastNote: string | null };
 
 export function moduleStatuses(sessions: GameSession[], pairingId: string): ModuleStatus[] {
   const mine = sessions.filter((s) => s.pairing_id === pairingId);
@@ -43,6 +43,7 @@ export function moduleStatuses(sessions: GameSession[], pairingId: string): Modu
       sessions: rows.length,
       minutes: rows.reduce((n, r) => n + (r.minutes ?? 0), 0),
       lastAt: rows[0]?.created_at ?? null,
+      lastNote: rows.find((r) => r.note)?.note ?? null,
     };
   });
 }
