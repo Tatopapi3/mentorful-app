@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { signOut } from "@/lib/auth/actions";
+import { MentorfulMark } from "./mentorful-mark";
 
 export type NavItem = { href: string; label: string; match?: string[]; /** Active only on exactly this path, for a parent route like /admin. */ exact?: boolean };
 export type QuickAction = { href: string; label: string; hint?: string };
@@ -134,7 +135,9 @@ export function AtlasBar({
     <>
       <header className="ev-topbar">
         <Link href={items[0]?.href ?? "/"} className="ev-brand" aria-label="Mentorful home">
-          <span className="mark" aria-hidden>✳</span>
+          <span className="mark" aria-hidden>
+            <MentorfulMark size={30} />
+          </span>
           <span className="word">mentorful</span>
         </Link>
         <nav className="ev-nav" aria-label="Primary">
