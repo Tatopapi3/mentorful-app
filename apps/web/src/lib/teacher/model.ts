@@ -190,7 +190,9 @@ export function buildModel(input: {
     };
   });
 
-  const entries: Entry[] = logs.map((l) => {
+  // Drafts first: a half-written note is the thing the teacher most needs to see, whatever its date.
+  const ordered = [...logs.filter((l) => l.status === "draft"), ...logs.filter((l) => l.status !== "draft")];
+  const entries: Entry[] = ordered.map((l) => {
     const iHost = l.host_id === me.id;
     const other = byId.get(iHost ? l.visitor_id : l.host_id) ?? null;
     return {

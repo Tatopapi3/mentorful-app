@@ -4,6 +4,9 @@ import { submitEntry } from "../actions";
 import { loadTeacher } from "@/lib/teacher/load";
 import type { Entry } from "@/lib/teacher/model";
 
+// The notebook opens on the latest few entries; the rest are one tap away.
+const RECENT = 4;
+
 const dateBlock = (iso: string) => {
   const d = new Date(iso);
   return { m: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(), d: d.getDate(), y: d.getFullYear() };
@@ -87,7 +90,15 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
           {model.entries.length === 0 ? (
             <p className="ev-empty ta-nb-empty">Nothing written down yet. Your first entry will appear here.</p>
           ) : (
-            model.entries.map((e) => <EntryView e={e} key={e.id} />)
+            <>
+              {model.entries.slice(0, RECENT).map((e) => <EntryView e={e} key={e.id} />)}
+              {model.entries.length > RECENT ? (
+                <details className="ta-older">
+                  <summary>Show {model.entries.length - RECENT} older {model.entries.length - RECENT === 1 ? "entry" : "entries"}</summary>
+                  {model.entries.slice(RECENT).map((e) => <EntryView e={e} key={e.id} />)}
+                </details>
+              ) : null}
+            </>
           )}
         </section>
       </div>
