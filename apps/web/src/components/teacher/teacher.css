@@ -5,7 +5,7 @@
  * Nick's tch- classes or the ev- kit.
  */
 .ta { flex: 1; display: flex; flex-direction: column; }
-.ta .ta-icon { flex: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.ta-icon { flex: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .ta h2 { margin-bottom: 8px; }
 .ta .ev-main { padding-bottom: 96px; }
 
