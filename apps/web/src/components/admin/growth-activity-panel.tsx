@@ -47,7 +47,7 @@ export default function GrowthActivityPanel({ skin, data }: { skin: Skin; data: 
       )}
       <Muted skin={skin}>
         Only teachers who chose to share are counted, and the figures are rounded to the nearest 5%. You see school-wide totals, never a name, a department or one person&rsquo;s minutes.
-        This shows whether the growth tools are being used. It does not show how well anyone teaches, and time spent is not the same as growth: the change you can trust is the Culture Scan, taken again later.
+        Teachers who choose to share are likely more engaged than the rest, so read these as the picture among volunteers, not the whole faculty. This shows whether the growth tools are being used. It does not show how well anyone teaches, and time spent is not the same as growth: the change you can trust is the Culture Scan, taken again later.
       </Muted>
     </Panel>
   );
