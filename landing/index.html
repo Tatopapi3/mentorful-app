@@ -44,6 +44,11 @@ h2 { font-size:clamp(26px,3.4vw,36px); margin-bottom:6px; }
 .ask { margin-top:36px; }
 .ask h3 { font-size:22px; margin-bottom:10px; }
 .ask ol { margin:0; padding-left:22px; } .ask li { margin:8px 0; }
+.fresh { margin-top:40px; padding:22px 26px; border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:0 18px 36px -28px rgba(22,40,60,.35); }
+.fresh h3 { font-size:22px; margin:8px 0 6px; }
+.fresh p { margin:0; color:var(--muted); max-width:52em; }
+.fresh .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+.fresh .btn { margin-top:0; }
 .nokey { margin:26px 0 0; padding:14px 18px; border-radius:12px; background:#fff3e0; border:1px solid #f0c987; color:#7a4a00; }
 footer { margin-top:44px; color:var(--muted); font-size:13px; }
 @media (max-width:760px){ main{padding:36px 18px 56px} .cards{grid-template-columns:1fr} }
@@ -59,6 +64,18 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
   <p class="lead">The same two dashboards, one for teachers and one for school leaders, shown in two designs: the new one, and Nick&rsquo;s. Open each and tell us which you prefer. It&rsquo;s a sample school with invented conversations, and nothing you click is saved.</p>
   <p class="nokey" id="nokey" hidden>This page needs its private link to open the dashboards. Use the full link you were sent (it ends in <code>?k=…</code>).</p>
 
+  <aside class="fresh" aria-labelledby="ctle-h">
+    <span class="tag new">New</span>
+    <h3 id="ctle-h">Teachers&rsquo; 100 hours of professional development, in one place</h3>
+    <p>New York asks certified teachers for 100 hours of Continuing Teacher and Leader Education (CTLE) every 5 years, 15% of them language acquisition. Each teacher keeps a private count with their pace, and a school leader sees only a rounded share of teachers on pace, from those who choose to share. It sits in the Growth tab. Mentorful is the teacher&rsquo;s own record, not the state&rsquo;s.</p>
+    <div class="btns">
+      <a class="btn" data-path="/preview/as/teacher?next=/dashboard/aurora/growth">Teacher tracker, Aurora &rarr;</a>
+      <a class="btn nick" data-path="/preview/as/teacher?next=/dashboard/nick/growth">Teacher tracker, Nick&rsquo;s design &rarr;</a>
+      <a class="btn" data-path="/preview/as/admin?next=/admin/aurora/insights">What a leader sees, Aurora &rarr;</a>
+      <a class="btn nick" data-path="/preview/as/admin?next=/admin/insights">What a leader sees, Nick&rsquo;s design &rarr;</a>
+    </div>
+  </aside>
+
   <section class="block" aria-labelledby="new">
     <span class="tag new">The new design</span>
     <h2 id="new">Aurora: one calm look for teachers and leaders</h2>
@@ -73,7 +90,7 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
             <li>Home with one clear next step</li>
             <li>My pair: your partner, a lookbook of colleagues, your own card</li>
             <li>Journal with exact timestamps, and notes to your future self</li>
-            <li>Growth: pedagogy games, goals, a practice log and your time on Mentorful</li>
+            <li>Growth: your CTLE hours (100 per 5 years), pedagogy games, goals, a practice log and your time on Mentorful</li>
             <li>Pair chat and video calls, and the Culture Scan</li>
           </ul>
           <a class="btn" data-path="/preview/as/teacher?next=/dashboard/aurora">Open the teacher dashboard &rarr;</a>
@@ -87,7 +104,7 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
           <ul>
             <li>Pulse, Pairing, Overview, Constellation, Insights and Reports</li>
             <li>School-wide numbers only; groups under 5 are hidden</li>
-            <li>Growth-tool use shown as anonymous totals, from teachers who choose to share</li>
+            <li>Growth-tool use and CTLE progress shown as anonymous totals, from teachers who choose to share</li>
             <li>Leaders see counts, never what teachers said</li>
           </ul>
           <a class="btn" data-path="/preview/as/admin?next=/admin/aurora/pulse">Open the admin dashboard &rarr;</a>
@@ -108,7 +125,7 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
           <h3>Teacher dashboard</h3>
           <ul>
             <li>Every tab of the new teacher dashboard: Home, My pair (with the lookbook and your own card), Journal, Growth and Culture Scan</li>
-            <li>Pair chat and video calls, notes to your future self, pedagogy games, goals and a practice log</li>
+            <li>The CTLE hours tracker, pair chat and video calls, notes to your future self, pedagogy games, goals and a practice log</li>
             <li>The switch at the top right hops between Nick&rsquo;s look and Aurora on the same tab</li>
           </ul>
           <a class="btn nick" data-path="/preview/as/teacher?next=/dashboard/nick">Open Nick&rsquo;s teacher dashboard &rarr;</a>
