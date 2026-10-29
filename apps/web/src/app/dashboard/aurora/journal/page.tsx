@@ -11,7 +11,7 @@ import type { Entry } from "@/lib/teacher/model";
 const RECENT = 4;
 
 function EntryView({ e }: { e: Entry }) {
-  const submittedLater = e.submittedAt && Math.abs(Date.parse(e.submittedAt) - Date.parse(e.createdAt)) > 120_000;
+  const submittedLater = e.submittedAt && Date.parse(e.submittedAt) - Date.parse(e.createdAt) > 120_000;
   const fields: [string, string | null][] = [
     ["Working toward", e.vision],
     ["Noticed working", e.strength],

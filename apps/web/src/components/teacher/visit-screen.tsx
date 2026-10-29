@@ -64,6 +64,10 @@ export function VisitHost({ pairs, meId }: { pairs: VisitPair[]; meId: string })
   const clipRef = useRef<HTMLInputElement>(null);
   const api = useRef<Api | null>(null);
   const pair = pairs.find((p) => p.pairingId === pairId) ?? null;
+  // Primitives only in the session effect's dependencies: the page refreshing hands over new `pairs` objects, and that
+  // must never tear down a live camera.
+  const partnerFirst = pair?.partnerFirst ?? "";
+  const hasPair = pair !== null;
 
   // A fresh pair starts from a clean screen.
   const choose = (id: string | null) => {
@@ -94,9 +98,9 @@ export function VisitHost({ pairs, meId }: { pairs: VisitPair[]; meId: string })
 
   // One session per open pair: join the channel, wire the video, and tear it all down on close or when the pair changes.
   useEffect(() => {
-    if (!open || !pairId || !pair) return;
+    if (!open || !pairId || !hasPair) return;
     let alive = true;
-    const first = pair.partnerFirst;
+    const first = partnerFirst;
     const L: Live | null = liveAvailable() ? createLive(() => {}) : null;
     let ch: PairChannel | null = null;
     let local: MediaStream | null = null;
@@ -321,7 +325,7 @@ export function VisitHost({ pairs, meId }: { pairs: VisitPair[]; meId: string })
       void L?.close();
       api.current = null;
     };
-  }, [open, pairId, pair, meId]);
+  }, [open, pairId, hasPair, partnerFirst, meId]);
 
   if (!open || !pair) return null;
   const connected = liveAvailable();
