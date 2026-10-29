@@ -49,7 +49,7 @@ export function readGrowth(g: GrowthActivity): Reading | null {
   sentences.push(`About ${about} teachers (${pct(g.share_pct)} of ${g.teachers}) chose to share their activity, and roughly ${pct(g.active_week_pct)} of them used Mentorful in the last week.`);
   if (g.typical_week_minutes != null) sentences.push(`A typical sharing teacher was active about ${g.typical_week_minutes} minutes in the last week.`);
   sentences.push(`${pct(g.practiced_pct)} logged something in their practice log in the last ${g.window_days} days${g.practice_entries != null ? `, ${g.practice_entries} entries in all` : ""}, and ${pct(g.has_goal_pct)} have set a goal${g.goals_done_pct != null ? ` (${pct(g.goals_done_pct)} of the goals set are done)` : ""}.`);
-  if (g.game_sessions != null) sentences.push(`Pairs played ${g.game_sessions} games sessions${g.pairs_playing != null ? ` across ${g.pairs_playing} pairs` : ""}${g.game_modules_done != null ? `, finishing ${g.game_modules_done} modules` : ""}.`);
+  if (g.game_sessions != null) sentences.push(`Pairs played ${g.game_sessions} game sessions${g.pairs_playing != null ? ` across ${g.pairs_playing} pairs` : ""}${g.game_modules_done != null ? `, finishing ${g.game_modules_done} modules` : ""}.`);
   return {
     headline: [
       { label: "Sharing their activity", value: `about ${about}`, note: `${pct(g.share_pct)} of ${g.teachers} teachers, by choice` },
