@@ -14,6 +14,8 @@ export type Hub = {
   time: PlatformDay[];
   goals: Goal[];
   practice: GrowthEntry[];
+  /** The teacher's own choice about anonymous school totals (019). `ready` is false until that script is applied. */
+  sharing: { ready: boolean; on: boolean };
 };
 
 // A table that isn't there yet (migration not applied) reads as "not switched on", not as an error.
@@ -35,7 +37,7 @@ export const toMessage = (r: { id: string; pairing_id: string; sender_id: string
  */
 export const loadHub = cache(async (): Promise<Hub> => {
   const data = await loadTeacher();
-  const empty: Hub = { ready: true, messages: [], games: [], notes: [], time: [], goals: [], practice: [] };
+  const empty: Hub = { ready: true, messages: [], games: [], notes: [], time: [], goals: [], practice: [], sharing: { ready: false, on: false } };
   if (!data.model) return empty;
   const me = data.model.me.id;
   const pairIds = data.model.partners.map((p) => p.pairingId);
@@ -43,13 +45,14 @@ export const loadHub = cache(async (): Promise<Hub> => {
   const today = new Date().toISOString().slice(0, 10);
 
   const none = Promise.resolve({ data: [] as never[], error: null });
-  const [msgs, games, notes, time, goals, practice] = await Promise.all([
+  const [msgs, games, notes, time, goals, practice, sharingRes] = await Promise.all([
     pairIds.length ? supabase.from("pair_messages").select("id, pairing_id, sender_id, body, created_at").in("pairing_id", pairIds).order("created_at", { ascending: false }).limit(300) : none,
     pairIds.length ? supabase.from("pair_game_sessions").select("id, pairing_id, module, logged_by, minutes, completed, note, outputs, created_at").in("pairing_id", pairIds).order("created_at", { ascending: false }).limit(300) : none,
     supabase.from("future_notes").select("id, body, open_on, opened_at, created_at").eq("profile_id", me).order("created_at", { ascending: false }).limit(100),
     supabase.from("platform_time").select("day, seconds").eq("profile_id", me).order("day", { ascending: false }).limit(60),
     supabase.from("growth_goals").select("id, title, area, why, target_date, status, created_at").eq("profile_id", me).order("created_at", { ascending: false }).limit(50),
     supabase.from("growth_entries").select("id, goal_id, kind, minutes, body, created_at").eq("profile_id", me).order("created_at", { ascending: false }).limit(100),
+    supabase.from("growth_sharing").select("share").eq("profile_id", me).maybeSingle(),
   ]);
 
   if ([msgs, games, notes, time, goals, practice].some((r) => missing(r.error))) return { ...empty, ready: false };
@@ -62,5 +65,7 @@ export const loadHub = cache(async (): Promise<Hub> => {
     time: (time.data ?? []) as PlatformDay[],
     goals: (goals.data ?? []) as Goal[],
     practice: (practice.data ?? []) as GrowthEntry[],
+    // 019 may not be applied even when 017 is, so a missing sharing table only turns this one control off.
+    sharing: { ready: !missing(sharingRes.error), on: (sharingRes.data as { share: boolean } | null)?.share === true },
   };
 });

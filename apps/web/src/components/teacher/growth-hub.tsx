@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { addGrowthEntry, logGameSession, saveGoal, setGoalStatus } from "@/app/dashboard/aurora/hub-actions";
+import { addGrowthEntry, logGameSession, saveGoal, setGoalStatus, setGrowthSharing } from "@/app/dashboard/aurora/hub-actions";
 import {
   GOAL_AREAS,
   MODULES,
@@ -255,7 +255,7 @@ export function GoalsPanel({ goals, entries, ready }: { goals: Goal[]; entries: 
           </button>
         ) : null}
       </div>
-      <p className="ev-muted">One to three things you want to get better at. Private to you: not shared with your co-mentor or your school lead, and never scored.</p>
+      <p className="ev-muted">One to three things you want to get better at. Private to you: not shared with your co-mentor or your school lead, and never scored. (If you choose to be counted in anonymous school totals, only a number goes in, never your words.)</p>
       {!ready ? <NotReady /> : null}
       {err ? <p className="ev-alert" role="alert">{err}</p> : null}
 
@@ -452,6 +452,71 @@ export function PracticeLog({ entries, goals, ready, totals }: { entries: Growth
             </li>
           ))}
         </ol>
+      ) : null}
+    </section>
+  );
+}
+
+/* ------------------------------------------------- anonymous school totals */
+
+/**
+ * The teacher's choice to be counted in their school's anonymous growth totals. Off by default; says plainly what
+ * leadership can and can't see; changing it takes effect at the next reading.
+ */
+export function SharingCard({ on: initial, ready }: { on: boolean; ready: boolean }) {
+  const [on, setOn] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function change(next: boolean) {
+    setBusy(true);
+    setMsg(null);
+    const r = await setGrowthSharing(next);
+    setBusy(false);
+    if (!r.ok) return setMsg({ ok: false, text: r.error });
+    setOn(next);
+    setMsg({ ok: true, text: next ? "Thanks. You'll be counted in your school's anonymous totals from the next reading." : "Done. You're no longer counted." });
+  }
+
+  return (
+    <section className="ev-panel ta-sharing" aria-labelledby="ta-sharing-h">
+      <p className="ev-eyebrow">Your choice</p>
+      <h2 id="ta-sharing-h">
+        Count me in my school&rsquo;s <em>anonymous totals</em>.
+      </h2>
+      <p className="ev-muted">Your school lead can see whether the growth tools are being used across the faculty, but only as totals, and only from teachers who choose to be counted. It is off unless you turn it on.</p>
+      <div className="ta-sharing-cols">
+        <div>
+          <p className="ta-label">What your school lead sees</p>
+          <ul>
+            <li>School-wide percentages, like &ldquo;about 60% of teachers who share used Mentorful last week&rdquo;</li>
+            <li>Rounded to the nearest 5%, and only once at least 5 teachers have chosen this</li>
+          </ul>
+        </div>
+        <div>
+          <p className="ta-label">What they never see</p>
+          <ul>
+            <li>Your name, your department, or whether you chose this</li>
+            <li>How long <em>you</em> spent, or any figure about you</li>
+            <li>Your goals, practice log, notes, chat, or anything you write in a game</li>
+          </ul>
+        </div>
+      </div>
+      {!ready ? (
+        <p className="ev-hold">Anonymous totals aren&rsquo;t switched on for your school yet.</p>
+      ) : (
+        <label className="ev-check">
+          <input type="checkbox" checked={on} disabled={busy} onChange={(e) => void change(e.target.checked)} />
+          <span>
+            <strong>Yes, count my activity in anonymous school totals</strong>
+            <small className="ev-muted">You can switch this off at any time. Time on a platform isn&rsquo;t the same as growth, and it will never be used to judge you.</small>
+          </span>
+        </label>
+      )}
+      {msg ? (
+        <p className={msg.ok ? "ev-note" : "ev-alert"} role={msg.ok ? "status" : "alert"}>
+          {msg.text}
+        </p>
       ) : null}
     </section>
   );
