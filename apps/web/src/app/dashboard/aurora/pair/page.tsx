@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AdjustRequest } from "@/components/teacher/adjust-request";
 import { Icon } from "@/components/teacher/icons";
 import { OpenChat, OpenVisit } from "@/components/teacher/open-events";
+import { PairTabs } from "@/components/teacher/pair-tabs";
 import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadTeacher } from "@/lib/teacher/load";
 import { agoLabel, daysSince } from "@/lib/teacher/model";
@@ -24,6 +25,7 @@ export default async function PairPage() {
         </h1>
         <p className="ev-lead">A quiet place to understand and look after your mentoring partnership.</p>
       </header>
+      <PairTabs current="partnership" />
 
       {model.partners.length === 0 ? (
         <section className="ev-empty">

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export type IconName =
   | "home" | "users" | "book" | "scan" | "lock" | "check" | "arrow" | "clock" | "shield" | "heart" | "message" | "sliders" | "close" | "spark"
-  | "growth" | "chat" | "send" | "paperclip" | "video" | "upload" | "file" | "expand" | "shrink" | "mail" | "target" | "play" | "grid" | "compass" | "eye" | "trophy" | "swap" | "plus" | "pen" | "external";
+  | "growth" | "chat" | "send" | "paperclip" | "video" | "upload" | "file" | "expand" | "shrink" | "mail" | "target" | "play" | "grid" | "compass" | "eye" | "trophy" | "swap" | "plus" | "pen" | "external" | "list" | "search" | "left" | "right" | "camera" | "filter";
 
 const PATHS: Record<IconName, ReactNode> = {
   home: (<><path d="m3 10.8 9-7.3 9 7.3" /><path d="M5.5 9.8V21h13V9.8M9.5 21v-6.5h5V21" /></>),
@@ -38,6 +38,12 @@ const PATHS: Record<IconName, ReactNode> = {
   swap: (<><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" /></>),
   plus: <path d="M12 5v14M5 12h14" />,
   pen: <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />,
+  list: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
+  search: (<><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></>),
+  left: <path d="m15 18-6-6 6-6" />,
+  right: <path d="m9 18 6-6-6-6" />,
+  camera: (<><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13" r="3.5" /></>),
+  filter: <path d="M3 5h18l-7 8v6l-4-2v-4z" />,
   external: (<><path d="M14 4h6v6M20 4 10 14" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>),
 };
 
