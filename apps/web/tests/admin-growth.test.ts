@@ -25,7 +25,7 @@ describe("reading the growth totals", () => {
     const r = readGrowth({ ...full, typical_week_minutes: null, goals_done_pct: null, practice_entries: null, game_sessions: null, game_modules_done: null, pairs_playing: null, days_buckets: null })!;
     const text = r.sentences.join(" ");
     expect(text).not.toMatch(/typical sharing teacher/);
-    expect(text).not.toMatch(/entries in all|games sessions|of the goals set are done/);
+    expect(text).not.toMatch(/entries in all|game sessions|of the goals set are done/);
     expect(r.buckets).toEqual([]);
     expect(r.headline[3].note).toMatch(/too few to show/);
   });

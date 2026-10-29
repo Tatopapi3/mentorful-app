@@ -94,6 +94,9 @@ describe("browsing the lookbook", () => {
   });
   it("gives the same colour to the same name, inside the teal-to-violet range", () => {
     expect(hueFor("Ana Alvarez")).toBe(hueFor("Ana Alvarez"));
-    for (const n of ["A", "Zed Zimmer", "Mia Chen", "Jo"]) expect(hueFor(n)).toBeGreaterThanOrEqual(165), expect(hueFor(n)).toBeLessThan(285);
+    for (const n of ["A", "Zed Zimmer", "Mia Chen", "Jo"]) {
+      expect(hueFor(n)).toBeGreaterThanOrEqual(165);
+      expect(hueFor(n)).toBeLessThan(285);
+    }
   });
 });
