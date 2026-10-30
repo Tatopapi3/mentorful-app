@@ -86,8 +86,9 @@ Nick's Oct 29 answers that are still open, and where each one goes:
    table of single-use codes, a distribution step for the school lead, and an insert policy that requires a valid unused
    code and burns it, without storing which teacher used which code (that link would end the anonymity).
 2. **Release results after the survey closes.** `loadReportStats()` in `src/lib/report/data.ts` returns "ok" as soon as
-   responses exist (and passes the gates). Add a check that the survey is closed (`survey_is_open(sid)` in `004`, and
-   `surveys.status`, which is still `draft` in Nick's data) before it returns "ok"; every report, deck, CSV and the Insights
+   responses exist (and passes the gates). Add a check that the survey is closed before it returns "ok" (`survey_is_open(sid)` in `004` is true while
+   `surveys.closes_at` is empty or in the future; `surveys.status` is still `draft` in Nick's data, so `closes_at` is the field
+   to use); every report, deck, CSV and the Insights
    Culture Scan read go through that one function.
 3. **Master key.** `SUPABASE_SERVICE_ROLE_KEY` is read in exactly one place, `src/lib/report/data.ts`. Nick wants it
    restricted and rotated now (he holds it), and "reports read from the database instead of the master key" on the
