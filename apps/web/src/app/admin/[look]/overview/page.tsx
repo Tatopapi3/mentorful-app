@@ -77,7 +77,7 @@ export default async function AuroraOverviewPage({ params: routeParams, searchPa
         <p className="ev-muted">
           {d.faculty.length} teachers and {d.pairs.length} approved pairs this cycle. To protect people, this page doesn&apos;t list teachers or show who is paired with whom, and no group under 5 is shown anywhere on it.
           <br />
-          The <Link href={`${base}/constellation`}>Constellation</Link> shows the same network by department.
+          The <Link href={`${base}/constellation`}>Constellation</Link> shows the same network by department, and the <Link href={`${base}/reports`}>faculty map</Link> in Reports lets you see who is connected.
         </p>
       </section>
 

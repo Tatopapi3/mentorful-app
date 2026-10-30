@@ -2,6 +2,9 @@ import { DIMENSIONS, DIMENSION_LABEL } from "@/lib/report/stats";
 import { demoCount, respondentsText } from "@/lib/report/gates";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { participationRates } from "./participation";
+import { facultyOrbit } from "./faculty-orbit";
+import { coverage, departmentMatrix } from "./network";
+import { cellText } from "./overview-floor";
 import type { AdminSnapshot, Facts } from "./facts";
 
 export function csvEscape(v: string | number | null | undefined): string {
@@ -52,5 +55,27 @@ export function resultsCsv(snap: AdminSnapshot, facts: Facts): string {
     add("participation", "Teachers active (%)", r.activePct);
     for (const d of r.departments) add("active teachers by department (%)", d.department, d.pct);
   }
+  return rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
+}
+
+/**
+ * The picture the faculty map shows, as department totals: how many teachers and pairs each department has and how far
+ * its pairs reach. The same figures as the "Faculty connection" slide in the leadership deck. Departments under 5
+ * teachers are left out, a pair count under 5 is withheld, and no row names a person.
+ */
+export function connectionCsv(snap: AdminSnapshot, prev: AdminSnapshot | null): string {
+  const m = departmentMatrix(snap);
+  const cov = coverage(m);
+  const orbit = facultyOrbit(snap, snap.participation ?? null, prev);
+  const rows: (string | number | null)[][] = [["department", "teachers", "pairs that cross departments", "pairs inside the department", "departments reached", "departments possible", "pairs that have talked (%)"]];
+  for (const p of orbit.planets) {
+    rows.push([p.dept, p.teachers, cellText(p.across >= 5 ? p.across : null), cellText(p.within >= 5 ? p.within : null), p.reach, p.possible, p.activePct === null ? "n/a" : p.activePct]);
+  }
+  rows.push([]);
+  rows.push(["school", snap.school.name]);
+  rows.push(["cycle", snap.cycle?.name ?? ""]);
+  rows.push(["department connections that exist", cov.connected]);
+  rows.push(["department connections possible", cov.possible]);
+  if (m.omitted.length > 0) rows.push(["note", `${m.omitted.length} department${m.omitted.length === 1 ? "" : "s"} with fewer than 5 teachers left out to protect privacy`]);
   return rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
 }
