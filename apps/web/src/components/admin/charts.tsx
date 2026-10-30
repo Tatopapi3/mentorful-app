@@ -46,7 +46,7 @@ export function MonthBars({ activity }: { activity: Activity }) {
   const top = 26;
   const bw = Math.min(54, (W / n) * 0.55);
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Chart, scrollable">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Conversations by month: ${activity.totals.map((t) => `${monthLabel(t.month)} ${t.n ?? "fewer than 5"}`).join(", ")}`} style={{ width: "100%", minWidth: n * 64, maxWidth: W * 1.35, height: "auto", display: "block" }}>
         <line x1="0" x2={W} y1={base} y2={base} stroke={line} />
         {activity.totals.map((t, i) => {
@@ -74,7 +74,7 @@ export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden
   const cellStyle = { padding: "9px 10px", textAlign: "center" as const, border: `1px solid ${line}`, fontSize: 13, minWidth: 74 };
   return (
     <>
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Chart, scrollable">
       <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 120 + activity.months.length * 78 }}>
         <thead>
           <tr>
@@ -97,7 +97,7 @@ export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden
                 const pct = n === null ? 0 : Math.round(18 + (n / activity.max) * 62);
                 return (
                   <td key={m} style={{ ...cellStyle, background: n === null ? "transparent" : `color-mix(in srgb, ${teal} ${pct}%, transparent)`, color: n === null ? muted : ink, fontWeight: n === null ? 400 : 600 }} title={n === null ? "Fewer than 5 conversations" : `${n} conversations`}>
-                    {n === null ? "<5" : n}
+                    <span style={{ display: "inline-block", minWidth: 24, padding: "1px 7px", borderRadius: 6, background: "var(--ev-panel-solid, #fff)", color: "var(--ev-ink, #14122b)" }}>{n === null ? "<5" : n}</span>
                   </td>
                 );
               })}
@@ -118,7 +118,7 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
   const hatch = `repeating-linear-gradient(135deg, transparent 0 5px, ${line} 5px 6px)`;
   return (
     <>
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Chart, scrollable">
         <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 150 + weekly.weeks.length * 58 }}>
           <thead>
             <tr>

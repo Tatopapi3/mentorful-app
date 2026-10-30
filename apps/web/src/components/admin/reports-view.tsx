@@ -49,7 +49,7 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
             { label: "Department connections", value: `${cov.connected} of ${cov.possible}`, note: "departments of 5 or more teachers" },
           ]}
         />
-        <div style={{ height: 520, marginTop: 14, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line, #d9d3c5)", background: "#fff" }}>
+        <div style={{ height: 520, marginTop: 14, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line, #d9d3c5)", background: "#fff", color: "#14122b" }}>
           <FacultyMapClient users={detail.mapUsers} edges={detail.mapEdges} />
         </div>
         <Muted skin={skin}>

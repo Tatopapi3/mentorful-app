@@ -89,7 +89,7 @@ export function PairingFlow({ matrix }: { matrix: DeptMatrix }) {
   if (dots.length < 2) return null;
   const labelFit = (s: string) => (s.length > 15 ? `${s.slice(0, 14)}…` : s);
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Chart, scrollable">
       <svg viewBox={`0 0 ${W} 262`} role="img" aria-label={`Pairs between departments: ${arcs.map((a) => `${a.a} and ${a.b} ${a.count}`).join(", ") || "none yet"}`} style={{ width: "100%", minWidth: dots.length * 84, height: "auto", display: "block" }}>
         <line x1="20" x2={W - 20} y1="190" y2="190" stroke={line} />
         {arcs.map((a) => (
