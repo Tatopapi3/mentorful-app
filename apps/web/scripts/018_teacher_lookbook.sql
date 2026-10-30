@@ -76,7 +76,7 @@ as $$
    order by p.last_name, p.first_name, p.id
 $$;
 
-revoke all on function public.lookbook_cards() from public;
+revoke all on function public.lookbook_cards() from anon, public;
 grant execute on function public.lookbook_cards() to authenticated;
 
 -- ------------------------------------------------------------ self-test
