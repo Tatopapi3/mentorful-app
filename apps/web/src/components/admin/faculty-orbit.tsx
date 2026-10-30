@@ -48,7 +48,7 @@ export function FacultyOrbit({ planets, lenses, directions }: { planets: Planet[
         ))}
       </div>
       <p style={{ margin: "0 0 10px", color: muted, fontSize: 14 }}>{LENS_NOTE[lens]}</p>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Faculty orbit by ${LENS_LABEL[lens]}: ${planets.map((p) => `${p.dept} ${p.notes[lens]}`).join("; ")}`} style={{ width: "100%", height: "auto", display: "block" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Faculty orbit by ${LENS_LABEL[lens]}: ${planets.map((p) => `${p.dept} ${p.notes[lens]}`).join("; ")}`} style={{ width: "100%", height: "auto", display: "block" }}>
         {[0, 1 / 3, 2 / 3, 1].map((f) => {
           const rx = R_MIN + f * (R_MAX - R_MIN);
           return <ellipse key={f} cx={CX} cy={CY} rx={rx} ry={rx * 0.56} fill="none" stroke={line} strokeDasharray={f === 1 ? "none" : "3 6"} />;

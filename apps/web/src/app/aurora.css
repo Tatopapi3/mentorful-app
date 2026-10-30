@@ -11,14 +11,14 @@
   --ev-panel: rgba(255, 255, 255, 0.8);
   --ev-panel-solid: #ffffff;
   --ev-soft: rgba(99, 102, 241, 0.09);
-  --ev-teal: #0c9488;
+  --ev-teal: #0a7268;
   --ev-teal-deep: #4f46e5;
   --ev-grad: linear-gradient(135deg, #0ea5a4 0%, #4f46e5 100%);
   --ev-grad-soft: linear-gradient(135deg, rgba(14, 165, 164, 0.14), rgba(79, 70, 229, 0.14));
   --ev-on-grad: #ffffff;
   --ev-navy: #17143a;
   --ev-on-navy: #f4f3ff;
-  --ev-amber: #a15c07;
+  --ev-amber: #8f5106;
   --ev-amber-soft: rgba(245, 158, 11, 0.14);
   --ev-alert: #a3243b;
   --ev-alert-soft: rgba(244, 63, 94, 0.1);
@@ -73,6 +73,8 @@
 @keyframes ev-drift { to { transform: translate3d(5vw, 4vw, 0) scale(1.08); } }
 
 .ev a { color: var(--ev-teal); text-underline-offset: 3px; }
+/* A link inside a sentence must not rely on colour alone. */
+.ev p a:not(.ev-btn), .ev li a:not(.ev-btn):not([class]) { text-decoration: underline; }
 .ev button, .ev input, .ev select, .ev textarea { font: inherit; color: inherit; max-width: 100%; }
 .ev h1, .ev h2, .ev h3 { font-family: var(--ev-display); font-weight: 600; letter-spacing: -0.03em; line-height: 1.12; margin: 0 0 12px; color: var(--ev-ink); }
 .ev h1 { font-size: clamp(32px, 4.4vw, 54px); letter-spacing: -0.04em; }

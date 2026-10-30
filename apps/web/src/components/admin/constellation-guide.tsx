@@ -85,7 +85,7 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
       )}
       {m.depts.length >= 2 && (
         <Panel skin={skin} title="Which departments are connected" eyebrow="Departments">
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Pairs between departments, scrollable">
             <table style={{ borderCollapse: "collapse", minWidth: 420, width: "100%", fontSize: 13.5 }}>
               <thead>
                 <tr>
