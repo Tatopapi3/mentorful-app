@@ -22,11 +22,11 @@ The brand badge (the spiked M in the Aurora gradient) is `components/aurora/ment
 - **My pair**: partnership (chat with file sharing, private partner-change request) and a **Lookbook** of colleagues: name,
   department and strengths only (search, filters, grid and list), with one switch to hide yourself. Video call is built but off.
 - **Journal**: log a conversation (exact timestamps), **note to future self** (sealed until a chosen date), private notebook.
-- **Growth**: time on Mentorful (private), suggested focus, goals (the six **pedagogy games** are built but off),
+- **Growth**: **CTLE hours tracker** (New York's 100 hours per 5 years, 15% language acquisition; the numbers are settings, so other requirements work), time on Mentorful (private), suggested focus, goals (the six **pedagogy games** are built but off),
   practice log, an opt-in to anonymous school totals, Mentorful products.
 - **Culture Scan**, a **pair chat** drawer on every tab (the **video call** that rings your co-mentor is built but off).
 
-Logic is pure and tested: `src/lib/teacher/` (model, hub, lookbook, protocols). UI: `src/components/teacher/`.
+Logic is pure and tested: `src/lib/teacher/` (model, hub, lookbook, protocols, ctle). The CTLE pace rule exists twice, in `ctle.ts` and in `ctle_progress()`; change both together. Mentorful is a teacher's own record, not NYSED's: only hours from an approved sponsor count, and the screen says so. Whether the district becomes an approved sponsor, and so can sign off Mentorful activity, is Nick's decision. UI: `src/components/teacher/`.
 
 ## Database scripts (written, NOT applied)
 
@@ -37,6 +37,8 @@ Order matters. All are additive (new tables, functions, buckets; no existing tab
 | `017_teacher_hub.sql` | pair chat, game sessions, notes to future self, time on platform, goals, practice log | pair tables: the two teachers only; own tables: the owner only; no admin read path |
 | `018_teacher_lookbook.sql` | `lookbook_choices`, `lookbook_cards()` | the lookbook returns exactly name, department, strength tags (no email, photo or free text); one owner-only hide switch; admins get no rows. Rewritten on Oct 29 to Nick's fixed set; the earlier self-authored card (photo, bio, experience) was never applied and is gone |
 | `019_growth_activity.sql` | `growth_sharing`, `growth_activity()` | consent; anonymous, rounded to 5, floor of 5 (10 for distributions), admin only |
+| `020_school_headcount.sql` | `schools.faculty_headcount` | one nullable column; the roster size the Culture Scan's 60% participation gate measures against |
+| `021_ctle_hours.sql` | `ctle_settings`, `ctle_hours`, `ctle_progress()` | owner-only hours (no admin read path); leadership gets only a rounded share complete / on pace / behind, from teachers who opted in (019) and set the tracker up, floor of 5. Needs 019 first |
 
 Checked on a throwaway Postgres (PGlite) with stand-ins for Nick's helper functions (`my_profile_id`, `my_school_id`,
 `is_school_admin`), not against his real schema. A read-only look at the real `mentorful-app` project confirmed those
@@ -68,7 +70,7 @@ around locally: merge `juan-preview` into a scratch branch, then `npm run previe
 
 ```
 cd apps/web
-npm test          # 107 tests
+npm test          # 127 tests
 npx tsc --noEmit
 npx next build
 ```
@@ -92,11 +94,11 @@ Not done, and why:
 - **"Archetype" panel**: Nick wants to discuss whether it should exist. It stays, with the floor applied.
 - **Faculty map page and Pairing page** still show named teachers and pairs (the map, and pairing is roster work). Only Overview was in Nick's ask; worth confirming whether the map should go.
 - **Triads**: after Demo Day (data-model change). **RSS feed**: reshape toward sharing Google Docs and PDFs between co-mentors; pair chat file sharing is the start. Not built.
-- **Hour logging / CTLE**: keep on the list, "design the logging, don't promise the credit". Built and parked on local branch `Juan-ctle-idea`; its SQL is also numbered 020 and must be renumbered if both land.
+- **Hour logging / CTLE**: Nick said keep it on the list, "design the logging, don't promise the credit". It is in the Growth tab as the teacher's own record (not NYSED's); nothing says Mentorful activity earns credit. Script `021_ctle_hours.sql`.
 
 ## Next steps
 
-1. Apply 017, 018, 019, 020 (and 016 only if video comes back) to a project that is not Nick's, then sign in real test teachers (only one profile is
+1. Apply 017 to 021 (and 016 only if video comes back) to a project that is not Nick's, then sign in real test teachers (only one profile is
    linked to a login today).
 2. After Demo Day: try a video call between two real devices and review the game content (both are off).
 4. Decide whether "count me in anonymous totals" stays off by default (it does today).

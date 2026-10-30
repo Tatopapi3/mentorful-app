@@ -3,7 +3,7 @@ import { respondentsText } from "@/lib/report/gates";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import GrowthActivityPanel from "@/components/admin/growth-activity-panel";
-import { loadGrowthActivity } from "@/lib/admin/growth";
+import { loadCtleProgress, loadGrowthActivity } from "@/lib/admin/growth";
 import { TrendsSections, loadTrendsData } from "@/components/admin/trends-view";
 import Link from "next/link";
 import { CultureBubbles } from "@/components/admin/diagrams";
@@ -31,6 +31,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
   const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const growth = await loadGrowthActivity(admin);
+  const ctle = await loadCtleProgress(admin);
   const facts = buildFacts(snap);
   const actions = buildActions(facts, base).filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);
@@ -99,7 +100,7 @@ export default async function InsightsPage({ params: routeParams, searchParams }
       )}
 
       <ParticipationPanel skin={look} snap={snap} />
-      <GrowthActivityPanel skin={look} data={growth} />
+      <GrowthActivityPanel skin={look} data={growth} ctle={ctle} />
 
       <div id="trends" style={{ scrollMarginTop: 96 }}>
         <TrendsSections skin={look} snap={snap} data={trends} withHeading />

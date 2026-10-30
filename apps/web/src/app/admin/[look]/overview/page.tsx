@@ -105,6 +105,9 @@ export default async function AuroraOverviewPage({ params: routeParams, searchPa
         <section className="ev-panel">
           <p className="ev-eyebrow">Teaching archetypes · {d.faculty.length} teachers</p>
           <h2>How teachers teach</h2>
+          <p className="ev-small" style={{ marginTop: 0 }}>
+            Each teacher has one teaching style on their profile, from onboarding: <strong>Nurturer</strong> (care first, then challenge), <strong>Activator</strong> (spark curiosity, ignite action) or <strong>Architect</strong> (design clarity, build mastery). It names the approach a teacher leans toward. It is not a score or an evaluation, and no style is better than another. This panel only counts how many teachers lean each way, so you can see the mix on your faculty. Groups under 5 are hidden.
+          </p>
           {TEACHING_STYLES.map((s) => {
             const meta = TEACHING_STYLE[s as TeachingStyle];
             const n = floorCell(d.styleCounts[s]);
