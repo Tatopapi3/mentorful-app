@@ -50,7 +50,7 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
           ]}
         />
         <div style={{ height: 520, marginTop: 14, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line, #d9d3c5)", background: "#fff", color: "#14122b" }}>
-          <FacultyMapClient users={detail.mapUsers} edges={detail.mapEdges} />
+          <FacultyMapClient users={detail.mapUsers} edges={detail.mapEdges} height="100%" />
         </div>
         <Muted skin={skin}>
           Switch the map between a grid, pairings, departments and strengths, and click anyone to see who they are paired with. It is a live view and is never part of a download. The same picture, as department totals with groups under 5 left out, is the “Faculty connection” slide in the leadership deck and the spreadsheet below.

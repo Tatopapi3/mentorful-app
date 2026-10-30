@@ -19,7 +19,7 @@ export default async function AuroraMapPage() {
       <section className="ev-panel" style={{ marginTop: 18 }}>
         <small>Nodes: {d.mapUsers.length} · Edges: {d.mapEdges.length}</small>
         <div style={{ height: "72vh", minHeight: 520, marginTop: 10, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line)", background: "#fff", color: "#14122b" }}>
-          <FacultyMapClient users={d.mapUsers} edges={d.mapEdges} />
+          <FacultyMapClient users={d.mapUsers} edges={d.mapEdges} height="100%" />
         </div>
       </section>
     </main>

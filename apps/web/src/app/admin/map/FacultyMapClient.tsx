@@ -49,6 +49,8 @@ function hashTo01(s: string) {
 export default function FacultyMapClient(props: {
   users: UserNode[];
   edges: { id: string; source: string; target: string; label?: string }[];
+  /** How tall the map is. The full-size page fills the window; a map inside another page passes a fixed height so it fits its box. */
+  height?: number | string;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
@@ -301,8 +303,8 @@ export default function FacultyMapClient(props: {
   };
 
   return (
-    <div style={{ display: "flex", gap: 16, height: "calc(100vh - 72px)" }}>
-      <div style={{ flex: 1, border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ display: "flex", gap: 16, height: props.height ?? "calc(100vh - 72px)" }}>
+      <div style={{ flex: 1, border: "1px solid #eee", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", minWidth: 0 }}>
         <div
           style={{
             display: "flex",
@@ -342,6 +344,7 @@ export default function FacultyMapClient(props: {
           )}
         </div>
 
+        <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <ReactFlow
           nodes={nodes}
           edges={edgesRF}
@@ -357,6 +360,7 @@ export default function FacultyMapClient(props: {
           <Background />
           <Controls />
         </ReactFlow>
+        </div>
       </div>
 
       <aside style={{ width: 340, border: "1px solid #eee", borderRadius: 12, padding: 12 }}>
