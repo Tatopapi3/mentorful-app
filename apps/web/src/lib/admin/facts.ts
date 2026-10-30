@@ -3,6 +3,7 @@
  * Every sentence the Pulse and Insights pages print comes from a number computed here, so a suggestion can
  * always name the number behind it.
  */
+import type { CtleReadingRaw, GrowthActivity } from "./growth";
 import { DIMENSIONS, DIMENSION_LABEL, type Dimension, type ReportStats } from "@/lib/report/stats";
 import type { Participation } from "./participation";
 
@@ -38,6 +39,10 @@ export type AdminSnapshot = {
   participation?: Participation | null;
   /** Approved pairs with no conversation in the last 30 days, or null when unknown. */
   quietPairs?: number | null;
+  /** Anonymous growth-tool totals (script 019), or null when not available. Only teachers who chose to share are in them. */
+  growth?: GrowthActivity | null;
+  /** Anonymous CTLE-hours reading (script 021), or null when not available. */
+  ctle?: CtleReadingRaw | null;
 };
 
 export type Facts = {

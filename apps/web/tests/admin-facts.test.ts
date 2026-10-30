@@ -465,3 +465,29 @@ describe("leadership deck", () => {
     expect(everything).toContain("1 group with fewer than 5 teachers is hidden");
   });
 });
+
+describe("the deck's teacher growth slide", () => {
+  const pr = (a: string, b: string) => ({ id: a + b, a, b, domain: "classroom", tag: null });
+  const mkPeople = ["Math", "ELA", "Arts"].flatMap((d) => Array.from({ length: 5 }, (_, i) => ({ id: `${d}${i}`, name: `Teacher ${d}${i}`, dept: d })));
+  const withTotals = (growth: unknown, ctle: unknown) => ({ school: { name: "Test School", priority: null }, cycle: { id: "c", name: "Fall", status: "complete" }, cycles: [], people: mkPeople, pairs: [pr("Math0", "ELA0")], requests: [], conversations: 3, scan: null, growth, ctle }) as never;
+  const g = { teachers: 15, window_days: 30, enough: true, contributors: 10, share_pct: 65, active_week_pct: 60, practiced_pct: 50, has_goal_pct: 45, goals_done_pct: null };
+  const c = { teachers: 15, enough: true, contributors: 10, tracking_pct: 65, complete_pct: 10, on_pace_pct: 40, behind_pct: 50 };
+  const at = (s: unknown) => buildDeck(s as never, null, new Date("2026-10-23T12:00:00Z"));
+
+  it("appears only when enough teachers chose to share", () => {
+    expect(at(withTotals(g, c)).slides.map((s) => s.kicker)).toContain("Teacher growth");
+    expect(at(withTotals({ teachers: 15, window_days: 30, enough: false }, null)).slides.map((s) => s.kicker)).not.toContain("Teacher growth");
+    expect(at(withTotals(null, null)).slides.map((s) => s.kicker)).not.toContain("Teacher growth");
+  });
+  it("adds the CTLE bars only when that reading is there, and says what it is", () => {
+    const withCtle = JSON.stringify(at(withTotals(g, c)));
+    expect(withCtle).toContain("CTLE hours: hours reached");
+    expect(withCtle).toContain("not the state's");
+    expect(JSON.stringify(at(withTotals(g, null)))).not.toContain("CTLE hours");
+  });
+  it("is rounded, anonymous, and names nobody", () => {
+    const text = JSON.stringify(at(withTotals(g, c)));
+    expect(text).not.toMatch(/Teacher (Math|ELA|Arts)\d/);
+    expect(text).toContain("rounded to the nearest 5%");
+  });
+});

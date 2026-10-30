@@ -61,11 +61,11 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
         </div>
       </Panel>
 
-      <Panel skin={skin} title="Leadership deck" eyebrow="Slides" count="7 slides">
+      <Panel skin={skin} title="Leadership deck" eyebrow="Slides">
         <Row
           skin={skin}
           title="Where the program stands, how far the pairs reach, and what to do next"
-          detail="Pairing, department connections, participation and next steps in seven 16:9 slides. Download it as a PowerPoint file to edit, or open it and save it as a PDF to share."
+          detail="Pairing, department connections, participation, teacher growth (once enough teachers share) and next steps in 16:9 slides. Download it as a PowerPoint file to edit, or open it and save it as a PDF to share."
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Get skin={skin} href={`/admin/export/slides.pptx${q}`} primary>Download PowerPoint</Get>

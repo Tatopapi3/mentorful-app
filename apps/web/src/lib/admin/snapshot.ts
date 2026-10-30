@@ -1,4 +1,5 @@
 import { loadReportStats } from "@/lib/report/data";
+import { loadCtleProgress, loadGrowthActivity } from "./growth";
 import { DIMENSIONS, type Dimension } from "@/lib/report/stats";
 import { loadParticipation } from "./participation";
 import type { AdminContext } from "./require";
@@ -35,6 +36,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
   const { data: count } = await supabase.rpc("conversation_log_count", { p_cycle: cycle?.id ?? null });
 
   const { participation, quietPairs } = await loadParticipation({ supabase, schoolId } as AdminContext, cycle?.id ?? null);
+  const [growth, ctle] = await Promise.all([loadGrowthActivity({ supabase, schoolId } as AdminContext), loadCtleProgress({ supabase, schoolId } as AdminContext)]);
   const report = await loadReportStats();
   let scan: ScanSummary | null = null;
   if (report.status === "ok") {
@@ -63,6 +65,8 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
     stats: report.status === "ok" ? report.stats : null,
     participation,
     quietPairs,
+    growth,
+    ctle,
   };
 }
 
