@@ -1,17 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DOMAIN_LABEL, CONCERN_DOMAINS, type ConcernDomain } from "@/lib/domains";
-import { NO_FILTERS, WANTS, YEARS_BANDS, activeFilters, facetCounts, filterCards, paginate, type Card, type Filters } from "@/lib/teacher/lookbook";
+import { NO_FILTERS, activeFilters, facetCounts, filterCards, paginate, type Card, type Filters } from "@/lib/teacher/lookbook";
 import { Icon } from "./icons";
 import { CardDetail, CardPhoto, LookbookCard } from "./lookbook-card";
-import { OpenCall, OpenChat } from "./open-events";
+import { OpenChat } from "./open-events";
 import { Overlay } from "./overlay";
-import { useBase } from "./use-base";
 
 const PER_PAGE = 9;
-const STYLES = ["Nurturer", "Activator", "Architect"];
 
 type View = "grid" | "list";
 
@@ -20,7 +17,6 @@ function toggle<T>(list: T[], v: T): T[] {
 }
 
 export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card[]; meId: string; partnerByProfile: Record<string, string>; ready: boolean }) {
-  const base = useBase();
   const [f, setF] = useState<Filters>(NO_FILTERS);
   const [view, setView] = useState<View>("grid");
   const [page, setPage] = useState(1);
@@ -54,18 +50,15 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
     return (
       <section className="ev-empty">
         <h3>The lookbook isn&rsquo;t switched on for your school yet</h3>
-        <p className="ev-muted">Your school lead needs to apply the update first. Once it is, teachers can share a card about themselves and browse colleagues here.</p>
+        <p className="ev-muted">Your school lead needs to apply the update first. Once it is, you can browse colleagues by department and strength here.</p>
       </section>
     );
   }
   if (cards.length === 0) {
     return (
       <section className="ev-empty">
-        <h3>Nobody has shared a card yet</h3>
-        <p className="ev-muted">A card is a short, friendly introduction: a photo, what you&rsquo;re good at, your experience, and what you hope to get out of working with a co-mentor. Sharing is always your choice.</p>
-        <Link className="ev-btn primary" href={`${base}/pair/card`}>
-          Make my card <Icon name="arrow" size={16} />
-        </Link>
+        <h3>No colleagues to show yet</h3>
+        <p className="ev-muted">The lookbook lists colleagues by name, department and strengths. It fills in as teachers join, and anyone can choose to stay out of it.</p>
       </section>
     );
   }
@@ -84,7 +77,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
       <aside className={`ta-lb-filters ev-panel${showFilters ? " open" : ""}`} aria-label="Filters">
         <div className="ta-lb-search">
           <Icon name="search" size={16} />
-          <input type="search" value={f.q} onChange={(e) => set({ q: e.target.value })} placeholder="Search names, skills, achievements…" aria-label="Search the lookbook" />
+          <input type="search" value={f.q} onChange={(e) => set({ q: e.target.value })} placeholder="Search names, departments, strengths…" aria-label="Search the lookbook" />
         </div>
         {n > 0 ? (
           <button type="button" className="ev-btn quiet sm" onClick={() => { setF(NO_FILTERS); setPage(1); }}>
@@ -92,24 +85,12 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
           </button>
         ) : null}
         <fieldset>
-          <legend>Looking for</legend>
-          {WANTS.map((w) => check(w, f.wants.includes(w), facets.wants.get(w) ?? 0, () => set({ wants: toggle(f.wants, w) })))}
-        </fieldset>
-        <fieldset>
           <legend>Strong in</legend>
           {CONCERN_DOMAINS.map((d: ConcernDomain) => check(DOMAIN_LABEL[d], f.domains.includes(d), facets.domains.get(d) ?? 0, () => set({ domains: toggle(f.domains, d) })))}
         </fieldset>
         <fieldset>
           <legend>Department</legend>
           {facets.departments.map(([d, c]) => check(d, f.departments.includes(d), c, () => set({ departments: toggle(f.departments, d) })))}
-        </fieldset>
-        <fieldset>
-          <legend>Years teaching</legend>
-          {YEARS_BANDS.map((b) => check(b.label, f.bands.includes(b.key), facets.bands.get(b.key) ?? 0, () => set({ bands: toggle(f.bands, b.key) })))}
-        </fieldset>
-        <fieldset>
-          <legend>Teaching style</legend>
-          {STYLES.map((s) => check(s, f.styles.includes(s), facets.styles.get(s) ?? 0, () => set({ styles: toggle(f.styles, s) })))}
         </fieldset>
       </aside>
 
@@ -166,14 +147,11 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
                   <CardPhoto card={c} className="sm" />
                   <span className="ta-lb-list-main">
                     <strong>{c.name}</strong>
-                    <small className="ev-muted">{[c.headline, c.department, c.yearsTeaching !== null ? `${c.yearsTeaching} yrs` : ""].filter(Boolean).join(" · ")}</small>
+                    <small className="ev-muted">{c.department}</small>
                   </span>
                   <span className="ta-lb-list-tags">
                     {c.domains.slice(0, 2).map((d) => (
                       <span className="ev-badge" key={d}>{DOMAIN_LABEL[d]}</span>
-                    ))}
-                    {c.wants.slice(0, 1).map((w) => (
-                      <span className="ev-badge amber" key={w}>{w}</span>
                     ))}
                   </span>
                   {badgeFor(c) ? <span className="ev-badge">{badgeFor(c)}</span> : null}
@@ -187,7 +165,7 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
       {current ? (
         <Overlay>
         <div className="ev-scrim" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setOpen(null)}>
-          <div className="ta-lb-detail" role="dialog" aria-modal="true" aria-label={`${current.name}'s card`}>
+          <div className="ta-lb-detail" role="dialog" aria-modal="true" aria-label={`${current.name}'s profile`}>
             <div className="ta-lb-detail-bar">
               <button type="button" className="ta-iconbtn" disabled={idx <= 0} onClick={() => setOpen(shown[idx - 1].profileId)} aria-label="Previous teacher">
                 <Icon name="left" size={16} />
@@ -212,16 +190,10 @@ export function Lookbook({ cards, meId, partnerByProfile, ready }: { cards: Card
                     <OpenChat pairingId={partnerByProfile[current.profileId]}>
                       <Icon name="chat" size={16} /> Message
                     </OpenChat>
-                    <OpenCall pairingId={partnerByProfile[current.profileId]}>
-                      <Icon name="video" size={16} /> Video call
-                    </OpenCall>
                   </div>
                 ) : current.profileId === meId ? (
                   <div className="ta-lb-actions">
-                    <span className="ev-badge">This is your card</span>
-                    <Link className="ev-btn" href={`${base}/pair/card`}>
-                      <Icon name="pen" size={16} /> Edit
-                    </Link>
+                    <span className="ev-badge">This is you</span>
                   </div>
                 ) : null
               }
