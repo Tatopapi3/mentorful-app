@@ -135,7 +135,7 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
               <th scope="row" style={{ ...cell, border: 0, borderBottom: `1px solid ${line}`, textAlign: "left", fontWeight: 700 }}>All departments</th>
               {weekly.totals.map((t) => (
                 <td key={t.week} style={{ ...cell, background: shade(t.n), fontWeight: 600, color: t.n === null ? muted : ink }} title={t.n === null ? "Fewer than 5 conversations" : `${t.n} conversations`}>
-                  {t.n === null ? "·" : t.n}
+                  <span style={{ display: "inline-block", minWidth: 24, padding: "1px 7px", borderRadius: 6, background: "var(--ev-panel-solid, #fff)", color: "var(--ev-ink, #14122b)" }}>{t.n === null ? "·" : t.n}</span>
                 </td>
               ))}
             </tr>
@@ -148,7 +148,7 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
                   const n = weekly.cell(d, w);
                   return (
                     <td key={w} style={{ ...cell, background: n === null ? hatch : shade(n), color: n === null ? muted : ink, fontWeight: n === null ? 400 : 600 }} title={n === null ? "Fewer than 5 conversations" : `${n} conversations`}>
-                      {n === null ? "·" : n}
+                      <span style={{ display: "inline-block", minWidth: 24, padding: "1px 7px", borderRadius: 6, background: "var(--ev-panel-solid, #fff)", color: "var(--ev-ink, #14122b)" }}>{n === null ? "·" : n}</span>
                     </td>
                   );
                 })}
