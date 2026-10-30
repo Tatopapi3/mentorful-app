@@ -12,6 +12,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { createPreviewClient, previewEnabled } from "@/lib/preview";
 import {
   DIMENSIONS,
   computeReportStats,
@@ -54,6 +55,8 @@ export type ReportLoad =
   | { status: "misconfigured"; message: string };
 
 function serviceClient(url: string, key: string) {
+  // Local preview only (see lib/preview): the report engine reads the made-up responses.
+  if (previewEnabled()) return createPreviewClient("admin", { bypassRls: true }) as unknown as ReturnType<typeof createClient>;
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
