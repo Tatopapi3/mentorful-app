@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Mentorful dashboards: the new design and Nick's</title>
-<meta name="description" content="The teacher and leadership dashboards, in the new Aurora design and in Nick's design. Sample school, invented data.">
+<title>The Mentorful dashboards</title>
+<meta name="description" content="The teacher and leadership dashboards in the Aurora design. Sample school, invented data.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -45,8 +45,11 @@ h2 { font-size:clamp(26px,3.4vw,36px); margin-bottom:6px; }
 .ask h3 { font-size:22px; margin-bottom:10px; }
 .ask p { margin:0; color:var(--muted); max-width:52em; }
 .ask ol { margin:0; padding-left:22px; } .ask li { margin:8px 0; }
+.minis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+.card .small { margin:0 0 8px; color:var(--muted); font-size:14px; }
 .nokey { margin:26px 0 0; padding:14px 18px; border-radius:12px; background:#fff3e0; border:1px solid #f0c987; color:#7a4a00; }
 footer { margin-top:44px; color:var(--muted); font-size:13px; }
+@media (max-width:900px){ .minis{grid-template-columns:1fr} }
 @media (max-width:760px){ main{padding:36px 18px 56px} .cards{grid-template-columns:1fr} }
 </style>
 </head>
@@ -56,17 +59,17 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
     <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="g" x1="8%" y1="0%" x2="92%" y2="100%"><stop offset="0" stop-color="#0ea5a4"/><stop offset="1" stop-color="#4f46e5"/></linearGradient></defs><polygon points="37,1 47,10 59,0.5 65,16 82,15.5 82,31 93,36.5 84,47.5 94.5,58 82,64 82,84 66,83 48,99.5 32,83 15,84 15,64 2,58 15,48 1.5,36 15,31 15,15.5 32,16" fill="url(#g)" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/><text x="48.5" y="66" text-anchor="middle" font-size="46" font-weight="700" fill="#fff" font-family="Georgia, serif">M</text></svg>
     Mentorful · teacher and leadership dashboards
   </p>
-  <h1>Two designs for the Mentorful dashboards</h1>
-  <p class="lead">The same two dashboards, one for teachers and one for school leaders, shown in two designs: the new one, and Nick&rsquo;s. Open each and tell us which you prefer. It&rsquo;s a sample school with invented conversations, and nothing you click is saved.</p>
+  <h1>The Mentorful dashboards</h1>
+  <p class="lead">One for teachers and one for school leaders, in the new Aurora design. It&rsquo;s a sample school with invented conversations, and nothing you click is saved.</p>
   <p class="nokey" id="nokey" hidden>This page needs its private link to open the dashboards. Use the full link you were sent (it ends in <code>?k=…</code>).</p>
 
-  <section class="block" aria-labelledby="new">
-    <span class="tag new">The new design</span>
-    <h2 id="new">Aurora: one calm look for teachers and leaders</h2>
+  <section class="block" aria-labelledby="two">
+    <span class="tag new">Aurora</span>
+    <h2 id="two">Two dashboards, one calm look</h2>
     <p class="sub">Soft gradients, rounded cards and the Mentorful badge in teal and indigo, with a Night mode. Teachers and leaders get the same bar, the same type and the same feel.</p>
     <div class="cards">
       <article class="card">
-        <img src="img/teacher-new.jpg" alt="The new teacher dashboard: a greeting, one next step, and a row of cards" loading="lazy">
+        <img src="img/teacher-home.jpg" alt="The teacher dashboard: a greeting, one next step, and a row of cards" loading="lazy">
         <div class="body">
           <span class="for">For teachers</span>
           <h3>Teacher dashboard</h3>
@@ -74,58 +77,58 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
             <li>Home with one clear next step</li>
             <li>My pair: your partner, and a lookbook of colleagues by name, department and strengths</li>
             <li>Journal with exact timestamps, and notes to your future self</li>
-            <li>Growth: goals, a practice log and your time on Mentorful</li>
+            <li>Growth: goals, a practice log, and a private count of your 100 hours of professional development (CTLE)</li>
             <li>Pair chat with file sharing, and the Culture Scan</li>
           </ul>
-          <a class="btn" data-path="/preview/as/teacher?next=/dashboard/aurora">Open the teacher dashboard &rarr;</a>
+          <a class="btn" data-path="/preview/as/teacher?next=/dashboard">Open the teacher dashboard &rarr;</a>
         </div>
       </article>
       <article class="card">
-        <img src="img/admin-new.jpg" alt="The new leadership dashboard: Pulse, with four progress rings" loading="lazy">
+        <img src="img/admin-pulse.jpg" alt="The leadership dashboard: Pulse, with four progress rings" loading="lazy">
         <div class="body">
           <span class="for">For school leaders</span>
           <h3>Admin dashboard</h3>
           <ul>
             <li>Pulse, Pairing, Overview, Constellation, Insights and Reports</li>
             <li>School-wide numbers only; groups under 5 are hidden, and no teacher is named on the Overview</li>
-            <li>Growth-tool use shown as anonymous totals, from teachers who choose to share</li>
+            <li>Teacher growth and CTLE progress shown as anonymous totals, from teachers who choose to share</li>
             <li>Leaders see counts, never what teachers said</li>
           </ul>
-          <a class="btn" data-path="/preview/as/admin?next=/admin/aurora/pulse">Open the admin dashboard &rarr;</a>
+          <a class="btn" data-path="/preview/as/admin?next=/admin/pulse">Open the admin dashboard &rarr;</a>
         </div>
       </article>
     </div>
   </section>
 
-  <section class="block" aria-labelledby="nick">
-    <span class="tag nick">Nick&rsquo;s design</span>
-    <h2 id="nick">Nick&rsquo;s look: paper, serif type and teal</h2>
-    <p class="sub">The same two dashboards with every tab and feature, in Nick&rsquo;s own design: his header, his tab bar, his navy badge, warm paper and serif type.</p>
-    <div class="cards">
+  <section class="block" aria-labelledby="more">
+    <h2 id="more">Jump straight to</h2>
+    <p class="sub">Three newer pieces, each one click away.</p>
+    <div class="minis">
       <article class="card">
-        <img src="img/teacher-nick.jpg" alt="Nick's teacher dashboard: profile, co-mentors and conversation journal" loading="lazy">
+        <img src="img/teacher-lookbook.jpg" alt="The lookbook: colleagues as cards with name, department and strengths" loading="lazy">
         <div class="body">
-          <span class="for">For teachers</span>
-          <h3>Teacher dashboard</h3>
-          <ul>
-            <li>Every tab of the new teacher dashboard: Home, My pair (with the lookbook), Journal, Growth and Culture Scan</li>
-            <li>Pair chat with file sharing, notes to your future self, goals and a practice log</li>
-            <li>The switch at the top right hops between Nick&rsquo;s look and Aurora on the same tab</li>
-          </ul>
-          <a class="btn nick" data-path="/preview/as/teacher?next=/dashboard/nick">Open Nick&rsquo;s teacher dashboard &rarr;</a>
+          <span class="for">Teachers</span>
+          <h3>Lookbook</h3>
+          <p class="small">Find a colleague who is strong where you want to grow. Name, department and strengths only, and you can hide yourself.</p>
+          <a class="btn" data-path="/preview/as/teacher?next=/dashboard/pair/lookbook">Open the lookbook &rarr;</a>
         </div>
       </article>
       <article class="card">
-        <img src="img/admin-nick.jpg" alt="Nick's leadership dashboard: Pulse, with the Culture Scan averages" loading="lazy">
+        <img src="img/teacher-growth.jpg" alt="The CTLE hours tracker with a progress bar and a list of sessions" loading="lazy">
         <div class="body">
-          <span class="for">For school leaders</span>
-          <h3>Admin dashboard</h3>
-          <ul>
-            <li>Pulse, Pairing, Overview, Constellation, Insights and Reports</li>
-            <li>The same numbers and the same privacy rules</li>
-            <li>The switch at the top right hops between the looks on the same page</li>
-          </ul>
-          <a class="btn nick" data-path="/preview/as/admin?next=/admin/pulse">Open Nick&rsquo;s admin dashboard &rarr;</a>
+          <span class="for">Teachers</span>
+          <h3>Professional development hours</h3>
+          <p class="small">New York asks for 100 hours of CTLE every 5 years. Each teacher keeps a private count, with pace. It is their own record, not the state&rsquo;s.</p>
+          <a class="btn" data-path="/preview/as/teacher?next=/dashboard/growth">Open the tracker &rarr;</a>
+        </div>
+      </article>
+      <article class="card">
+        <img src="img/admin-reports.jpg" alt="Reports with the faculty map and its three headline figures" loading="lazy">
+        <div class="body">
+          <span class="for">School leaders</span>
+          <h3>Reports and the faculty map</h3>
+          <p class="small">The map shows who is connected; the deck and spreadsheet beside it carry the same picture as department totals.</p>
+          <a class="btn" data-path="/preview/as/admin?next=/admin/reports">Open Reports &rarr;</a>
         </div>
       </article>
     </div>
@@ -136,8 +139,9 @@ footer { margin-top:44px; color:var(--muted); font-size:13px; }
     <ul>
       <li>It&rsquo;s a sample school built from Nick&rsquo;s sandbox data. Every name and conversation is invented, and nothing you do is kept.</li>
       <li>File sharing in pair chat needs the live database, so here it shows how it looks but can&rsquo;t connect.</li>
-      <li>What colleagues see of a teacher is fixed: name, department and strengths. Goals, notes and time on the platform are private to the teacher unless they decide otherwise.</li>
-      <li>Both teacher looks have the same features. Use the Nick / Aurora switch at the top right of any teacher page to compare them on the same tab.</li>
+      <li>What colleagues see of a teacher is fixed: name, department and strengths. Goals, notes, time on the platform and professional-development hours are private to the teacher unless they decide otherwise.</li>
+      <li>The faculty map is a live view for the school lead and is never part of a download. The deck and spreadsheets contain counts and averages only.</li>
+      <li>Use the Day / Night button in the top bar to try both themes.</li>
     </ul>
   </div>
 
