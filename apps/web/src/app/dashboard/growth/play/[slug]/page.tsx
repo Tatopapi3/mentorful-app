@@ -5,12 +5,12 @@ import { FEATURES } from "@/lib/teacher/features";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
 import { protocolFor } from "@/lib/teacher/protocols";
-import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
+import { teacherBase } from "@/lib/teacher/look";
 
-export default async function PlayPage({ params, searchParams }: { params: Promise<{ look: string; slug: string }>; searchParams: Promise<{ with?: string }> }) {
+export default async function PlayPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ with?: string }> }) {
   if (!FEATURES.games) notFound();
-  const { slug, look: lookRaw } = await params;
-  const base = teacherBase(await teacherLookOf(Promise.resolve({ look: lookRaw })));
+  const { slug } = await params;
+  const base = teacherBase();
   const { with: withPair } = await searchParams;
   const protocol = protocolFor(slug);
   if (!protocol) notFound();

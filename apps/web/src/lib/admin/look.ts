@@ -1,13 +1,9 @@
-import { notFound } from "next/navigation";
-import { lookEnabled } from "./looks";
-
-/** The two looks that share the Aurora layout. Nick's own look lives under /admin without a prefix. */
-export type Look = "aurora" | "blend";
-
-export async function lookOf(params: Promise<{ look: string }>): Promise<Look> {
-  const { look } = await params;
-  if ((look !== "aurora" && look !== "blend") || !lookEnabled(look)) notFound();
-  return look;
-}
-
-export const lookBase = (look: Look) => `/admin/${look}` as const;
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/**
+ * The leadership area has one look: Aurora. (It once came in three, Nick's, Aurora and a blend, so they could be compared;
+ * the choice was made and the others were removed.) `LOOK` and `lookBase` stay as the one place the skin name and the
+ * base path are written, so the shared components keep taking a `skin`.
+ */
+export type Look = "aurora";
+export const LOOK: Look = "aurora";
+export const lookBase = (_look: Look = LOOK) => "/admin" as const;

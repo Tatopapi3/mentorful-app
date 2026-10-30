@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin/require";
 
 // The only two places a leader can change pairings. Both run on the signed-in admin's session, so the existing
 // row-level policies for admins decide what is allowed, and both check the school again in the query.
-const BACK = new Set(["/admin/pairings", "/admin/aurora/pairings", "/admin/blend/pairings"]);
+const BACK = new Set(["/admin/pairings"]);
 const back = (v: FormDataEntryValue | null) => (BACK.has(String(v)) ? String(v) : "/admin/pairings");
 const done = (to: string, kind: "notice" | "error", message: string, cycle?: string) =>
   redirect(`${to}?${new URLSearchParams({ [kind]: message, ...(cycle ? { cycle } : {}) }).toString()}`);

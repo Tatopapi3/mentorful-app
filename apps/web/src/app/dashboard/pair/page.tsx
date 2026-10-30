@@ -5,13 +5,13 @@ import { OpenCall, OpenChat } from "@/components/teacher/open-events";
 import { PairTabs } from "@/components/teacher/pair-tabs";
 import { DateBlock, Stamp } from "@/components/teacher/stamp";
 import { loadTeacher } from "@/lib/teacher/load";
-import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
+import { teacherBase } from "@/lib/teacher/look";
 import { agoLabel, daysSince } from "@/lib/teacher/model";
 import { DOMAIN_LABEL } from "@/lib/domains";
 
 
-export default async function PairPage({ params }: { params: Promise<{ look: string }> }) {
-  const BASE = teacherBase(await teacherLookOf(params));
+export default async function PairPage() {
+  const BASE = teacherBase();
   const data = await loadTeacher();
   if (!data.model) return null;
   const { model } = data;

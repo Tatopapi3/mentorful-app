@@ -1,7 +1,6 @@
 import { AtlasBar, type NavItem, type QuickAction } from "./bar";
-import { auroraFonts, blendFonts } from "./fonts";
+import { auroraFonts } from "./fonts";
 import "@/app/aurora.css";
-import "./blend.css";
 
 const initialsOf = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
@@ -17,7 +16,6 @@ export function AuroraChrome({
   actions,
   primary,
   tools,
-  look = "aurora",
   children,
 }: {
   schoolName: string;
@@ -28,12 +26,10 @@ export function AuroraChrome({
   actions: QuickAction[];
   primary?: QuickAction;
   tools?: React.ReactNode;
-  /** "blend" keeps the Aurora layout and recolors and retypes it toward Nick's paper-and-serif look. */
-  look?: "aurora" | "blend";
   children: React.ReactNode;
 }) {
   return (
-    <div className={`ev ${look === "blend" ? `${blendFonts} ev-blend` : auroraFonts}`} data-theme="light" suppressHydrationWarning>
+    <div className={`ev ${auroraFonts}`} data-theme="light" suppressHydrationWarning>
       <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       <div className="ev-aurora" aria-hidden>
         <i />

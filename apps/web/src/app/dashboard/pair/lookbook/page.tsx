@@ -3,10 +3,10 @@ import { LookbookSwitch } from "@/components/teacher/lookbook-switch";
 import { PairTabs } from "@/components/teacher/pair-tabs";
 import { loadLookbook } from "@/lib/teacher/lookbook-data";
 import { loadTeacher } from "@/lib/teacher/load";
-import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
+import { teacherBase } from "@/lib/teacher/look";
 
-export default async function LookbookPage({ params }: { params: Promise<{ look: string }> }) {
-  const base = teacherBase(await teacherLookOf(params));
+export default async function LookbookPage() {
+  const base = teacherBase();
   const data = await loadTeacher();
   if (!data.model) return null;
   const lb = await loadLookbook();

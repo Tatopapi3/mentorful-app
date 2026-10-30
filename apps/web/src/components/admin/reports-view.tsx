@@ -7,7 +7,7 @@ import { coverage, departmentMatrix } from "@/lib/admin/network";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 
-const btnClass = (skin: Skin, primary?: boolean) => (skin === "nick" ? `nk-btn${primary ? " nk-primary" : ""}` : `ev-btn sm${primary ? " primary" : ""}`);
+const btnClass = (_skin: Skin, primary?: boolean) => `ev-btn sm${primary ? " primary" : ""}`;
 
 // Plain anchors: these are files and print pages, so the browser should fetch them directly.
 function Get({ skin, href, primary, children }: { skin: Skin; href: string; primary?: boolean; children: ReactNode }) {

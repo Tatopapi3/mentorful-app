@@ -103,7 +103,7 @@ export function ConstellationGuide({ skin, snap, prev, part }: { skin: Skin; sna
                       if (r === c) return <td key={c} style={{ ...td, color: "var(--muted, var(--ev-muted))" }} title="Pairs inside this department">{m.within[r] ?? 0}<small> within</small></td>;
                       const n = crossCount(m, r, c);
                       return (
-                        <td key={c} style={{ ...td, fontWeight: 600, background: n === 0 ? (skin === "nick" ? "var(--amber-bg)" : "rgba(245,158,11,0.16)") : skin === "nick" ? "var(--teal-bg)" : "rgba(20,184,166,0.14)" }}>
+                        <td key={c} style={{ ...td, fontWeight: 600, background: n === 0 ? "rgba(245,158,11,0.16)" : "rgba(20,184,166,0.14)" }}>
                           {n === 0 ? "none" : n}
                         </td>
                       );

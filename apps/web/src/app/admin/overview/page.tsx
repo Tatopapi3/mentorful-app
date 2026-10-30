@@ -1,401 +1,148 @@
-import { redirect } from "next/navigation";
-import { demoCount, respondentLabel } from "@/lib/report/gates";
-import { createClient } from "@/lib/supabase/server";
-import AdminTabs from "@/components/nick/admin-tabs";
-import { CycleSwitcher } from "@/components/admin/kit";
-import SiteHeader from "@/components/SiteHeader";
 import Link from "next/link";
+import { demoCount, respondentLabel } from "@/lib/report/gates";
+import { LOOK, lookBase } from "@/lib/admin/look";
+import { CycleSwitcher } from "@/components/admin/kit";
+import { loadOverviewDetail } from "@/lib/admin/detail";
 import { FEWER_THAN_5, floorCell, floorCrossing, floorDepartments, floorRows, floorShare, type Cell } from "@/lib/admin/overview-floor";
-import { loadReportStats } from "@/lib/report/data";
-import {
-  CONCERN_DOMAINS,
-  DOMAIN_LABEL,
-  TEACHING_STYLE,
-  TEACHING_STYLES,
-  domainsForTags,
-  type TeachingStyle,
-} from "@/lib/domains";
+import { requireAdmin } from "@/lib/admin/require";
+import { CONCERN_DOMAINS, DOMAIN_LABEL, TEACHING_STYLE, TEACHING_STYLES, type TeachingStyle } from "@/lib/domains";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin" };
-
-/**
- * Leadership dashboard.
- *
- * Every faculty read runs on the caller's SESSION client (anon key + cookies),
- * so 009/011's policies scope the page to the reader's own school. The one
- * exception is the CTE score, which comes from the report engine's service-key
- * path — `survey_responses` has no SELECT policy by design, and that module is
- * the established boundary: it returns dimension-level aggregates only, never
- * rows. Do not widen that pattern to anything else on this page.
- *
- * Panels deliberately absent:
- *  - "Absent today" — no attendance data exists anywhere in the schema.
- *  - Previous-cycle comparison — there is one cycle. `surveys.wave` exists for
- *    a future delta, but nothing has been re-measured yet.
- */
-
-type Row = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  department: string | null;
-  teaching_style: string | null;
-  archetype_id: string | null;
-  strength_tags: unknown;
-};
-
-type Pair = {
-  id: string;
-  host_id: string;
-  visitor_id: string;
-  domain: string | null;
-  strategic_tag: string | null;
-};
-
-export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const cycleParam = (await searchParams).cycle;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("id, school_id, role, first_name")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  // Authorization, not just authentication. RLS already scopes the DATA to
-  // this reader's school; this stops a non-admin from seeing the page frame at
-  // all, which is the check the old version was missing.
-  if (!me || me.role !== "admin") {
-    return (
-      <>
-        <SiteHeader />
-        <main className="wrap adm-denied">
-          <h1>Leadership dashboard</h1>
-          <p>This page is for school leadership. Your account doesn’t have admin access.</p>
-        </main>
-      </>
-    );
-  }
-  if (!me.school_id) {
-    return (
-      <>
-        <SiteHeader />
-        <main className="wrap adm-denied">
-          <h1>Leadership dashboard</h1>
-          <p>Your profile isn’t attached to a school yet.</p>
-        </main>
-      </>
-    );
-  }
-
-  const schoolId = me.school_id;
-
-  const [{ data: school }, { data: cycle }, { data: people }, { data: logs }] =
-    await Promise.all([
-      supabase.from("schools").select("name, strategic_priority").eq("id", schoolId).maybeSingle(),
-      // Latest cycle, or the one chosen with ?cycle= (added with the cycle switcher).
-      typeof cycleParam === "string"
-        ? supabase.from("cycles").select("id, name, status, ends_at").eq("school_id", schoolId).eq("id", cycleParam).maybeSingle()
-        : supabase
-            .from("cycles")
-            .select("id, name, status, ends_at")
-            .eq("school_id", schoolId)
-            .order("ends_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-      supabase
-        .from("profiles")
-        .select("id, first_name, last_name, department, teaching_style, archetype_id, strength_tags")
-        .eq("school_id", schoolId)
-        .eq("is_demo", true)
-        .order("department")
-        .order("last_name"),
-      supabase.from("conversation_logs").select("id, domain").eq("school_id", schoolId),
-    ]);
-
-  const { data: pairings } = cycle
-    ? await supabase
-        .from("pairings")
-        .select("id, host_id, visitor_id, domain, strategic_tag")
-        .eq("school_id", schoolId)
-        .eq("cycle_id", cycle.id)
-        .eq("status", "approved")
-    : { data: [] as Pair[] };
-
-  const { data: allCycles } = await supabase.from("cycles").select("id, name, status").eq("school_id", schoolId).order("ends_at", { ascending: false });
-  const faculty = (people ?? []) as Row[];
-  const pairs = (pairings ?? []) as Pair[];
-  const byId = new Map(faculty.map((p) => [p.id, p]));
-
-  // --- metric strip --------------------------------------------------------
-  // conversation_logs is pair-private (011): a direct SELECT returns zero rows
-  // for an admin, by design. The count comes from conversation_log_count(),
-  // the SECURITY DEFINER aggregate added in 014, which returns a number and
-  // never content. Leadership sees that coaching is happening, never what was
-  // said. If the function is missing the RPC errors and we fall back to the
-  // rows we can actually read, which is the honest floor.
-  const { data: logCountRpc } = cycle
-    ? await supabase.rpc("conversation_log_count", { p_cycle: cycle.id })
-    : await supabase.rpc("conversation_log_count", { p_cycle: null });
-  const conversationCount =
-    typeof logCountRpc === "number" ? logCountRpc : (logs ?? []).length;
-
-  const domainCounts: Record<string, number> = {};
-  for (const d of CONCERN_DOMAINS) domainCounts[d] = 0;
-  for (const p of pairs) if (p.domain && p.domain in domainCounts) domainCounts[p.domain]++;
-  const domainsLogged = Object.values(domainCounts).filter((n) => n > 0).length;
-
-  // CTE = the Culture Scan's efficacy dimension. Server-only, aggregate-only.
-  const report = await loadReportStats();
-  const cte =
-    report.status === "ok" ? report.stats.dimensions.efficacy.mean : null;
-  const cteN = report.status === "ok" ? report.stats.n : null;
-  const cteDemo = report.status === "ok" ? demoCount({ n: report.stats.n, includesSynthetic: report.includesSynthetic, demoN: report.demoN }) : 0;
-
-  // --- department / strength-domain / archetype rollups --------------------
-  const deptCounts: Record<string, number> = {};
-  for (const p of faculty) deptCounts[p.department ?? "Unassigned"] = (deptCounts[p.department ?? "Unassigned"] ?? 0) + 1;
-
-  // Set membership: a teacher strong in two domains is counted in both, so
-  // these deliberately sum to more than the headcount.
-  const strengthCounts: Record<string, number> = {};
-  for (const d of CONCERN_DOMAINS) strengthCounts[d] = 0;
-  for (const p of faculty) for (const d of domainsForTags(p.strength_tags)) strengthCounts[d]++;
-
-  const styleCounts: Record<string, number> = {};
-  for (const s of TEACHING_STYLES) styleCounts[s] = 0;
-  for (const p of faculty) {
-    if (p.teaching_style && p.teaching_style in styleCounts) styleCounts[p.teaching_style]++;
-  }
-
-  // Nothing below may single out a group under 5 (Nick, Oct 29): counts under the floor are withheld, small
-  // departments are left out or combined, and no teacher is named.
-  const domainRows = floorRows(CONCERN_DOMAINS.map((d) => [DOMAIN_LABEL[d], domainCounts[d]] as [string, number]));
-  const strengthRows = floorRows(CONCERN_DOMAINS.map((d) => [DOMAIN_LABEL[d], strengthCounts[d]] as [string, number]));
-  const maxDomain = Math.max(1, ...domainRows.map(([, n]) => n ?? 0));
-  const maxStrength = Math.max(1, ...strengthRows.map(([, n]) => n ?? 0));
-  const departments = floorDepartments(deptCounts);
-  const deptRows: [string, number][] = [
-    ...departments.rows,
-    ...(departments.combined ? ([[`${departments.combined.departments} smaller departments, combined`, departments.combined.teachers]] as [string, number][]) : []),
-  ];
-  const maxDept = Math.max(1, ...deptRows.map(([, n]) => n));
-  const crossing = floorCrossing(pairs.map((p) => ({ host: byId.get(p.host_id)?.department ?? null, visitor: byId.get(p.visitor_id)?.department ?? null })));
-
+function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <>
-      <SiteHeader />
-      <main className="wrap adm">
-        {/* Added: the leadership tabs. Everything below is unchanged. */}
-        <AdminTabs />
-        <header className="adm-head" style={{ marginTop: 22 }}>
-          <div>
-            <p className="mono adm-eyebrow">Leadership dashboard</p>
-            <h1>{school?.name ?? "School"}</h1>
-            <p className="adm-sub">
-              {cycle ? (
-                <>
-                  {cycle.name} · <span className="adm-status">{cycle.status}</span>
-                </>
-              ) : (
-                "No cycle found"
-              )}
-              {school?.strategic_priority ? <> · {school.strategic_priority}</> : null}
-            </p>
-          </div>
-        </header>
-
-        <CycleSwitcher skin="nick" cycles={allCycles ?? []} selectedId={cycle?.id ?? null} path="/admin/overview" />
-
-        {/* ---------------------------------------------------- metric strip */}
-        <section className="adm-metrics" aria-label="Summary">
-          <Metric
-            label="Logged conversations"
-            value={String(conversationCount)}
-            note="content stays private"
-          />
-          <Metric label="Active pairs" value={String(pairs.length)} note="approved this cycle" />
-          <Metric label="Visits" value={String(pairs.length)} note="one per pair" />
-          <Metric
-            label="Domains logged"
-            value={`${domainsLogged}/4`}
-            note="of the four domains"
-          />
-          <Metric
-            label="CTE score"
-            value={cte === null ? "n/a" : cte.toFixed(2)}
-            note={
-              cte === null
-                ? "no scan data"
-                : `efficacy · ${respondentLabel(cteN ?? 0, cteDemo)}`
-            }
-          />
-        </section>
-
-        {/* -------------------------------------------------- faculty network */}
-        <section className="adm-card">
-          <div className="adm-card-head">
-            <h2>Faculty network</h2>
-            <span className="mono adm-count">
-              {faculty.length} teachers · {pairs.length} pairs
-            </span>
-          </div>
-          <p className="adm-lede">
-            To protect people, this page doesn’t list teachers or show who is paired with whom, and no group under 5 is shown
-            anywhere on it. The <Link href="/admin/constellation">Constellation</Link> shows the same network by department.
-          </p>
-        </section>
-
-        {/* ------------------------------------------ what we're working on */}
-        <div className="adm-grid">
-          <section className="adm-card">
-            <div className="adm-card-head">
-              <h2>What we’re working on</h2>
-              <span className="mono adm-count">{cycle?.name ?? "No cycle"}</span>
-            </div>
-            <ul className="adm-bars">
-              {domainRows.map(([label, n]) => (
-                <Bar key={label} label={label} value={n} max={maxDomain} suffix="pairs" />
-              ))}
-            </ul>
-            <p className="adm-foot">
-              Each pair chose one domain to work in. No previous cycle to compare against yet.
-            </p>
-          </section>
-
-          {/* -------------------------------------------- strength domains */}
-          <section className="adm-card">
-            <div className="adm-card-head">
-              <h2>Strength domains</h2>
-              <span className="mono adm-count">set membership</span>
-            </div>
-            <ul className="adm-bars">
-              {strengthRows.map(([label, n]) => (
-                <Bar key={label} label={label} value={n} max={maxStrength} suffix="teachers" />
-              ))}
-            </ul>
-            <p className="adm-foot">
-              Most teachers are strong in more than one domain, so these add up to more than{" "}
-              {faculty.length}. Membership only, with no ranking behind it.
-            </p>
-          </section>
-
-          {/* ------------------------------------------------ by department */}
-          <section className="adm-card">
-            <div className="adm-card-head">
-              <h2>By department</h2>
-              <span className="mono adm-count">{faculty.length} teachers</span>
-            </div>
-            <ul className="adm-bars">
-              {deptRows.map(([dept, n]) => (
-                <Bar key={dept} label={dept} value={n} max={maxDept} suffix="" />
-              ))}
-            </ul>
-            <p className="adm-foot">
-              Departments with fewer than 5 teachers aren’t listed
-              {departments.notShown ? `, so ${FEWER_THAN_5} teachers are left out of this chart` : departments.combined ? "; the small ones are shown together" : ""}.
-            </p>
-          </section>
-
-          {/* ------------------------------------------ teaching archetypes */}
-          <section className="adm-card">
-            <div className="adm-card-head">
-              <h2>Teaching archetypes</h2>
-              <span className="mono adm-count">{faculty.length} teachers</span>
-            </div>
-            <ul className="adm-styles">
-              {TEACHING_STYLES.map((s) => {
-                const meta = TEACHING_STYLE[s as TeachingStyle];
-                const n = floorCell(styleCounts[s]);
-                const pct = n === null ? 0 : floorShare(n, faculty.length) ?? 0;
-                return (
-                  <li key={s}>
-                    <div className="adm-style-top">
-                      <b>{meta.label}</b>
-                      <span className="mono">{n === null ? FEWER_THAN_5 : `${n} · ${pct}%`}</span>
-                    </div>
-                    <div className="adm-track">
-                      <i style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="adm-tagline">{meta.tagline}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        </div>
-
-        {/* ------------------------------------------------- co-mentor pairs */}
-        <section className="adm-card">
-          <div className="adm-card-head">
-            <h2>Co-mentor pairs</h2>
-            <span className="mono adm-count">{pairs.length} pairs</span>
-          </div>
-          <p className="adm-lede">
-            Shared-focus peer coaching: each pair works a domain both are already strong in, bringing different instincts to it.
-          </p>
-          {crossing ? (
-            <ul className="adm-bars">
-              <Bar label="Pairs across two departments" value={crossing.across} max={Math.max(crossing.across, crossing.within)} suffix="pairs" />
-              <Bar label="Pairs within one department" value={crossing.within} max={Math.max(crossing.across, crossing.within)} suffix="pairs" />
-            </ul>
-          ) : (
-            <p className="adm-foot">
-              Whether pairs cross departments isn’t shown yet: one of the two groups has fewer than 5 pairs, and showing the other would give it away.
-            </p>
-          )}
-          <p className="adm-foot">Who is paired with whom stays with the people managing pairings, not on this overview.</p>
-        </section>
-
-        <p className="adm-note">
-          Faculty shown here is demo data. Conversation logs stay private to the pair: leadership
-          sees how many happened and in which domains, never what was said.
-        </p>
-      </main>
-    </>
-  );
-}
-
-function Metric({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div className="adm-metric">
-      <span className="mono">{label}</span>
-      <b>{value}</b>
-      <span className="adm-metric-note">{note}</span>
+    <div className="ev-panel" style={{ padding: "18px 20px" }}>
+      <small style={{ textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10.5 }}>{label}</small>
+      <strong style={{ display: "block", font: "600 32px var(--ev-display)", letterSpacing: "-0.04em", margin: "4px 0 2px" }}>{value}</strong>
+      <small>{note}</small>
     </div>
   );
 }
 
-function Bar({
-  label,
-  value,
-  max,
-  suffix,
-}: {
-  label: string;
-  value: Cell;
-  max: number;
-  suffix: string;
-}) {
-  const pct = value === null ? 0 : max > 0 ? Math.round((value / max) * 100) : 0;
+// A row whose count is null is under the floor of 5: it is named, but its number and bar are withheld.
+function Bars({ rows, suffix }: { rows: [string, Cell][]; suffix?: string }) {
+  const max = Math.max(1, ...rows.map(([, n]) => n ?? 0));
   return (
-    <li className="adm-bar">
-      <div className="adm-bar-top">
-        <span>{label}</span>
-        <span className="mono">
-          {value === null ? FEWER_THAN_5 : value}
-          {value !== null && suffix ? ` ${suffix}` : ""}
-        </span>
+    <div>
+      {rows.map(([label, n]) => (
+        <div key={label} style={{ margin: "12px 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+            <span>{label}</span>
+            <strong style={{ fontWeight: 600 }}>{n === null ? FEWER_THAN_5 : `${n}${suffix ? ` ${suffix}` : ""}`}</strong>
+          </div>
+          <div style={{ height: 10, borderRadius: 999, background: "var(--ev-soft)", marginTop: 6 }}>
+            <div style={{ width: `${n === null ? 0 : Math.round((n / max) * 100)}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#5eead4,#818cf8)" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// The leadership overview in the Aurora look, from the same reads as Nick's: the numbers, what pairs work on,
+// strengths, departments, teaching styles and
+// and how pairs cross departments. Nothing is shown for a group under 5, and no teacher is named.
+export default async function AuroraOverviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const look = LOOK;
+  const base = lookBase(look);
+  const admin = (await requireAdmin())!;
+  const cycleParam = (await searchParams).cycle;
+  const d = await loadOverviewDetail(admin, { cycleId: typeof cycleParam === "string" ? cycleParam : null });
+  const domainsLogged = Object.values(d.domainCounts).filter((n) => n > 0).length;
+  const departments = floorDepartments(d.deptCounts);
+  const crossing = floorCrossing(d.pairs.map((p) => ({ host: d.byId.get(p.host_id)?.department ?? null, visitor: d.byId.get(p.visitor_id)?.department ?? null })));
+
+  return (
+    <main className="ev-main ev-wide">
+      <p className="ev-eyebrow">Overview · Leadership dashboard</p>
+      <h1>{d.school.name}</h1>
+      <p className="ev-lead">
+        {d.cycle ? `${d.cycle.name} · ${d.cycle.status}` : "No cycle found"}
+        {d.school.priority ? ` · ${d.school.priority}` : ""}
+      </p>
+
+      <CycleSwitcher skin={look} cycles={d.cycles} selectedId={d.cycle?.id ?? null} path={`${base}/overview`} />
+
+      <section aria-label="Summary" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14, margin: "22px 0" }}>
+        <Stat label="Logged conversations" value={String(d.conversationCount)} note="content stays private" />
+        <Stat label="Active pairs" value={String(d.pairs.length)} note="approved this cycle" />
+        <Stat label="Visits" value={String(d.pairs.length)} note="one per pair" />
+        <Stat label="Domains logged" value={`${domainsLogged}/${CONCERN_DOMAINS.length}`} note={`of the ${CONCERN_DOMAINS.length} domains`} />
+        <Stat label="CTE score" value={d.cte ? d.cte.value.toFixed(2) : "n/a"} note={d.cte ? `efficacy · ${respondentLabel(d.cte.n, demoCount({ n: d.cte.n, includesSynthetic: d.cte.synthetic, demoN: d.cte.demoN }))}` : "no scan data"} />
+      </section>
+
+      <section className="ev-panel">
+        <p className="ev-eyebrow">Faculty network</p>
+        <h2>The faculty as groups, never as individuals</h2>
+        <p className="ev-muted">
+          {d.faculty.length} teachers and {d.pairs.length} approved pairs this cycle. To protect people, this page doesn&apos;t list teachers or show who is paired with whom, and no group under 5 is shown anywhere on it.
+          <br />
+          The <Link href={`${base}/constellation`}>Constellation</Link> shows the same network by department, and the <Link href={`${base}/reports`}>faculty map</Link> in Reports lets you see who is connected.
+        </p>
+      </section>
+
+      <div className="ev-lead-grid" style={{ marginTop: 22, alignItems: "start", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+        <section className="ev-panel">
+          <p className="ev-eyebrow">What we&apos;re working on · {d.cycle?.name ?? "No cycle"}</p>
+          <h2>Domains this cycle</h2>
+          <Bars rows={floorRows(CONCERN_DOMAINS.map((k) => [DOMAIN_LABEL[k], d.domainCounts[k]] as [string, number]))} suffix="pairs" />
+          <p className="ev-small">Each pair chose one domain to work in.</p>
+        </section>
+        <section className="ev-panel">
+          <p className="ev-eyebrow">Strength domains · set membership</p>
+          <h2>Where teachers are strong</h2>
+          <Bars rows={floorRows(CONCERN_DOMAINS.map((k) => [DOMAIN_LABEL[k], d.strengthCounts[k]] as [string, number]))} suffix="teachers" />
+          <p className="ev-small">Most teachers are strong in more than one domain, so these add up to more than {d.faculty.length}. Membership only, with no ranking behind it.</p>
+        </section>
+        <section className="ev-panel">
+          <p className="ev-eyebrow">By department · {d.faculty.length} teachers</p>
+          <h2>Departments</h2>
+          <Bars rows={[...departments.rows, ...(departments.combined ? ([[`${departments.combined.departments} smaller departments, combined`, departments.combined.teachers]] as [string, number][]) : [])]} />
+          <p className="ev-small">
+            Departments with fewer than 5 teachers aren&apos;t listed{departments.notShown ? `, so ${FEWER_THAN_5} teachers are left out of this chart` : departments.combined ? "; the ones that are small are shown together" : ""}.
+          </p>
+        </section>
+        <section className="ev-panel">
+          <p className="ev-eyebrow">Teaching archetypes · {d.faculty.length} teachers</p>
+          <h2>How teachers teach</h2>
+          <p className="ev-small" style={{ marginTop: 0 }}>
+            Each teacher has one teaching style on their profile, from onboarding: <strong>Nurturer</strong> (care first, then challenge), <strong>Activator</strong> (spark curiosity, ignite action) or <strong>Architect</strong> (design clarity, build mastery). It names the approach a teacher leans toward. It is not a score or an evaluation, and no style is better than another. This panel only counts how many teachers lean each way, so you can see the mix on your faculty. Groups under 5 are hidden.
+          </p>
+          {TEACHING_STYLES.map((s) => {
+            const meta = TEACHING_STYLE[s as TeachingStyle];
+            const n = floorCell(d.styleCounts[s]);
+            const pct = n === null ? null : floorShare(n, d.faculty.length) ?? 0;
+            return (
+              <div key={s} style={{ margin: "14px 0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+                  <strong style={{ fontWeight: 600 }}>{meta.label}</strong>
+                  <span>{n === null ? FEWER_THAN_5 : `${n} · ${pct}%`}</span>
+                </div>
+                <div style={{ height: 10, borderRadius: 999, background: "var(--ev-soft)", marginTop: 6 }}>
+                  <div style={{ width: `${pct ?? 0}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#5eead4,#818cf8)" }} />
+                </div>
+                <small>{meta.tagline}</small>
+              </div>
+            );
+          })}
+        </section>
       </div>
-      <div className="adm-track">
-        <i style={{ width: `${pct}%` }} />
-      </div>
-    </li>
+
+      <section className="ev-panel" style={{ marginTop: 22 }}>
+        <p className="ev-eyebrow">Co-mentor pairs · {d.pairs.length} pairs</p>
+        <h2>How pairs <em>cross the school.</em></h2>
+        <p className="ev-lead" style={{ fontSize: 15 }}>Shared-focus peer coaching: each pair works a domain both are already strong in, bringing different instincts to it.</p>
+        {crossing ? (
+          <Bars rows={[["Pairs across two departments", crossing.across], ["Pairs within one department", crossing.within]]} suffix="pairs" />
+        ) : (
+          <p className="ev-muted">Whether pairs cross departments isn&apos;t shown yet: one of the two groups has fewer than 5 pairs, and showing the other would give it away.</p>
+        )}
+        <p className="ev-small">Who is paired with whom stays with the people managing pairings, not on this overview.</p>
+      </section>
+
+      <p className="ev-small" style={{ marginTop: 24 }}>
+        Faculty shown here is demo data. Conversation logs stay private to the pair: leadership sees how many happened and in which domains, never what was said.
+      </p>
+    </main>
   );
 }

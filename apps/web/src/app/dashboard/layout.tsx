@@ -2,24 +2,19 @@ import { AuroraChrome } from "@/components/aurora/chrome";
 import { CallHost } from "@/components/teacher/video-call";
 import { ChatDrawer } from "@/components/teacher/chat-drawer";
 import { MobileTabs } from "@/components/teacher/mobile-tabs";
-import { NickTeacherChrome } from "@/components/teacher/nick-chrome";
-import { TeacherLookSwitch } from "@/components/teacher/teacher-look-switch";
 import { TimeTracker } from "@/components/teacher/time-tracker";
 import { loadHub } from "@/lib/teacher/hub-data";
 import { loadTeacher } from "@/lib/teacher/load";
-import { teacherBase, teacherLookOf } from "@/lib/teacher/look";
+import { teacherBase } from "@/lib/teacher/look";
 import "@/components/teacher/teacher.css";
 import { FEATURES } from "@/lib/teacher/features";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your dashboard" };
 
-// The teacher's side in two looks from one set of pages: Aurora (the same shell as the leadership views: floating bar,
-// palette, Day/Night) and Nick's (his header and tab bar, paper and serif). Same tabs, same features; only the design
-// differs, so the two can be compared side by side. The look is /dashboard/aurora/... or /dashboard/nick/...
-export default async function TeacherLayout({ children, params }: { children: React.ReactNode; params: Promise<{ look: string }> }) {
-  const look = await teacherLookOf(params);
-  const BASE = teacherBase(look);
+// The teacher's side in the Aurora shell, the same as the leadership views: floating bar, palette, Day and Night.
+export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
+  const BASE = teacherBase();
   const data = await loadTeacher();
   if (!data.model) {
     return (
@@ -36,20 +31,12 @@ export default async function TeacherLayout({ children, params }: { children: Re
   const body = (
     <>
       <div className="ta">{children}</div>
-      {look === "aurora" ? <MobileTabs /> : null}
+      <MobileTabs />
       <ChatDrawer pairs={chatPairs} initial={hub.messages} />
       {FEATURES.videoCalls ? <CallHost pairs={chatPairs} meId={model.me.id} /> : null}
       <TimeTracker />
     </>
   );
-
-  if (look === "nick") {
-    return (
-      <NickTeacherChrome base={BASE} displayName={model.me.name} schoolName={schoolName}>
-        {body}
-      </NickTeacherChrome>
-    );
-  }
 
   const NAV = [
     { href: BASE, label: "Home", exact: true },
@@ -68,10 +55,9 @@ export default async function TeacherLayout({ children, params }: { children: Re
     ...(FEATURES.games ? [{ href: `${BASE}/growth#games`, label: "Play a pedagogy game with my co-mentor", hint: "Growth" }] : []),
     { href: `${BASE}/growth#practice`, label: "Add to my practice log", hint: "Growth" },
     { href: "/survey", label: "Take the Culture Scan", hint: "Anonymous" },
-    { href: "/dashboard/nick", label: "Switch to Nick’s look", hint: "Look" },
   ];
   return (
-    <AuroraChrome schoolName={schoolName} displayName={model.me.name} roleLabel="Teacher" nav={NAV} actions={ACTIONS} primary={{ href: `${BASE}/journal#log`, label: "+ Log a conversation" }} tools={<TeacherLookSwitch current="aurora" />}>
+    <AuroraChrome schoolName={schoolName} displayName={model.me.name} roleLabel="Teacher" nav={NAV} actions={ACTIONS} primary={{ href: `${BASE}/journal#log`, label: "+ Log a conversation" }}>
       {body}
     </AuroraChrome>
   );

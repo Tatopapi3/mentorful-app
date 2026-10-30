@@ -1,17 +1,12 @@
 import { AuroraChrome } from "@/components/aurora/chrome";
 import { PresentButton } from "@/components/aurora/present-button";
-import { SwitchLook } from "@/components/aurora/switch-look";
-import { lookBase, lookOf } from "@/lib/admin/look";
-import { lookEnabled } from "@/lib/admin/looks";
+import { lookBase } from "@/lib/admin/look";
 import { requireAdmin } from "@/lib/admin/require";
 
-// The whole leadership area in the Aurora layout, in two themes: Aurora itself and the blend of Aurora with Nick's
-// paper and serif. Overview and Faculty map show everything the existing leadership dashboard and faculty map show;
-// Pulse, Constellation and Insights add to them. Every tab uses this one shell, so a look never changes between
-// tabs. Nick's own look is under /admin.
-export default async function LookAdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ look: string }> }) {
-  const look = await lookOf(params);
-  const base = lookBase(look);
+// The whole leadership area in the Aurora layout: Pulse, Pairing, Overview, Constellation, Insights and Reports.
+// Every tab uses this one shell, so the chrome never changes between tabs.
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const base = lookBase();
   const NAV = [
     { href: `${base}/pulse`, label: "Pulse" },
     { href: `${base}/pairings`, label: "Pairing" },
@@ -31,9 +26,6 @@ export default async function LookAdminLayout({ children, params }: { children: 
     { href: `${base}/reports`, label: "Download slides, PDF and reports", hint: "Reports" },
     { href: `${base}/summary`, label: "Open the board summary", hint: "Present" },
     { href: `${base}/privacy`, label: "What leadership can and can't see", hint: "Trust" },
-    ...(lookEnabled("nick") ? [{ href: "/admin/pulse", label: "Switch to Nick’s look", hint: "Look" }] : []),
-    ...(look === "blend" && lookEnabled("aurora") ? [{ href: "/admin/aurora/pulse", label: "Switch to the Aurora look", hint: "Look" }] : []),
-    ...(look === "aurora" && lookEnabled("blend") ? [{ href: "/admin/blend/pulse", label: "Switch to the blend look", hint: "Look" }] : []),
   ];
   const admin = await requireAdmin();
   if (!admin) {
@@ -46,7 +38,7 @@ export default async function LookAdminLayout({ children, params }: { children: 
   }
   const { data: school } = await admin.supabase.from("schools").select("name").eq("id", admin.schoolId).maybeSingle();
   return (
-    <AuroraChrome look={look} schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<><PresentButton items={NAV.filter((n) => !n.href.endsWith("/reports"))} /><SwitchLook current={look} /></>}>
+    <AuroraChrome schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<PresentButton items={NAV.filter((n) => !n.href.endsWith("/reports"))} />}>
       {children}
     </AuroraChrome>
   );

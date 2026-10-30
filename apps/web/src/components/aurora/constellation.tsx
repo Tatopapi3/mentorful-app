@@ -7,10 +7,7 @@ import "@/app/aurora.css";
 export type StarPerson = { id: string; name: string; dept: string; grade: string | null };
 export type StarLink = { a: string; b: string };
 
-const PALETTE = {
-  aurora: { arcA: "#14b8a6", arcB: "#6366f1", halo: "#7c83ff", haloOp: 0.2, request: "#f59e0b", draft: "#ec4899", star: "#818cf8", starRing: "#fff", lone: "#8b8aa8", sel: "#14b8a6" },
-  nick: { arcA: "#00897b", arcB: "#16283c", halo: "#00897b", haloOp: 0.1, request: "#c8500a", draft: "#c8500a", star: "#00897b", starRing: "#faf7f2", lone: "#8b8377", sel: "#16283c" },
-} as const;
+const P = { arcA: "#14b8a6", arcB: "#6366f1", halo: "#7c83ff", haloOp: 0.2, request: "#f59e0b", draft: "#ec4899", star: "#818cf8", starRing: "#fff", lone: "#8b8aa8", sel: "#14b8a6" } as const;
 
 const W = 1000;
 const H = 600;
@@ -27,22 +24,18 @@ export function Constellation({
   pairs,
   requests,
   drafts,
-  skin = "aurora",
-  base = "/admin/aurora",
+  base = "/admin",
   draftLabel = "Draft round",
 }: {
   people: StarPerson[];
   pairs: StarLink[];
   requests: StarLink[];
   drafts: StarLink[];
-  /** "aurora" is the night-sky look; "nick" draws the same sky in the paper-and-teal palette of the existing pages. */
-  skin?: "aurora" | "nick";
-  /** Path prefix of the look this is shown in, so links stay inside it. */
-  base?: "/admin" | "/admin/aurora" | "/admin/blend";
+  /** Path prefix of the leadership area, so links stay inside it. */
+  base?: "/admin";
   /** What the dotted layer is called: "Draft round" on the pairing screen, "Suggested" where it shows suggestions. */
   draftLabel?: string;
 }) {
-  const P = PALETTE[skin];
   const [selected, setSelected] = useState<string | null>(requests[0]?.a ?? null);
   const [layers, setLayers] = useState({ pairs: true, requests: true, drafts: true });
   const [q, setQ] = useState("");
@@ -109,7 +102,7 @@ export function Constellation({
   const selFocusIds = new Set<string>(selected ? [selected, partnerOf.get(selected) ?? "", ...(selRequest ? [selRequest.a, selRequest.b] : [])] : []);
 
   return (
-    <div className={skin === "nick" ? "v3-sky nk-sky" : "v3-sky"}>
+    <div className="v3-sky">
       <div className="v3-sky-controls">
         <div className="ev-tabs" role="group" aria-label="Layers" style={{ margin: 0 }}>
           {(drafts.length > 0 ? (["pairs", "requests", "drafts"] as const) : (["pairs", "requests"] as const)).map((k) => (

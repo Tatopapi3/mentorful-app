@@ -1,4 +1,3 @@
-import NickDimensionBars from "@/components/nick/dimension-bars";
 import { demoCount, respondentLabel, respondentsText } from "@/lib/report/gates";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { AdminFrame, Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
@@ -25,7 +24,7 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
 
   return (
     <AdminFrame skin={skin} eyebrow={`Board summary · ${snap.cycle?.name ?? "No cycle"} · ${today}`} title={snap.school.name} sub={headlineSentence(facts)}>
-      <div className={skin === "nick" ? "nk-noprint" : "ev-noprint"} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
+      <div className="ev-noprint" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
         {snap.scan && <LinkBtn skin={skin} href={csv}>Download the results (CSV)</LinkBtn>}
         <Muted skin={skin}>To keep this page, press Cmd+P (Ctrl+P on Windows) and choose Save as PDF.</Muted>
       </div>
@@ -42,7 +41,7 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
 
       {snap.scan && (
         <Panel skin={skin} title="Culture Scan" eyebrow="School-wide averages" count={respondentsText(snap.scan)}>
-          {skin === "nick" ? <NickDimensionBars means={snap.scan.means} ci={snap.scan.ci} /> : <DimensionBars means={snap.scan.means} ci={snap.scan.ci} />}
+          <DimensionBars means={snap.scan.means} ci={snap.scan.ci} />
         </Panel>
       )}
 

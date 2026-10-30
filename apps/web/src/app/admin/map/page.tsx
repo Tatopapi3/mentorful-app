@@ -1,184 +1,27 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import AdminTabs from "@/components/nick/admin-tabs";
-import SiteHeader from "@/components/SiteHeader";
-import FacultyMapClient from "./FacultyMapClient";
-import {
-  DOMAIN_LABEL,
-  ARCHETYPE_LABEL,
-  TEACHING_STYLE,
-  domainsForTags,
-  type TeachingStyle,
-} from "@/lib/domains";
+import FacultyMapClient from "@/app/admin/map/FacultyMapClient";
+import { loadOverviewDetail } from "@/lib/admin/detail";
+import { requireAdmin } from "@/lib/admin/require";
 
 export const dynamic = "force-dynamic";
 
-/** The prop shape FacultyMapClient expects. */
-type MapUser = {
-  id: string;
-  name: string;
-  department: string | null;
-  strengthTags?: unknown;
-  domains?: string[];
-  archetype?: string | null;
-  teachingStyle?: string | null;
-};
-type MapEdge = { id: string; source: string; target: string; label?: string };
-type MapData = {
-  schoolName: string;
-  cycleName: string | null;
-  users: MapUser[];
-  edges: MapEdge[];
-};
-
-/**
- * Runs on the caller's SESSION client (anon key + their cookies), never the
- * service key. That is load-bearing: 009/011's policies are what scope this
- * page to the reader's own school, and the service key would bypass every one
- * of them — silently showing one school's faculty to another.
- *
- * A row that RLS hides comes back as an absent row, not an error — so an
- * unexpectedly empty map means a policy denied it, not that a query failed.
- */
-async function loadFacultyMap(): Promise<MapData | { error: string }> {
-  const supabase = await createClient();
-
-  // 1. The reader's own profile: identity and school in one read.
-  //    Keyed on auth_user_id, not id — see 007/010, the two are no longer
-  //    required to be equal.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Not signed in." };
-
-  const { data: me, error: meErr } = await supabase
-    .from("profiles")
-    .select("id, school_id, role")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  if (meErr) return { error: `profile read failed: ${meErr.message}` };
-  if (!me) return { error: "No profile is linked to this account." };
-  if (!me.school_id) return { error: "Your profile is not attached to a school." };
-
-  // 2. The school.
-  const { data: school, error: schoolErr } = await supabase
-    .from("schools")
-    .select("id, name")
-    .eq("id", me.school_id)
-    .maybeSingle();
-
-  if (schoolErr) return { error: `school read failed: ${schoolErr.message}` };
-  if (!school) return { error: "School not found (or not readable)." };
-
-  // 3. The cycle: most recent by ends_at.
-  //    NOT status = 'active'. The one migrated cycle is 'complete' (Fall 2025,
-  //    ended 2025-12-20) and filtering on 'active' would render an empty graph.
-  const { data: cycle, error: cycleErr } = await supabase
-    .from("cycles")
-    .select("id, name")
-    .eq("school_id", school.id)
-    .order("ends_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (cycleErr) return { error: `cycle read failed: ${cycleErr.message}` };
-
-  // 4. Faculty. is_demo keeps generated identities separate from real ones the
-  //    same way survey_responses.synthetic does; today every mapped teacher is
-  //    demo data. DROP THIS FILTER once a real roster exists, or real teachers
-  //    will not appear on the map.
-  const { data: people, error: peopleErr } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name, department, strength_tags, archetype_id, teaching_style")
-    .eq("school_id", school.id)
-    .eq("is_demo", true)
-    .order("department", { ascending: true })
-    .order("last_name", { ascending: true });
-
-  if (peopleErr) return { error: `profiles read failed: ${peopleErr.message}` };
-
-  // 5. Approved pairings for that cycle -> edges.
-  const { data: pairings, error: pairErr } = cycle
-    ? await supabase
-        .from("pairings")
-        .select("id, host_id, visitor_id, domain, strategic_tag")
-        .eq("school_id", school.id)
-        .eq("cycle_id", cycle.id)
-        .eq("status", "approved")
-    : { data: [], error: null };
-
-  if (pairErr) return { error: `pairings read failed: ${pairErr.message}` };
-
-  return {
-    schoolName: school.name,
-    cycleName: cycle?.name ?? null,
-    users: (people ?? []).map((p) => ({
-      id: p.id,
-      // Supabase splits the name; the client wants one string.
-      name: [p.first_name, p.last_name].filter(Boolean).join(" ").trim(),
-      department: p.department,
-      strengthTags: p.strength_tags,
-      domains: domainsForTags(p.strength_tags).map((d) => DOMAIN_LABEL[d]),
-      archetype: p.archetype_id ? ARCHETYPE_LABEL[p.archetype_id] : null,
-      teachingStyle: p.teaching_style
-        ? TEACHING_STYLE[p.teaching_style as TeachingStyle]?.label ?? null
-        : null,
-    })),
-    edges: (pairings ?? []).map((p) => ({
-      id: p.id,
-      source: p.host_id,
-      target: p.visitor_id,
-      label: (p.strategic_tag || p.domain || "").toString(),
-    })),
-  };
-}
-
-export default async function AdminMapPage() {
-  // Also directly routable at /admin/map, so it carries its own gate — not just
-  // the one on /admin that renders it.
-  // TODO: authentication only. Any signed-in user reaches this page; the data
-  // is at least scoped to their own school by RLS.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login");
-  }
-
-  const result = await loadFacultyMap();
-
-  if ("error" in result) {
-    return (
-      <main style={{ padding: 24, fontFamily: "system-ui" }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700 }}>Faculty Map</h1>
-        <p style={{ color: "#b45309" }}>{result.error}</p>
-      </main>
-    );
-  }
-
-  const { schoolName, cycleName, users, edges } = result;
-
+// The interactive faculty map, full size, in the Aurora look. The map itself is Nick's component: the same
+// four layouts and the same click-for-details panel.
+export default async function AuroraMapPage() {
+  const admin = (await requireAdmin())!;
+  const d = await loadOverviewDetail(admin);
   return (
-    <>
-      <SiteHeader />
-      <main className="wrap adm">
-        {/* Added: the leadership tabs and the same page frame as the other tabs. The map itself is unchanged. */}
-        <AdminTabs />
-        <header className="adm-head" style={{ marginTop: 22 }}>
-          <p className="mono adm-eyebrow">Faculty map</p>
-          <h1>{schoolName}</h1>
-          <p className="adm-sub">
-            {cycleName ? `Cycle: ${cycleName}` : "No cycle found"} · Nodes: {users.length} | Edges: {edges.length}
-          </p>
-        </header>
-        <section className="adm-card adm-map-card">
-          <div className="adm-map">
-            <FacultyMapClient users={users} edges={edges} />
-          </div>
-        </section>
-      </main>
-    </>
+    <main className="ev-main ev-wide">
+      <p className="ev-eyebrow">Faculty map · {d.school.name}{d.cycle ? ` · ${d.cycle.name}` : ""}</p>
+      <h1>
+        The whole faculty, <em>on one map.</em>
+      </h1>
+      <p className="ev-lead">Switch between a grid, pairings, departments and strengths. Click anyone to see who they are paired with.</p>
+      <section className="ev-panel" style={{ marginTop: 18 }}>
+        <small>Nodes: {d.mapUsers.length} · Edges: {d.mapEdges.length}</small>
+        <div style={{ height: "72vh", minHeight: 520, marginTop: 10, borderRadius: 16, overflow: "hidden", border: "1px solid var(--ev-line)", background: "#fff" }}>
+          <FacultyMapClient users={d.mapUsers} edges={d.mapEdges} />
+        </div>
+      </section>
+    </main>
   );
 }

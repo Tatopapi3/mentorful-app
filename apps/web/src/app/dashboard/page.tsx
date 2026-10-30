@@ -1,333 +1,209 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import SiteHeader from "@/components/SiteHeader";
-import CultureScanCard from "./CultureScanCard";
-import LogConversationForm from "./LogConversationForm";
-import { submitLog } from "./actions";
-import {
-  DOMAIN_LABEL,
-  ARCHETYPE_LABEL,
-  TEACHING_STYLE,
-  domainsForTags,
-  type TeachingStyle,
-} from "@/lib/domains";
+import Link from "next/link";
+import { Greeting, Today } from "@/components/teacher/greeting";
+import { Icon } from "@/components/teacher/icons";
+import { ScanEntry } from "@/components/teacher/scan-card";
+import { OpenCall, OpenChat } from "@/components/teacher/open-events";
+import { loadHub } from "@/lib/teacher/hub-data";
+import { loadTeacher } from "@/lib/teacher/load";
+import { teacherBase } from "@/lib/teacher/look";
+import { agoLabel, daysSince, nextStep } from "@/lib/teacher/model";
+import { formatDuration, noteState, timeTotals } from "@/lib/teacher/hub";
 
-export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Your dashboard" };
+const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-/**
- * The teacher's own view.
- *
- * Everything runs on the session client. A teacher sees their own profile, the
- * colleagues they are paired with, and the conversation logs they are a party
- * to — no more, because 011's policies say so rather than because this page
- * remembers to filter. The queries below are written to be correct anyway; RLS
- * is the floor, not the plan.
- *
- * Nothing here reads survey_responses. The Culture Scan is anonymous, and a
- * teacher's own answers are deliberately unrecoverable — see CLAUDE.md.
- */
-
-function fullName(p: { first_name: string | null; last_name: string | null } | null) {
-  if (!p) return "A colleague";
-  return [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || "A colleague";
-}
-
-type Profile = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  department: string | null;
-  teaching_style: string | null;
-  archetype_id: string | null;
-  inspiration: string | null;
-  strength_tags: unknown;
-  school_id: string | null;
-};
-
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: meRow } = await supabase
-    .from("profiles")
-    .select(
-      "id, first_name, last_name, department, teaching_style, archetype_id, inspiration, strength_tags, school_id"
-    )
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  const me = meRow as Profile | null;
-
-  if (!me) {
-    return (
-      <>
-        <SiteHeader />
-        <main className="wrap tch-denied">
-          <h1>Your dashboard</h1>
-          <p>
-            No teacher profile is linked to {user.email}. Ask your school lead to add you to the
-            roster.
-          </p>
-        </main>
-      </>
-    );
-  }
-
-  const myDomains = domainsForTags(me.strength_tags);
-  const myStyle = me.teaching_style
-    ? TEACHING_STYLE[me.teaching_style as TeachingStyle]
-    : null;
-  const myArchetype = me.archetype_id ? ARCHETYPE_LABEL[me.archetype_id] : null;
-
-  // Pairings the caller is in. RLS restricts these to their own either way.
-  const { data: pairingRows } = await supabase
-    .from("pairings")
-    .select("id, host_id, visitor_id, domain, strategic_tag, cycle_id")
-    .or(`host_id.eq.${me.id},visitor_id.eq.${me.id}`)
-    .eq("status", "approved");
-
-  const pairs = pairingRows ?? [];
-  const partnerIds = pairs.map((p) => (p.host_id === me.id ? p.visitor_id : p.host_id));
-
-  const { data: partnerRows } = partnerIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, department, teaching_style, archetype_id, strength_tags")
-        .in("id", partnerIds)
-    : { data: [] };
-
-  const partners = new Map(
-    (partnerRows ?? []).map((p) => [p.id, p as unknown as Profile])
-  );
-
-  // The journal. 011 scopes this to logs the caller is host or visitor on.
-  const { data: logRows } = await supabase
-    .from("conversation_logs")
-    .select(
-      "id, domain, vision, strength_noted, more_frequently, less_frequently, resources, status, submitted_at, created_at, host_id, visitor_id, logged_by"
-    )
-    .order("submitted_at", { ascending: false, nullsFirst: true })
-    .order("created_at", { ascending: false });
-
-  const logs = logRows ?? [];
-
-  const pairOptions = pairs.map((p) => ({
-    id: p.id,
-    partnerName: fullName(partners.get(p.host_id === me.id ? p.visitor_id : p.host_id) ?? null),
-    domain: p.domain,
-  }));
+export default async function TeacherHome() {
+  const BASE = teacherBase();
+  const data = await loadTeacher();
+  if (!data.model) return null;
+  const { model } = data;
+  const now = new Date();
+  const step = nextStep(model, now);
+  const partner = "partner" in step ? step.partner : model.partners[0];
+  const ends = model.cycle?.ends ? new Date(model.cycle.ends).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
+  const last = daysSince(model.lastAt, now);
+  const hub = await loadHub();
+  const serverToday = now.toISOString().slice(0, 10);
+  const arrived = hub.notes.filter((n) => noteState(n, serverToday) === "arrived").length;
+  const sealed = hub.notes.filter((n) => noteState(n, serverToday) === "sealed").length;
+  const activeGoals = hub.goals.filter((g) => g.status === "active");
+  const week = timeTotals(hub.time, serverToday).week;
 
   return (
-    <>
-      <SiteHeader />
-      <main className="wrap tch">
-        <header className="tch-head">
-          <p className="mono tch-eyebrow">Your dashboard</p>
-          <h1>{fullName(me)}</h1>
-        </header>
+    <main className="ev-main">
+      <header className="ta-hello">
+        <p className="ev-eyebrow">
+          <Today />
+          {model.cycle ? ` · ${model.cycle.name}` : ""}
+        </p>
+        <h1>
+          <Greeting first={model.me.first} />
+        </h1>
+        <p className="ev-lead">What would feel supportive today?</p>
+      </header>
 
-        <div className="tch-top">
-          {/* ------------------------------------------------ profile card */}
-          <section className="tch-card tch-profile">
-            <div className="tch-ident">
-              <h2>{fullName(me)}</h2>
-              {me.department ? <p className="tch-dept">{me.department}</p> : null}
-            </div>
+      <p className="ev-note ta-privacy">
+        <Icon name="lock" size={16} />
+        <span>
+          <strong>Your conversations are private.</strong> Your school lead sees how many conversations happened and in which areas, never what was said.
+        </span>
+      </p>
 
-            {myDomains.length > 0 ? (
-              <div className="tch-block">
-                <span className="mono">Strong in</span>
-                <ul className="tch-chips">
-                  {myDomains.map((d) => (
-                    <li key={d}>{DOMAIN_LABEL[d]}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {myStyle ? (
-              <div className="tch-block">
-                <span className="mono">Teaching style</span>
-                <p className="tch-style">{myStyle.label}</p>
-                <p className="tch-tagline">{myStyle.tagline}</p>
-              </div>
-            ) : null}
-
-            {myArchetype ? (
-              <div className="tch-block">
-                <span className="mono">Archetype</span>
-                <p className="tch-style">{myArchetype}</p>
-              </div>
-            ) : null}
-
-            {/* The inspiration sentence carries no header, by design. It reads
-                as something the teacher said, not a field they filled in. */}
-            {me.inspiration ? <blockquote className="tch-quote">{me.inspiration}</blockquote> : null}
-          </section>
-
-          {/* ----------------------------------------------- co-mentor cards */}
-          <section className="tch-card">
-            <div className="tch-card-head">
-              <h2>Your co-mentors</h2>
-              <span className="mono">{pairs.length} this cycle</span>
-            </div>
-
-            {pairs.length === 0 ? (
-              <p className="tch-empty">No pairings this cycle yet.</p>
-            ) : (
-              <ul className="tch-mentors">
-                {pairs.map((p) => {
-                  const partner = partners.get(p.host_id === me.id ? p.visitor_id : p.host_id);
-                  const theirDomains = domainsForTags(partner?.strength_tags);
-                  const shared = myDomains.filter((d) => theirDomains.includes(d));
-                  const theirArchetype = partner?.archetype_id
-                    ? ARCHETYPE_LABEL[partner.archetype_id]
-                    : null;
-                  const contrast =
-                    myArchetype && theirArchetype && myArchetype !== theirArchetype;
-                  const iHost = p.host_id === me.id;
-
-                  return (
-                    <li key={p.id} className="tch-mentor">
-                      <div className="tch-mentor-top">
-                        <b>{fullName(partner ?? null)}</b>
-                        <span className="tch-dept">{partner?.department}</span>
-                      </div>
-
-                      <p className="tch-role">
-                        {iHost
-                          ? "They visit your classroom."
-                          : "You visit their classroom."}
-                        {p.domain ? ` Focus: ${DOMAIN_LABEL[p.domain] ?? p.domain}.` : ""}
-                      </p>
-
-                      {/* Shared-focus, not complementary strengths: every pair in
-                          this data is strong in the same domains. The contrast
-                          that makes the pairing useful is the archetype. */}
-                      {shared.length > 0 ? (
-                        <p className="tch-insight">
-                          You’re both strong in{" "}
-                          <b>{shared.map((d) => DOMAIN_LABEL[d]).join(" and ")}</b>, so this is
-                          peer coaching rather than teaching.
-                          {contrast ? (
-                            <>
-                              {" "}
-                              You come at it as a <b>{myArchetype}</b>, they come at it as a{" "}
-                              <b>{theirArchetype}</b>.
-                            </>
-                          ) : null}
-                        </p>
-                      ) : contrast ? (
-                        <p className="tch-insight">
-                          You come at it as a <b>{myArchetype}</b>, they come at it as a{" "}
-                          <b>{theirArchetype}</b>.
-                        </p>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        </div>
-
-        {/* -------------------------------------------- conversation journal */}
-        <section className="tch-card">
-          <div className="tch-card-head">
-            <h2>Conversation journal</h2>
-            <span className="mono">{logs.length} entries</span>
-          </div>
-
-          <p className="tch-lede">
-            Private to you and the colleague in each conversation. Your school lead sees how many
-            conversations happened and in which domains, never what was said.
-          </p>
-
-          <LogConversationForm pairs={pairOptions} />
-
-          {logs.length === 0 ? (
-            <p className="tch-empty">Nothing logged yet.</p>
+      <section className="ta-hero" aria-labelledby="ta-next">
+        <div className="ta-hero-copy">
+          <p className="ev-eyebrow">Your next step</p>
+          <h2 id="ta-next">{step.title}</h2>
+          <p>{step.body}</p>
+          {step.kind === "none" ? null : step.kind === "draft" ? (
+            <Link className="ev-btn" href={`${BASE}/journal#notebook`}>
+              {step.cta} <Icon name="arrow" size={16} />
+            </Link>
           ) : (
-            <ol className="tch-logs">
-              {logs.map((l) => {
-                const otherId = l.host_id === me.id ? l.visitor_id : l.host_id;
-                const other = partners.get(otherId);
-                const iHost = l.host_id === me.id;
-                const when = l.submitted_at ?? l.created_at;
-                return (
-                  <li key={l.id} className="tch-entry">
-                    <div className="tch-entry-head">
-                      <span className="tch-chip">{DOMAIN_LABEL[l.domain] ?? l.domain}</span>
-                      <span className="tch-entry-who">
-                        {iHost ? "They observed you" : "You observed them"}
-                        {other ? ` · ${fullName(other)}` : ""}
-                      </span>
-                      <span className="mono tch-entry-when">
-                        {l.status === "draft"
-                          ? "Draft"
-                          : new Date(when).toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                      </span>
-                    </div>
+            <Link className="ev-btn" href={`${BASE}/journal?with=${step.partner.pairingId}#log`}>
+              {step.cta} <Icon name="arrow" size={16} />
+            </Link>
+          )}
+        </div>
+        <div className="ta-orbit" aria-hidden>
+          <i className="ta-ring r1" />
+          <i className="ta-ring r2" />
+          <span className="ta-bubble a">{model.me.initials}</span>
+          {partner ? <span className="ta-bubble b">{partner.initials}</span> : <span className="ta-bubble b ghost">?</span>}
+          <span className="ta-orbit-check">
+            <Icon name="check" size={16} />
+          </span>
+        </div>
+      </section>
 
-                    <dl className="tch-fields">
-                      {l.vision ? (
-                        <>
-                          <dt>Working toward</dt>
-                          <dd>{l.vision}</dd>
-                        </>
-                      ) : null}
-                      {l.strength_noted ? (
-                        <>
-                          <dt>Noticed working</dt>
-                          <dd>{l.strength_noted}</dd>
-                        </>
-                      ) : null}
-                      {l.more_frequently ? (
-                        <>
-                          <dt>More of</dt>
-                          <dd>{l.more_frequently}</dd>
-                        </>
-                      ) : null}
-                      {l.less_frequently ? (
-                        <>
-                          <dt>Less of</dt>
-                          <dd>{l.less_frequently}</dd>
-                        </>
-                      ) : null}
-                      {l.resources ? (
-                        <>
-                          <dt>Swapping</dt>
-                          <dd>{l.resources}</dd>
-                        </>
-                      ) : null}
-                    </dl>
+      <div className="ta-kpis">
+        <div>
+          <strong>{model.conversations}</strong>
+          <span>{model.conversations === 1 ? "conversation" : "conversations"} logged this cycle</span>
+        </div>
+        <div>
+          <strong>{model.partners.length}</strong>
+          <span>{model.partners.length === 1 ? "co-mentor" : "co-mentors"}</span>
+        </div>
+        <div>
+          <strong>{last === null ? "—" : agoLabel(last)}</strong>
+          <span>last entry</span>
+        </div>
+      </div>
 
-                    {l.status === "draft" ? (
-                      <form action={submitLog} className="tch-submit">
-                        <input type="hidden" name="log_id" value={l.id} />
-                        <button className="btn btn-ghost" type="submit">
-                          Submit this entry
-                        </button>
-                      </form>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
+      <div className="ta-grid">
+        <section className="ev-panel">
+          <p className="ev-eyebrow">A strength noticed in you</p>
+          {model.noticed ? (
+            <>
+              <blockquote className="ta-quote">{model.noticed.text}</blockquote>
+              <p className="ev-small">
+                {model.noticed.byFirst} wrote this after visiting your classroom on {day(model.noticed.at)}. Only the two of you can see it.
+              </p>
+            </>
+          ) : (
+            <p className="ev-muted">When a colleague writes up a visit to your classroom, the strength they noticed appears here first. It is the part that matters most.</p>
+          )}
+          {model.focus ? (
+            <div className="ta-focus">
+              <p className="ta-label">How {model.focus.byFirst} described what you&rsquo;re working toward</p>
+              <p>{model.focus.text}</p>
+            </div>
+          ) : null}
+        </section>
+
+        <section className="ev-panel">
+          <p className="ev-eyebrow">This cycle{ends ? ` · ends ${ends}` : ""}</p>
+          <ul className="ta-steps">
+            <li data-done={model.steps.hosted}>
+              <span><Icon name="check" size={14} /></span>
+              <div><strong>A colleague visited you</strong><small>A submitted entry from someone who came to your classroom</small></div>
+            </li>
+            <li data-done={model.steps.visited}>
+              <span><Icon name="check" size={14} /></span>
+              <div><strong>You visited a colleague</strong><small>A submitted entry from a visit you made</small></div>
+            </li>
+            <li data-done={model.steps.debrief}>
+              <span><Icon name="check" size={14} /></span>
+              <div><strong>You wrote a debrief</strong><small>What you saw working, written down</small></div>
+            </li>
+          </ul>
+          <p className="ev-small">Based on your submitted entries. Nothing here is scored.</p>
+        </section>
+
+        <section className="ev-panel">
+          <div className="ta-between">
+            <p className="ev-eyebrow">Your mentoring partner{model.partners.length > 1 ? "s" : ""}</p>
+            <Link className="ev-btn quiet sm" href={`${BASE}/pair`}>
+              View partnership
+            </Link>
+          </div>
+          {model.partners.length === 0 ? (
+            <p className="ev-muted">Your partner will appear here once your school lead has confirmed the pairing.</p>
+          ) : (
+            <ul className="ta-people">
+              {model.partners.map((p) => (
+                <li key={p.pairingId}>
+                  <span className="ev-avatar">{p.initials}</span>
+                  <div>
+                    <strong>{p.name}</strong>
+                    <small>
+                      {p.department}
+                      {p.department && p.domainLabel ? " · " : ""}
+                      {p.domainLabel ? `Focus: ${p.domainLabel}` : ""}
+                    </small>
+                    <small>{p.visitsMe ? "Visits your classroom" : "You visit their classroom"}</small>
+                  </div>
+                  <div className="ta-people-actions">
+                    <OpenChat pairingId={p.pairingId} className="ta-iconbtn"><Icon name="chat" size={16} /><span className="sr-only">Message {p.first}</span></OpenChat>
+                    <OpenCall pairingId={p.pairingId} className="ta-iconbtn"><Icon name="video" size={16} /><span className="sr-only">Video call {p.first}</span></OpenCall>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 
-        <CultureScanCard />
-      </main>
-    </>
+        <section className="ev-panel">
+          <p className="ev-eyebrow">Your growth</p>
+          <h3>{activeGoals.length ? (activeGoals.length === 1 ? "One goal in progress" : `${activeGoals.length} goals in progress`) : "Set a goal for yourself"}</h3>
+          <p className="ev-muted">
+            {activeGoals[0] ? <>Right now: <strong>{activeGoals[0].title}</strong>. </> : "One small thing you want to get better at, just for you. "}
+            {week > 0 ? <>You&rsquo;ve spent {formatDuration(week)} on Mentorful this week.</> : null}
+          </p>
+          <div className="ta-row">
+            <Link className="ev-btn" href={`${BASE}/growth`}>
+              Open the growth hub <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+        </section>
+
+        <section className="ev-panel" data-arrived={arrived > 0}>
+          <p className="ev-eyebrow">Note to future self</p>
+          {arrived > 0 ? (
+            <>
+              <h3>{arrived === 1 ? "A note from past you has arrived" : `${arrived} notes from past you have arrived`}</h3>
+              <p className="ev-muted">You asked to be reminded. Open it when you have a minute.</p>
+              <div className="ta-row">
+                <Link className="ev-btn primary" href={`${BASE}/journal?tab=future#notebook`}>
+                  Read {arrived === 1 ? "it" : "them"} <Icon name="mail" size={16} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3>{sealed ? `${sealed} ${sealed === 1 ? "note is" : "notes are"} on the way` : "Write to the you of next month"}</h3>
+              <p className="ev-muted">{sealed ? "Sealed until the day you chose. You can add another." : "What do you want to remember, try, or tell yourself? It stays sealed until the day you pick."}</p>
+              <div className="ta-row">
+                <Link className="ev-btn" href={`${BASE}/journal?tab=future#future`}>
+                  Write a note <Icon name="pen" size={16} />
+                </Link>
+              </div>
+            </>
+          )}
+        </section>
+
+        <ScanEntry />
+      </div>
+    </main>
   );
 }

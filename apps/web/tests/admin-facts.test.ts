@@ -116,10 +116,9 @@ describe("actions", () => {
     expect(ids({ ...base, scan })).not.toContain("no-scan");
   });
 
-  it("keep every link inside the look it was asked for", () => {
+  it("keep every link inside the leadership area", () => {
     const withData = { ...base, scan, requests: [{ id: "r", a: "e", b: "f", domain: null, tag: null }] };
     for (const a of buildActions(buildFacts(withData), "/admin")) expect(a.href).toMatch(/^\/admin\/(constellation|insights|pairings)$/);
-    for (const a of buildActions(buildFacts(withData), "/admin/aurora")) expect(a.href).toMatch(/^\/admin\/aurora\/(constellation|insights|pairings)$/);
   });
 
   it("put what to do before what to watch before what is going well", () => {
