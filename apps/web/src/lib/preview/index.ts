@@ -31,7 +31,7 @@ export function previewTables(): Tables {
     const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addHubTables(g.__previewTables, me.id);
   }
-  if (!(g.__previewTables as Tables).teacher_cards) {
+  if (!(g.__previewTables as Tables).lookbook_choices) {
     const me = g.__previewTables.profiles.find((p) => p.auth_user_id === IDS.authTeacher);
     if (me) addLookbookTables(g.__previewTables, me.id);
   }
@@ -61,7 +61,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
       const mine = new Set(tables.pairings.filter((p: Row) => p.status === "approved" && (p.host_id === me.id || p.visitor_id === me.id)).map((p: Row) => p.id));
       return role === "teacher" ? rows.filter((r: Row) => mine.has(r.pairing_id)) : [];
     }
-    if (table === "teacher_cards" || table === "growth_sharing") return rows.filter((r: Row) => r.profile_id === me.id);
+    if (table === "lookbook_choices" || table === "growth_sharing") return rows.filter((r: Row) => r.profile_id === me.id);
     if (["future_notes", "platform_time", "growth_goals", "growth_entries"].includes(table)) return rows.filter((r: Row) => r.profile_id === me.id);
     return rows;
   };
