@@ -19,12 +19,12 @@ The brand badge (the spiked M in the Aurora gradient) is `components/aurora/ment
 ## Teacher tabs
 
 - **Home**: one next step, cycle steps, a strength a colleague noticed, partners, growth snapshot, notes to your future self.
-- **My pair**: partnership (chat, video call, private partner-change request), **Lookbook** of colleagues' cards (search,
-  filters, grid and list, detail view), **My card** editor (opt-in, self-authored).
+- **My pair**: partnership (chat with file sharing, private partner-change request) and a **Lookbook** of colleagues: name,
+  department and strengths only (search, filters, grid and list), with one switch to hide yourself. Video call is built but off.
 - **Journal**: log a conversation (exact timestamps), **note to future self** (sealed until a chosen date), private notebook.
-- **Growth**: time on Mentorful (private), suggested focus, six **pedagogy games** you play with your co-mentor, goals,
+- **Growth**: time on Mentorful (private), suggested focus, goals (the six **pedagogy games** are built but off),
   practice log, an opt-in to anonymous school totals, Mentorful products.
-- **Culture Scan**, a **pair chat** drawer and a **video call** (rings your co-mentor) on every tab.
+- **Culture Scan**, a **pair chat** drawer on every tab (the **video call** that rings your co-mentor is built but off).
 
 Logic is pure and tested: `src/lib/teacher/` (model, hub, lookbook, protocols). UI: `src/components/teacher/`.
 
@@ -35,7 +35,7 @@ Order matters. All are additive (new tables, functions, buckets; no existing tab
 | Script | What it adds | Privacy rule it enforces |
 |---|---|---|
 | `017_teacher_hub.sql` | pair chat, game sessions, notes to future self, time on platform, goals, practice log | pair tables: the two teachers only; own tables: the owner only; no admin read path |
-| `018_teacher_lookbook.sql` | `teacher_cards`, `lookbook_cards()`, private `teacher-photos` bucket | opt-in; only the teacher writes; "growing in" hidden unless they switch it on; admins get nothing |
+| `018_teacher_lookbook.sql` | `lookbook_choices`, `lookbook_cards()` | the lookbook returns exactly name, department, strength tags (no email, photo or free text); one owner-only hide switch; admins get no rows. Rewritten on Oct 29 to Nick's fixed set; the earlier self-authored card (photo, bio, experience) was never applied and is gone |
 | `019_growth_activity.sql` | `growth_sharing`, `growth_activity()` | consent; anonymous, rounded to 5, floor of 5 (10 for distributions), admin only |
 
 Checked on a throwaway Postgres (PGlite) with stand-ins for Nick's helper functions (`my_profile_id`, `my_school_id`,
@@ -88,7 +88,7 @@ Not done, and why:
 
 - **Survey access by one-time codes** and **release results after the survey closes**: both change the survey/report pipeline (`survey_responses`, the service-key path). That is the privacy work Eric is picking up; this branch did not touch it.
 - **Master key**: Nick is rotating it and restricting it. The "reports read from the database, not the master key" item goes on the hardening roadmap.
-- **Profile visibility = name, department, strengths** (admins keep email for roster work): this conflicts with the lookbook card (photo, experience, achievements, "growing in", what I want). The card is opt-in and written by the teacher, but it is more than the fixed minimal set. **Decision needed from Juan/Nick**, so it was left as is.
+- **Profile visibility = name, department, strengths** (admins keep email for roster work): done. The lookbook shows exactly that, and the self-authored card, photo bucket and "growing in" are removed. One call to confirm with Nick: a teacher now appears by default and can hide themselves (opt-out), where the old card was opt-in. His site copy promises teachers choose what's shown; per-field toggles are the later enhancement.
 - **"Archetype" panel**: Nick wants to discuss whether it should exist. It stays, with the floor applied.
 - **Faculty map page and Pairing page** still show named teachers and pairs (the map, and pairing is roster work). Only Overview was in Nick's ask; worth confirming whether the map should go.
 - **Triads**: after Demo Day (data-model change). **RSS feed**: reshape toward sharing Google Docs and PDFs between co-mentors; pair chat file sharing is the start. Not built.
@@ -96,8 +96,7 @@ Not done, and why:
 
 ## Next steps
 
-1. Apply 017, 018, 019 (and 016) to a project that is not Nick's, then sign in real test teachers (only one profile is
+1. Apply 017, 018, 019, 020 (and 016 only if video comes back) to a project that is not Nick's, then sign in real test teachers (only one profile is
    linked to a login today).
-2. Try a video call between two real devices.
-3. Review the game content and the lookbook fields with Nick.
+2. After Demo Day: try a video call between two real devices and review the game content (both are off).
 4. Decide whether "count me in anonymous totals" stays off by default (it does today).
