@@ -17,10 +17,7 @@ export default function Home() {
   return (
     <AuroraPublic>
       <section className="ap-hero">
-        <p className="ev-eyebrow">Mentorful</p>
-        <h1>
-          The school culture platform for teachers and the people who <em>lead them.</em>
-        </h1>
+        <h1>The school culture platform for teachers and the people who lead them.</h1>
         <p className="ap-lead">Co-mentoring, classroom visits, and a real measure of how your faculty is actually connected.</p>
         <div className="ap-cta">
           <Link className="ev-btn primary" href="/login">
@@ -33,7 +30,6 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="ap-demo-h">
-        <p className="ev-eyebrow">Demo</p>
         <h2 id="ap-demo-h">Look around without an account</h2>
         <p className="ap-muted">Everything below runs on synthetic data. No real school responses.</p>
         <div className="ap-demos">
