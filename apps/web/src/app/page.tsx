@@ -6,12 +6,18 @@ import { AuroraPublic } from "@/components/aurora/public-frame";
  * Reports, so that card points there.
  */
 
-const DEMOS = [
+// Only the survey and the report open without signing in. The other two need an account, and are shown only in the demo
+// builds (PREVIEW_MOCK=1), where the app runs on made-up data and signs you in as a sample person.
+const OPEN = [
   { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
   { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
+];
+const SIGNED_IN = [
   { href: "/admin/reports", title: "Reports and faculty map", blurb: "A staff network, drawn from data." },
   { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
 ];
+const DEMO = process.env.PREVIEW_MOCK === "1";
+const DEMOS = DEMO ? [...OPEN, ...SIGNED_IN] : OPEN;
 
 export default function Home() {
   return (
@@ -30,8 +36,8 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="ap-demo-h">
-        <h2 id="ap-demo-h">Look around without an account</h2>
-        <p className="ap-muted">Everything below runs on synthetic data. No real school responses.</p>
+        <h2 id="ap-demo-h">{DEMO ? "Look around without an account" : "Take a look"}</h2>
+        <p className="ap-muted">{DEMO ? "Everything below runs on synthetic data. No real school responses." : "No account needed. Both use sample data, not a real school\u2019s answers."}</p>
         <div className="ap-demos">
           {DEMOS.map((d) => (
             <Link key={d.href} className="ap-demo" href={d.href}>
