@@ -73,9 +73,7 @@ export default function SurveyCompletePage() {
         <div className="ap-sent" aria-hidden="true">
           ✓
         </div>
-        <h1>
-          That’s it. <em>Thank you.</em>
-        </h1>
+        <h1>That’s it. Thank you.</h1>
         <p className="ap-lead">
           Your answers are in, and they’re already unlinked from you. Even we can’t pull them back
           up.
@@ -96,7 +94,7 @@ export default function SurveyCompletePage() {
         </div>
 
         <div className="ap-partic">
-          <div className="ev-eyebrow" style={{ marginBottom: 0 }}>
+          <div className="ap-label" style={{ marginBottom: 0 }}>
             Faculty progress
           </div>
           <div className="barwrap">

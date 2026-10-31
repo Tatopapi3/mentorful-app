@@ -181,10 +181,7 @@ export default function SurveyPage() {
     return (
       <AuroraPublic right={<span className="ap-prog"><span className="lbl">School Culture Scan</span></span>}>
         <div className="ap-card ap-survey">
-          <p className="ev-eyebrow">Culture Scan</p>
-          <h1>
-            Before you <em>start</em>
-          </h1>
+          <h1>Before you start</h1>
           <p>
             Twenty-six questions, about six minutes. There are no right answers, and none of this is
             about your teaching.

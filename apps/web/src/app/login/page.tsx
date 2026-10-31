@@ -64,9 +64,9 @@ export default function LoginPage() {
 
   if (status === "sent") {
     return (
-      <AuroraPublic>
-        <div className="ap-auth">
-          <div className="ap-card">
+      <AuroraPublic bleed>
+        <div className="ap-split">
+          <div className="ap-split-left"><div className="ap-box">
             <div className="ap-sent" aria-hidden>
               ✉
             </div>
@@ -94,8 +94,8 @@ export default function LoginPage() {
                 Start over
               </a>
             </p>
-          </div>
-          <aside className="ap-aside">
+          </div></div>
+          <aside className="ap-split-right">
             <h2>{"Still can't get in?"}</h2>
             <p>
               Some school districts block outside links entirely. If nothing arrives after two attempts, email{" "}
@@ -109,19 +109,16 @@ export default function LoginPage() {
   }
 
   return (
-    <AuroraPublic>
-      <div className="ap-auth">
-        <div className="ap-card">
-          <p className="ev-eyebrow">Sign in</p>
-          <h1>
-            Sign in with your <em>school email</em>
-          </h1>
+    <AuroraPublic bleed>
+      <div className="ap-split">
+        <div className="ap-split-left"><div className="ap-box">
+          <h1>Sign in with your school email</h1>
           <p className="ap-lead" style={{ fontSize: 17 }}>
             {"No password. We'll email you a link that signs you in."}
           </p>
           <form onSubmit={handleSubmit}>
             <div className="ev-field">
-              <label htmlFor="email">School email</label>
+              <label className="ap-label" htmlFor="email">School email</label>
               <input
                 id="email"
                 type="email"
@@ -141,8 +138,8 @@ export default function LoginPage() {
             {"Your school set up your account, so there's nothing to create. Can't get in? "}
             <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>
           </p>
-        </div>
-        <aside className="ap-aside">
+        </div></div>
+        <aside className="ap-split-right">
           <h2>{"You're here because your school is running a Culture Scan."}</h2>
           <p>{"It takes about six minutes, once. Here's the whole thing:"}</p>
           <ol className="ap-steps">
