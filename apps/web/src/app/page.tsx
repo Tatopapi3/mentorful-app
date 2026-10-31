@@ -1,67 +1,50 @@
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
+import { AuroraPublic } from "@/components/aurora/public-frame";
 
 /**
- * Landing screen, ported from the app-screens prototype.
- *
- * The prototype repeated the logo inside the navy hero; here the shared
- * SiteHeader sits above it instead, so the mark isn't rendered twice.
- *
- * Card order and copy follow the prototype. All four demo routes that the old
- * "Demo routes" list linked to are preserved.
+ * The landing page, in the Aurora look. Card order and copy follow the prototype; the faculty map now lives inside
+ * Reports, so that card points there.
  */
 
 const DEMOS = [
   { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
   { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
-  { href: "/admin/map", title: "Faculty map", blurb: "A staff network, drawn from data." },
+  { href: "/admin/reports", title: "Reports and faculty map", blurb: "A staff network, drawn from data." },
   { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
 ];
 
 export default function Home() {
   return (
-    <>
-      <SiteHeader />
-
-      <div className="land-hero">
-        <div className="wrap">
-          <h1>The school culture platform for teachers and the people who lead them.</h1>
-          <p>
-            Co-mentoring, classroom visits, and a real measure of how your faculty is actually
-            connected.
-          </p>
-          <div className="land-cta">
-            <Link className="btn" href="/login">
-              Sign in
-            </Link>
-            <a
-              className="btn btn-ghost"
-              href="https://mentorful.co"
-              style={{ textDecoration: "none", padding: "11.5px 24px" }}
-            >
-              About Mentorful
-            </a>
-          </div>
+    <AuroraPublic>
+      <section className="ap-hero">
+        <p className="ev-eyebrow">Mentorful</p>
+        <h1>
+          The school culture platform for teachers and the people who <em>lead them.</em>
+        </h1>
+        <p className="ap-lead">Co-mentoring, classroom visits, and a real measure of how your faculty is actually connected.</p>
+        <div className="ap-cta">
+          <Link className="ev-btn primary" href="/login">
+            Sign in
+          </Link>
+          <a className="ev-btn" href="https://mentorful.co">
+            About Mentorful
+          </a>
         </div>
-      </div>
+      </section>
 
-      <main className="wrap land-demo">
-        <p className="mono" style={{ color: "var(--muted)", marginBottom: 4 }}>
-          Demo
-        </p>
-        <h2 style={{ fontSize: 21, marginBottom: 6 }}>Look around without an account</h2>
-        <p style={{ fontSize: 15.5, color: "#6B6459", maxWidth: 560 }}>
-          Everything below runs on synthetic data. No real school responses.
-        </p>
-        <div className="demo-row">
+      <section aria-labelledby="ap-demo-h">
+        <p className="ev-eyebrow">Demo</p>
+        <h2 id="ap-demo-h">Look around without an account</h2>
+        <p className="ap-muted">Everything below runs on synthetic data. No real school responses.</p>
+        <div className="ap-demos">
           {DEMOS.map((d) => (
-            <Link key={d.href} className="demo" href={d.href}>
+            <Link key={d.href} className="ap-demo" href={d.href}>
               <b>{d.title}</b>
               <span>{d.blurb}</span>
             </Link>
           ))}
         </div>
-      </main>
-    </>
+      </section>
+    </AuroraPublic>
   );
 }

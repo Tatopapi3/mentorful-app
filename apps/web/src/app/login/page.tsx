@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import SiteHeader from "@/components/SiteHeader";
+import { AuroraPublic } from "@/components/aurora/public-frame";
 
 /**
  * Login and check-your-email screens, ported from the app-screens prototype.
  *
- * The prototype repeated the logo inside the left column; here the shared
- * SiteHeader sits above both screens instead, so the mark isn't rendered twice.
- * All other copy is verbatim, except the address on the sent screen, which is
- * the one the person actually typed rather than the prototype's placeholder.
+ * In the Aurora look, inside the same frame as the rest of the app. All copy is
+ * verbatim, except the address on the sent screen, which is the one the person
+ * actually typed rather than the prototype's placeholder.
  */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -65,82 +64,66 @@ export default function LoginPage() {
 
   if (status === "sent") {
     return (
-      <>
-        <SiteHeader />
-        <div className="auth">
-          <div className="auth-left">
-            <div className="auth-box">
-              <div className="sent-icon" aria-hidden>
-                ✉
-              </div>
-              <h1>Check your email</h1>
-              <p className="sub">
-                A sign-in link is on its way to <strong>{email}</strong>. It works once and
-                expires in an hour.
-              </p>
-              <p style={{ fontSize: 15, color: "#6B6459" }}>
-                Nothing after a minute? School spam filters are the usual culprit. Look for a
-                message from Mentorful, or send another link.
-              </p>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                style={{ marginTop: 10 }}
-                onClick={handleResend}
-                disabled={resend === "sending"}
-              >
-                {resend === "sending" ? "Sending…" : "Send another link"}
-              </button>
-              {resend === "sent" && (
-                <p className="auth-status">Another link is on its way.</p>
-              )}
-              {resend === "error" && (
-                <p className="auth-error">
-                  {"That didn't send. Wait a moment and try again — your first link should still work."}
-                </p>
-              )}
-              <p className="help">
-                Wrong address?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleStartOver();
-                  }}
-                >
-                  Start over
-                </a>
-              </p>
+      <AuroraPublic>
+        <div className="ap-auth">
+          <div className="ap-card">
+            <div className="ap-sent" aria-hidden>
+              ✉
             </div>
-          </div>
-          <div className="auth-right">
-            <h2>{"Still can't get in?"}</h2>
-            <p>
-              Some school districts block outside links entirely. If nothing arrives after two
-              attempts, email <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>{" "}
-              {"and we'll sort it out with your administrator. You won't be the only one."}
+            <h1>Check your email</h1>
+            <p className="ap-lead" style={{ fontSize: 17 }}>
+              A sign-in link is on its way to <strong>{email}</strong>. It works once and expires in an hour.
+            </p>
+            <p className="ap-muted" style={{ fontSize: 15 }}>
+              Nothing after a minute? School spam filters are the usual culprit. Look for a message from Mentorful, or send another link.
+            </p>
+            <button type="button" className="ev-btn" style={{ marginTop: 6 }} onClick={handleResend} disabled={resend === "sending"}>
+              {resend === "sending" ? "Sending…" : "Send another link"}
+            </button>
+            {resend === "sent" && <p className="ap-status">Another link is on its way.</p>}
+            {resend === "error" && <p className="ap-error">{"That didn't send. Wait a moment and try again — your first link should still work."}</p>}
+            <p className="ap-help">
+              Wrong address?{" "}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleStartOver();
+                }}
+              >
+                Start over
+              </a>
             </p>
           </div>
+          <aside className="ap-aside">
+            <h2>{"Still can't get in?"}</h2>
+            <p>
+              Some school districts block outside links entirely. If nothing arrives after two attempts, email{" "}
+              <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>{" "}
+              {"and we'll sort it out with your administrator. You won't be the only one."}
+            </p>
+          </aside>
         </div>
-      </>
+      </AuroraPublic>
     );
   }
 
   return (
-    <>
-      <SiteHeader />
-      <div className="auth">
-        <div className="auth-left">
-          <div className="auth-box">
-            <h1>Sign in with your school email</h1>
-            <p className="sub">{"No password. We'll email you a link that signs you in."}</p>
-            <form onSubmit={handleSubmit}>
-              <label className="mono auth-label" htmlFor="email">
-                School email
-              </label>
+    <AuroraPublic>
+      <div className="ap-auth">
+        <div className="ap-card">
+          <p className="ev-eyebrow">Sign in</p>
+          <h1>
+            Sign in with your <em>school email</em>
+          </h1>
+          <p className="ap-lead" style={{ fontSize: 17 }}>
+            {"No password. We'll email you a link that signs you in."}
+          </p>
+          <form onSubmit={handleSubmit}>
+            <div className="ev-field">
+              <label htmlFor="email">School email</label>
               <input
                 id="email"
-                className="field"
                 type="email"
                 required
                 value={email}
@@ -148,41 +131,36 @@ export default function LoginPage() {
                 placeholder="you@yourschool.org"
                 autoComplete="email"
               />
-              <button
-                type="submit"
-                className="btn"
-                style={{ width: "100%", marginTop: 14 }}
-                disabled={status === "sending"}
-              >
-                {status === "sending" ? "Sending…" : "Send my link"}
-              </button>
-              {error && <p className="auth-error">{error}</p>}
-            </form>
-            <p className="help">
-              {"Your school set up your account, so there's nothing to create. Can't get in? "}
-              <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>
-            </p>
-          </div>
+            </div>
+            <button type="submit" className="ev-btn primary" style={{ width: "100%", marginTop: 14, justifyContent: "center" }} disabled={status === "sending"}>
+              {status === "sending" ? "Sending…" : "Send my link"}
+            </button>
+            {error && <p className="ap-error">{error}</p>}
+          </form>
+          <p className="ap-help">
+            {"Your school set up your account, so there's nothing to create. Can't get in? "}
+            <a href="mailto:hello@mentorful.co">hello@mentorful.co</a>
+          </p>
         </div>
-        <div className="auth-right">
+        <aside className="ap-aside">
           <h2>{"You're here because your school is running a Culture Scan."}</h2>
           <p>{"It takes about six minutes, once. Here's the whole thing:"}</p>
-          <div className="steps-mini">
-            <div>
+          <ol className="ap-steps">
+            <li>
               <i>01</i>
               <span>Answer 26 questions about the school around you.</span>
-            </div>
-            <div>
+            </li>
+            <li>
               <i>02</i>
               <span>Your answers are unlinked from you the moment you submit.</span>
-            </div>
-            <div>
+            </li>
+            <li>
               <i>03</i>
               <span>Your school gets the combined picture. Nobody gets yours.</span>
-            </div>
-          </div>
-        </div>
+            </li>
+          </ol>
+        </aside>
       </div>
-    </>
+    </AuroraPublic>
   );
 }

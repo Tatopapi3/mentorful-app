@@ -6,7 +6,7 @@ const initialsOf = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 
 // Applies the saved Day/Night choice before first paint so there is no flash.
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("mentorful-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"night":"day";var r=document.currentScript.parentElement;r.setAttribute("data-theme",t==="night"?"dark":"light")}catch(e){}})()`;
+export const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("mentorful-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"night":"day";var r=document.currentScript.parentElement;r.setAttribute("data-theme",t==="night"?"dark":"light")}catch(e){}})()`;
 
 export function AuroraChrome({
   schoolName,

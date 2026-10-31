@@ -19,7 +19,7 @@ const subscribeTheme = (notify: () => void) => {
 const readTheme = (): "day" | "night" =>
   document.querySelector<HTMLElement>(".ev")?.getAttribute("data-theme") === "dark" ? "night" : "day";
 
-function useTheme() {
+export function useTheme() {
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => "day" as const);
   const toggle = useCallback(() => {
     const next = theme === "day" ? "night" : "day";

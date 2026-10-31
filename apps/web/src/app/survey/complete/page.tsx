@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
+import { AuroraPublic } from "@/components/aurora/public-frame";
 
 export const metadata: Metadata = {
   title: "Scan complete",
@@ -68,41 +68,35 @@ export default function SurveyCompletePage() {
   const pct = Math.round((FACULTY_PROGRESS.finished / FACULTY_PROGRESS.total) * 100);
 
   return (
-    <>
-      <SiteHeader
-        sticky
-        right={
-          <span className="mono" style={{ color: "var(--teal)" }}>
-            Complete
-          </span>
-        }
-      />
-      <main className="done">
-        <div className="sent-icon" aria-hidden="true">
+    <AuroraPublic right={<span className="ap-prog"><span className="lbl" style={{ color: "var(--ev-teal)" }}>Complete</span></span>}>
+      <main className="ap-done">
+        <div className="ap-sent" aria-hidden="true">
           ✓
         </div>
-        <h1>That’s it. Thank you.</h1>
-        <p className="lede">
+        <h1>
+          That’s it. <em>Thank you.</em>
+        </h1>
+        <p className="ap-lead">
           Your answers are in, and they’re already unlinked from you. Even we can’t pull them back
           up.
         </p>
 
         <h2 style={{ marginTop: 44 }}>What you were actually answering</h2>
-        <p className="say">
+        <p className="ap-muted">
           We didn’t label the sections while you took it, because seeing the name of a thing changes
           how people rate it. Here’s what the four groups measured.
         </p>
-        <div className="dims">
+        <div className="ap-dims">
           {DIMENSIONS.map((d) => (
-            <div key={d.key} className="dim">
+            <div key={d.key} className="ap-dim">
               <b>{d.name}</b>
               <span>{d.gloss}</span>
             </div>
           ))}
         </div>
 
-        <div className="partic">
-          <div className="mono" style={{ color: "var(--muted)" }}>
+        <div className="ap-partic">
+          <div className="ev-eyebrow" style={{ marginBottom: 0 }}>
             Faculty progress
           </div>
           <div className="barwrap">
@@ -121,15 +115,15 @@ export default function SurveyCompletePage() {
         </div>
 
         <h2 style={{ marginTop: 42 }}>What happens next</h2>
-        <p className="say">
+        <p className="ap-muted">
           Once everyone’s in, the whole faculty’s answers get combined into four scores and a map of
           how they hold together. Your school sees that picture, and so will you. Nobody sees an
           individual response, ever.
         </p>
-        <Link className="btn" href="/dashboard" style={{ marginTop: 12, textDecoration: "none" }}>
+        <Link className="ev-btn primary" href="/dashboard" style={{ marginTop: 12 }}>
           Back to dashboard
         </Link>
       </main>
-    </>
+    </AuroraPublic>
   );
 }
