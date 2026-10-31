@@ -4,9 +4,22 @@
  * untouched demo data; nothing is shared between visitors, and /preview/reset clears them.
  */
 import { cookies } from "next/headers";
+import { gunzipSync, gzipSync } from "node:zlib";
 import type { Row, Tables, Write } from "./mockQuery";
 
 export const JOURNAL_COOKIE = "demo_changes";
+
+/**
+ * A cookie holds about 4 KB and the browser quietly drops one that is too big, which lost the approval of a round of pairs.
+ * The changes are repetitive (the same school and cycle ids on every row), so the cookie holds them gzipped. "z." marks the
+ * compressed form; a plain JSON cookie from before still reads.
+ */
+export const packJournal = (j: Write[]): string => `z.${gzipSync(JSON.stringify(j)).toString("base64url")}`;
+export function unpackJournal(v: string): Write[] {
+  const text = v.startsWith("z.") ? gunzipSync(Buffer.from(v.slice(2), "base64url")).toString() : decodeURIComponent(v);
+  const j = JSON.parse(text);
+  return Array.isArray(j) ? (j as Write[]) : [];
+}
 
 /**
  * PREVIEW_JOURNAL=memory keeps the changes in this server's memory instead of a cookie. That is for running the demo on one
@@ -19,14 +32,13 @@ const mem = globalThis as unknown as { __previewJournal?: Write[] };
 export const resetMemoryJournal = () => {
   mem.__previewJournal = [];
 };
-const MAX = 3600;
+const MAX = 3800;
 
 export async function readJournal(): Promise<Write[]> {
   if (inMemory()) return [...(mem.__previewJournal ?? [])];
   try {
     const v = (await cookies()).get(JOURNAL_COOKIE)?.value;
-    const j = v ? JSON.parse(decodeURIComponent(v)) : [];
-    return Array.isArray(j) ? (j as Write[]) : [];
+    return v ? unpackJournal(v) : [];
   } catch {
     return [];
   }
@@ -38,10 +50,10 @@ export async function writeJournal(journal: Write[]): Promise<void> {
     return;
   }
   let j = journal;
-  let value = encodeURIComponent(JSON.stringify(j));
+  let value = packJournal(j);
   while (value.length > MAX && j.length > 1) {
     j = j.slice(1);
-    value = encodeURIComponent(JSON.stringify(j));
+    value = packJournal(j);
   }
   try {
     (await cookies()).set(JOURNAL_COOKIE, value, { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 });
