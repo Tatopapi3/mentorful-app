@@ -5,6 +5,7 @@ import { loadHub } from "@/lib/teacher/hub-data";
 import { Icon } from "@/components/teacher/icons";
 import { submitEntry } from "@/lib/teacher/actions";
 import { loadTeacher } from "@/lib/teacher/load";
+import { FEATURES } from "@/lib/teacher/features";
 import type { Entry } from "@/lib/teacher/model";
 
 // The notebook opens on the latest few entries; the rest are one tap away.
@@ -79,7 +80,8 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
           pairs={model.partners.map((p) => ({ id: p.pairingId, partnerName: p.name, partnerFirst: p.first, domain: p.domain, visitsMe: p.visitsMe }))}
           defaultPairing={withPair}
           prefill={prefill?.slice(0, 400)}
-          initialTab={tab === "future" ? "future" : "log"}
+          initialTab={tab === "future" ? "future" : tab === "scan" && FEATURES.scanNotes ? "scan" : "log"}
+          scanEnabled={FEATURES.scanNotes}
           serverToday={serverToday}
           cycleEnds={model.cycle?.ends?.slice(0, 10) ?? null}
           hubReady={hub.ready}
