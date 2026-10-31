@@ -23,6 +23,9 @@ When you add a screen (a code-entry step, a closed-survey message), wrap it in `
 finished, the scan closes Friday" block is **invented placeholder data** (the code says so); replace it with a real aggregate or remove it
 before a real school sees it. The standalone Culture Scan report at `/report` keeps its original slide design.
 
+Sign-in lands a school lead on `/admin` and everyone else on `/dashboard` (`src/lib/auth/landing.ts`, used by `/auth/callback`). A
+link may name a page on this site with `?next=`; anything that is not a path on this site is ignored.
+
 ## Teacher dashboard (`/dashboard`)
 
 | Tab | What is there |
