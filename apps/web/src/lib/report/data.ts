@@ -155,5 +155,5 @@ export async function loadReportStats(): Promise<ReportLoad> {
     if (gate.status === "below") return { status: "below-floor", surveyId, n: stats.n, floor: gate.required, reason: "participation" };
   }
 
-  return { status: "ok", stats, surveyId, includesSynthetic: INCLUDE_SYNTHETIC, demoN };
+  return { status: "ok", stats, surveyId, includesSynthetic: INCLUDE_SYNTHETIC && demoN > 0, demoN };
 }

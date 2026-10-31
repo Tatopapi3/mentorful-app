@@ -1,3 +1,4 @@
+import { NoticePage } from "@/components/aurora/notice-page";
 import { AuroraChrome } from "@/components/aurora/chrome";
 import { CallHost } from "@/components/teacher/video-call";
 import { ChatDrawer } from "@/components/teacher/chat-drawer";
@@ -18,10 +19,9 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   const data = await loadTeacher();
   if (!data.model) {
     return (
-      <main style={{ maxWidth: 640, margin: "64px auto", padding: 24, fontFamily: "system-ui, sans-serif" }}>
-        <h1>Your dashboard</h1>
+      <NoticePage eyebrow="Your dashboard" title="No teacher profile is linked yet" signedIn>
         <p>No teacher profile is linked to {data.email}. Ask your school lead to add you to the roster.</p>
-      </main>
+      </NoticePage>
     );
   }
   const { model, schoolName } = data;
