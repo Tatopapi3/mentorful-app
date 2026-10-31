@@ -546,3 +546,12 @@
 .ev-badge[data-pace="complete"] { color: var(--ev-teal); }
 .ev-badge[data-pace="on-pace"] { color: var(--ev-teal); }
 .ev-badge[data-pace="behind"] { color: var(--ev-amber); background: var(--ev-amber-soft); }
+
+/* Scan notes (Journal) */
+.ta-scan-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 4px; }
+.ta-scan-actions label.ev-btn { cursor: pointer; }
+.ta-scan-camera video { width: 100%; max-height: 420px; border-radius: 14px; background: #0d0b2b; object-fit: cover; }
+.ta-scan-shot { display: block; width: 100%; max-height: 240px; object-fit: contain; border-radius: 12px; border: 1px solid var(--ev-line); background: #fff; margin: 14px 0; }
+.ta-scan-reading { text-align: center; }
+.ta-scan .ev-badge { margin-left: 8px; }
+.ta-scan-saved p { display: flex; align-items: center; gap: 8px; font-weight: 600; }
