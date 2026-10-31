@@ -3,6 +3,8 @@ import { Lora, Public_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import BranchBadge from "@/components/BranchBadge";
 import { branchLabel } from "@/lib/branch";
+import { cookies } from "next/headers";
+import { DemoSwitcher, type StageRole } from "@/components/demo/switcher";
 
 // Type system ported from the app-screens prototype: Lora for headings and the
 // wordmark, Public Sans for body, JetBrains Mono for small uppercase labels.
@@ -41,17 +43,26 @@ export const metadata: Metadata = {
     "The school culture platform for teachers and the people who lead them.",
 };
 
-export default function RootLayout({
+// Demo Day only: the stage dataset adds a bar for switching between the principal and the two teachers.
+const STAGE = process.env.PREVIEW_MOCK === "1" && process.env.PREVIEW_DATASET === "stage";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let who: StageRole = "admin";
+  if (STAGE) {
+    const jar = await cookies();
+    who = jar.get("preview_as")?.value === "teacher" ? (jar.get("preview_who")?.value === "second" ? "second" : "first") : "admin";
+  }
   return (
     <html lang="en">
       <body
         className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
+        {STAGE ? <DemoSwitcher current={who} /> : null}
         <BranchBadge />
       </body>
     </html>
