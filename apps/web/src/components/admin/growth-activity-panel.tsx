@@ -1,4 +1,5 @@
 import { BarList, Muted, Panel, StatGrid, type Skin } from "@/components/admin/kit";
+import { FEATURES } from "@/lib/teacher/features";
 import { ctleNotEnough, notEnough, readCtle, readGrowth, type CtleReadingRaw, type GrowthActivity } from "@/lib/admin/growth";
 
 /**
@@ -10,7 +11,7 @@ export default function GrowthActivityPanel({ skin, data, ctle }: { skin: Skin; 
   return (
     <>
       <GrowthTotals skin={skin} data={data} />
-      <CtlePulse skin={skin} data={ctle ?? null} />
+      {FEATURES.ctle ? <CtlePulse skin={skin} data={ctle ?? null} /> : null}
     </>
   );
 }

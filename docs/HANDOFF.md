@@ -33,14 +33,15 @@ link may name a page on this site with `?next=`; anything that is not a path on 
 | Home | one next step, cycle steps, a strength a colleague noticed, partners, growth snapshot, notes to your future self |
 | My pair | your partnership (chat with file sharing, private partner-change request); **Lookbook**: colleagues by name, department and strengths only, with one switch to hide yourself |
 | Journal | log a conversation (exact timestamps), note to your future self (sealed until a date), private notebook |
-| Growth | **CTLE hours tracker**, time on Mentorful (private), suggested focus, goals, practice log, opt-in to anonymous school totals, Mentorful products |
+| Growth | time on Mentorful (private), suggested focus, goals, practice log, opt-in to anonymous school totals, Mentorful products |
 | Culture Scan | the survey, anonymous |
 
-Plus a pair-chat drawer on every tab. **Off, but built:** pedagogy games and video calls
-(`src/lib/teacher/features.ts`; build with `NEXT_PUBLIC_FEATURE_GAMES=1` or `NEXT_PUBLIC_FEATURE_VIDEO=1` to bring one back;
+Plus a pair-chat drawer on every tab. **Off, but built:** pedagogy games, video calls and the CTLE hours tracker
+(`src/lib/teacher/features.ts`; build with `NEXT_PUBLIC_FEATURE_GAMES=1`, `NEXT_PUBLIC_FEATURE_VIDEO=1` or `NEXT_PUBLIC_FEATURE_CTLE=1` to bring one back;
 video also needs Bertrand's `016_pair_live_channel_and_files.sql`).
 
-**CTLE tracker.** New York asks certified teachers for 100 hours of Continuing Teacher and Leader Education every 5 years,
+**CTLE tracker (off, a later add-on; Juan, Oct 30).** With `NEXT_PUBLIC_FEATURE_CTLE` unset nothing shows on Growth, Insights, the
+deck or the Trust page, and the app never reads the CTLE tables (they are in the database from 021, unused). New York asks certified teachers for 100 hours of Continuing Teacher and Leader Education every 5 years,
 15% language acquisition, from an approved sponsor. The numbers are per-teacher settings (75 hours for a Level III teaching
 assistant, other states). It is the teacher's own record, not NYSED's, nothing says Mentorful time earns credit, and hours
 not from an approved sponsor are kept but never counted. Nick: "design the logging, don't promise the credit yet."
@@ -56,8 +57,8 @@ Pulse, Pairing, Overview, Constellation, Insights, Reports (plus Board summary a
 - **Reports**: the leadership deck (PowerPoint and PDF), the Culture Scan report, the board summary, the results CSV, and
   now the **faculty map** (live, named, for the school lead only) with the same figures as the deck's "Faculty connection"
   slide and a **faculty-connection CSV** (department totals, groups under 5 left out, no names). The deck gains a
-  "Teacher growth" slide from the anonymous growth and CTLE totals when enough teachers have chosen to share.
-- **Insights**: Culture Scan, trends, anonymous growth-tool totals, anonymous CTLE reading.
+  "Teacher growth" slide from the anonymous growth totals (and CTLE, when that tracker is on) when enough teachers have chosen to share.
+- **Insights**: Culture Scan, trends, anonymous growth-tool totals (anonymous CTLE reading when the tracker is on).
 - Labels say "Logged conversations" (a submitted log, not a mutually confirmed one).
 
 ## Database
@@ -134,14 +135,14 @@ npm run dev
 
 Environment (`.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only),
 `NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID`, `NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID`. Optional: `NEXT_PUBLIC_FEATURE_GAMES=1`,
-`NEXT_PUBLIC_FEATURE_VIDEO=1`, `NEXT_PUBLIC_TURN_URL` (calls through strict school networks).
+`NEXT_PUBLIC_FEATURE_VIDEO=1`, `NEXT_PUBLIC_FEATURE_CTLE=1`, `NEXT_PUBLIC_TURN_URL` (calls through strict school networks).
 
 The offline preview layer (a mock Supabase with made-up data, used for the share link) is **not** on this branch. It lives on
 `view/aurora`; never merge it.
 
 ## After Demo Day
 
-Pedagogy games and video calls (built, off), Partnership Pulse Check, triads, a content-sharing feed for Google Docs and PDFs
+Pedagogy games, video calls and the CTLE tracker (built, off), Partnership Pulse Check, triads, a content-sharing feed for Google Docs and PDFs
 between co-mentors (file sharing in pair chat is the start; it needs Bertrand's 016 for the storage bucket), per-field profile
 choices, reports reading from the database instead of the master key, Bertrand's pairing exclusion rules and MCP server
 (not taken; see his branch).

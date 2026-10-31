@@ -1,4 +1,5 @@
 import { LOOK, lookBase } from "@/lib/admin/look";
+import { FEATURES } from "@/lib/teacher/features";
 import { respondentsText } from "@/lib/report/gates";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
@@ -31,7 +32,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const cycleParam = typeof params.cycle === "string" ? params.cycle : undefined;
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const growth = await loadGrowthActivity(admin);
-  const ctle = await loadCtleProgress(admin);
+  const ctle = FEATURES.ctle ? await loadCtleProgress(admin) : null;
   const facts = buildFacts(snap);
   const actions = buildActions(facts, base).filter((a) => a.severity !== "good").slice(0, 4);
   const conn = departmentConnections(snap);

@@ -23,7 +23,7 @@ export default async function GrowthPage() {
   if (!data.model) return null;
   const { model } = data;
   const hub = await loadHub();
-  const ctle = await loadCtle();
+  const ctle = FEATURES.ctle ? await loadCtle() : null;
   const serverToday = new Date().toISOString().slice(0, 10);
   const suggestions = suggestionsFrom(model.entries);
   const pairs = model.partners.map((p) => ({ pairingId: p.pairingId, partnerFirst: p.first }));
@@ -47,7 +47,7 @@ export default async function GrowthPage() {
         <SuggestionCard items={suggestions} />
       </div>
 
-      <CtlePanel settings={ctle.settings} entries={ctle.entries} ready={ctle.ready} today={serverToday} />
+      {ctle ? <CtlePanel settings={ctle.settings} entries={ctle.entries} ready={ctle.ready} today={serverToday} /> : null}
 
       {FEATURES.games ? <GamesHub pairs={pairs} games={hub.games} ready={hub.ready} /> : null}
 

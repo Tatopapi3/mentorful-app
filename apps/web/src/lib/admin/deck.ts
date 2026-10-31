@@ -111,7 +111,7 @@ export function buildDeck(snap: AdminSnapshot, prev: AdminSnapshot | null, today
     const ctle = snap.ctle ? readCtle(snap.ctle) : null;
     const blocks: DeckBlock[] = [{ kind: "stats", items: growth.headline.map((h) => ({ value: h.value, label: h.label, note: h.note })) }];
     if (ctle) blocks.push({ kind: "bars", rows: ctle.rows.map((r) => ({ label: `CTLE hours: ${r.label.toLowerCase()}`, value: r.value, max: 100, text: `${r.value}%` })) });
-    blocks.push({ kind: "note", text: "Only teachers who chose to share are counted, and every figure is rounded to the nearest 5%. This shows whether the growth tools are being used, not how well anyone teaches. CTLE is each teacher's own record of professional-development hours, not the state's." });
+    blocks.push({ kind: "note", text: "Only teachers who chose to share are counted, and every figure is rounded to the nearest 5%. This shows whether the growth tools are being used, not how well anyone teaches." + (ctle ? " CTLE is each teacher's own record of professional-development hours, not the state's." : "") });
     slides.push({ kicker: "Teacher growth", title: "How teachers are using their growth tools", lead: growth.sentences[0], blocks });
   }
 
