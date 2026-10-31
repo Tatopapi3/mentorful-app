@@ -21,7 +21,7 @@ Only the look changed: each page keeps its own logic, so **Eric can change how t
 When you add a screen (a code-entry step, a closed-survey message), wrap it in `<AuroraPublic>` and use the `ap-card`, `ap-item`,
 `ap-error` and `ev-btn` classes the existing screens use. Two things on the thank-you page to know about: the "32 of 50 teachers have
 finished, the scan closes Friday" block is **invented placeholder data** (the code says so); replace it with a real aggregate or remove it
-before a real school sees it. The standalone Culture Scan report at `/report` keeps its original slide design.
+before a real school sees it. The standalone Culture Scan report at `/report` is in the Aurora look too (frame, buttons and slide palette); it is still open to anyone without signing in, which is the pilot setting and must be gated before a real school sees it (see the comment at the top of `src/app/report/page.tsx`). The 404, error and "no access" pages use `NoticePage` (`src/components/aurora/notice-page.tsx`).
 
 Sign-in lands a school lead on `/admin` and everyone else on `/dashboard` (`src/lib/auth/landing.ts`, used by `/auth/callback`). A
 link may name a page on this site with `?next=`; anything that is not a path on this site is ignored.

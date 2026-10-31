@@ -79,15 +79,6 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number)
   );
 }
 
-const btn: React.CSSProperties = {
-  padding: "6px 12px",
-  borderRadius: 4,
-  border: "1px solid #ccc",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 13,
-};
-
 export function SlideActions({ index, name }: { index: number; name: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -112,16 +103,16 @@ export function SlideActions({ index, name }: { index: number; name: string }) {
 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-      <span style={{ fontSize: 13, color: "#898781", marginRight: 4 }}>
+      <span className="ev-muted" style={{ fontSize: 13, marginRight: 4 }}>
         Slide {index}
       </span>
-      <button type="button" style={btn} disabled={busy !== null} onClick={() => run("svg")}>
+      <button type="button" className="ev-btn sm" disabled={busy !== null} onClick={() => run("svg")}>
         {busy === "svg" ? "…" : "SVG"}
       </button>
-      <button type="button" style={btn} disabled={busy !== null} onClick={() => run("png")}>
+      <button type="button" className="ev-btn sm" disabled={busy !== null} onClick={() => run("png")}>
         {busy === "png" ? "…" : "PNG"}
       </button>
-      {error && <span style={{ color: "#d03b3b", fontSize: 13 }}>{error}</span>}
+      {error && <span className="ap-error" style={{ margin: 0 }}>{error}</span>}
     </div>
   );
 }
@@ -207,22 +198,17 @@ export function DeckToolbar({ count }: { count: number }) {
 
   return (
     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-      <button
-        type="button"
-        style={{ ...btn, padding: "8px 16px", fontWeight: 600 }}
-        disabled={busy}
-        onClick={downloadPdf}
-      >
+      <button type="button" className="ev-btn primary" disabled={busy} onClick={downloadPdf}>
         Download deck as PDF
       </button>
-      <button type="button" style={{ ...btn, padding: "8px 16px", fontWeight: 600 }} disabled={busy} onClick={downloadPptx}>
+      <button type="button" className="ev-btn" disabled={busy} onClick={downloadPptx}>
         Download deck as PowerPoint
       </button>
-      <button type="button" style={{ ...btn, padding: "8px 16px" }} disabled={busy} onClick={downloadAllPng}>
+      <button type="button" className="ev-btn" disabled={busy} onClick={downloadAllPng}>
         Download all PNGs
       </button>
-      {progress && <span style={{ fontSize: 13, color: "#52514e" }}>{progress}</span>}
-      {error && <span style={{ color: "#d03b3b", fontSize: 13 }}>{error}</span>}
+      {progress && <span className="ev-muted" style={{ fontSize: 13 }}>{progress}</span>}
+      {error && <span className="ap-error" style={{ margin: 0 }}>{error}</span>}
     </div>
   );
 }

@@ -96,3 +96,8 @@
   .ap-nav .actions { width: 100%; }
   .ap-nav .actions > * { flex: 1; }
 }
+
+/* The Culture Scan report: a notice for demo data, and the slide frame the SVG slides sit in. */
+.ap-notice { display: flex; align-items: flex-start; gap: 12px; margin: 20px 0; padding: 14px 16px; border-radius: 14px; font-size: 14px; color: var(--ev-ink); background: var(--ev-amber-soft); border: 1px solid var(--ev-amber); }
+.ap-notice > span:first-child { color: var(--ev-amber); font-size: 18px; line-height: 1.2; }
+.ap-slide { border: 1px solid var(--ev-line); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 18px 40px -26px rgba(79, 70, 229, 0.45); }

@@ -1,3 +1,4 @@
+import { NoticePage } from "@/components/aurora/notice-page";
 import { AuroraChrome } from "@/components/aurora/chrome";
 import { PresentButton } from "@/components/aurora/present-button";
 import { lookBase } from "@/lib/admin/look";
@@ -30,10 +31,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const admin = await requireAdmin();
   if (!admin) {
     return (
-      <main style={{ maxWidth: 640, margin: "64px auto", padding: 24, fontFamily: "system-ui, sans-serif" }}>
-        <h1>Leadership views</h1>
-        <p>These pages are for school leadership. Your account doesn’t have admin access to a school.</p>
-      </main>
+      <NoticePage eyebrow="Leadership views" title="This area is for school leadership" home="/dashboard" signedIn>
+        <p>Your account doesn’t have admin access to a school.</p>
+      </NoticePage>
     );
   }
   const { data: school } = await admin.supabase.from("schools").select("name").eq("id", admin.schoolId).maybeSingle();

@@ -9,25 +9,25 @@
  * Pure functions only; the PDF export will reuse these.
  */
 
-/** Design tokens, light surface. Text never wears the series color. */
+/** Design tokens, light surface, in the Aurora palette (ink #14122b, indigo series). Text never wears the series color. */
 export const T = {
   surface: "#ffffff",
-  inkPrimary: "#0b0b0b",
-  inkSecondary: "#52514e",
-  muted: "#898781",
-  gridline: "#e1e0d9",
-  baseline: "#c3c2b7",
-  /** Single series hue — validated: passes lightness, chroma and 3:1 on white. */
-  series: "#2a78d6",
+  inkPrimary: "#14122b",
+  inkSecondary: "#4b4966",
+  muted: "#6b6987",
+  gridline: "#e4e3f3",
+  baseline: "#c9c8e0",
+  /** Single series hue (Aurora indigo): 6.3:1 on white, so it passes the 3:1 a graphic needs with room to spare. */
+  series: "#4f46e5",
   /**
    * Blue step 700 — the confidence band, which has to stay readable both over
    * the bar fill and against the white surface where it extends past the tip.
    * A surface-colored underlay was tried first and read as a notch cut out of
    * the bar; a darker step of the same hue is the honest fix.
    */
-  seriesDark: "#0d366b",
+  seriesDark: "#2e2a9e",
   /** De-emphasis fill for context marks in an emphasis chart. */
-  deEmphasis: "#c3c2b7",
+  deEmphasis: "#c9c8e0",
   /**
    * Negative pole of the diverging pair used for network edges (blue ↔ red:
    * warm/cool, so they read as opposite). Validated against the surface:
@@ -41,7 +41,7 @@ export const T = {
    */
   warning: "#fab219",
   warningSoft: "#fdf3dc",
-  border: "rgba(11,11,11,0.10)",
+  border: "rgba(20,18,43,0.10)",
 } as const;
 
 export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';

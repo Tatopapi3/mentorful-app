@@ -8,7 +8,7 @@ import NetworkSlide from "./slides/NetworkSlide";
 import GapSlide from "./slides/GapSlide";
 import StartHereSlide from "./slides/StartHereSlide";
 import ActionsSlide from "./slides/ActionsSlide";
-import SiteHeader from "@/components/SiteHeader";
+import { AuroraPublic } from "@/components/aurora/public-frame";
 
 /**
  * Culture Scan report — previews the six 16:9 deck slides stacked.
@@ -29,41 +29,33 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Culture Scan report" };
 
-const page: React.CSSProperties = { maxWidth: 1120, margin: "40px auto", padding: 24 };
 
 export default async function ReportPage() {
   const load = await loadReportStats();
 
   if (load.status === "misconfigured") {
     return (
-      <>
-        <SiteHeader />
-        <main style={page}>
-          <h1>Culture Scan report</h1>
-          <p style={{ color: "#d03b3b" }}>{load.message}</p>
-        </main>
-      </>
+      <AuroraPublic>
+        <Heading />
+        <p className="ap-error">{load.message}</p>
+      </AuroraPublic>
     );
   }
 
   if (load.status === "no-data") {
     return (
-      <>
-        <SiteHeader />
-        <main style={page}>
-          <h1>Culture Scan report</h1>
-          <p>No responses yet. The report unlocks once staff have taken the scan.</p>
-        </main>
-      </>
+      <AuroraPublic>
+        <Heading />
+        <p className="ev-lead">No responses yet. The report unlocks once staff have taken the scan.</p>
+      </AuroraPublic>
     );
   }
 
   if (load.status === "below-floor") {
     return (
-      <>
-        <SiteHeader />
-        <main style={page}>
-          <h1>Culture Scan report</h1>
+      <AuroraPublic>
+        <Heading />
+        <div className="ap-card">
           {load.reason === "no-headcount" ? (
             <p>
               {load.n} {load.n === 1 ? "response" : "responses"} so far, but the school record has no faculty headcount.
@@ -76,8 +68,8 @@ export default async function ReportPage() {
               until enough staff have taken the scan to keep individual answers unidentifiable and the picture representative.
             </p>
           )}
-        </main>
-      </>
+        </div>
+      </AuroraPublic>
     );
   }
 
@@ -149,52 +141,48 @@ export default async function ReportPage() {
   ];
 
   return (
+    <AuroraPublic>
+      <p className="ev-eyebrow">Culture Scan report</p>
+      <h1>
+        School <em>Culture Scan</em>
+      </h1>
+      <p className="ev-lead">
+        {stats.n} respondents · {stats.itemTotal} items · wave 1 · {SLIDE_COUNT} slides, 16:9
+      </p>
+
+      {synthetic && (
+        <div className="ap-notice" role="note">
+          <span aria-hidden>⚠</span>
+          <span>
+            <strong>Synthetic demo data — not real staff responses.</strong> Every number and finding below is generated. Clear the synthetic rows before
+            showing this to a school.
+          </span>
+        </div>
+      )}
+
+      <div style={{ margin: "24px 0" }}>
+        <DeckToolbar count={SLIDE_COUNT} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+        {slides.map((slide, i) => (
+          <section key={slide.name}>
+            <div className="ap-slide">{slide.node}</div>
+            <SlideActions index={i + 1} name={slide.name} />
+          </section>
+        ))}
+      </div>
+    </AuroraPublic>
+  );
+}
+
+function Heading() {
+  return (
     <>
-      <SiteHeader />
-      <main style={page}>
-        <h1 style={{ marginBottom: 4 }}>School Culture Scan</h1>
-        <p style={{ marginTop: 0, color: "#52514e" }}>
-          {stats.n} respondents · {stats.itemTotal} items · wave 1 · {SLIDE_COUNT} slides, 16:9
-        </p>
-
-        {synthetic && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              margin: "20px 0",
-              padding: "14px 16px",
-              background: "#fdf3dc",
-              borderLeft: "6px solid #fab219",
-              borderRadius: 4,
-            }}
-          >
-            <span aria-hidden style={{ fontSize: 20, lineHeight: 1 }}>
-              ⚠
-            </span>
-            <span style={{ fontSize: 14, color: "#0b0b0b" }}>
-              <strong>Synthetic demo data — not real staff responses.</strong> Every number and
-              finding below is generated. Clear the synthetic rows before showing this to a school.
-            </span>
-          </div>
-        )}
-
-        <div style={{ margin: "24px 0" }}>
-          <DeckToolbar count={SLIDE_COUNT} />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-          {slides.map((slide, i) => (
-            <section key={slide.name}>
-              <div style={{ border: "1px solid rgba(11,11,11,0.10)", borderRadius: 8, overflow: "hidden" }}>
-                {slide.node}
-              </div>
-              <SlideActions index={i + 1} name={slide.name} />
-            </section>
-          ))}
-        </div>
-      </main>
+      <p className="ev-eyebrow">Culture Scan report</p>
+      <h1>
+        School <em>Culture Scan</em>
+      </h1>
     </>
   );
 }
