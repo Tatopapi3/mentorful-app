@@ -116,7 +116,10 @@ Nick's Oct 29 answers that are still open, and where each one goes:
    `authenticated` only.
 6. **Lookbook default.** Teachers appear by default and can hide themselves (the old self-authored card was opt-in). Per-field
    choices are the later enhancement Nick named.
-7. **Archetype panel.** Kept, with the floor and an explanation; Nick asked whether it should exist at all.
+7. **Email for sign-in links.** Sign-in is by emailed link, and Supabase's built-in sender only allows about two emails an hour per
+   project ("email rate limit exceeded"). Fine for one person testing, not for a school. Before real use, set a real sender
+   (Supabase: Authentication, then SMTP, with a provider such as Resend or Postmark) and raise the rate limit to match the faculty size.
+8. **Archetype panel.** Kept, with the floor and an explanation; Nick asked whether it should exist at all.
 
 ## Running it
 
