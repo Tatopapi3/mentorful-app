@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import SiteHeader from "@/components/SiteHeader";
+import { AuroraPublic } from "@/components/aurora/public-frame";
 
 const PROGRESS_KEY = "mentorful:culture-scan-v2:progress";
 const COMPLETED_KEY = "mentorful:culture-scan-v2:completed";
@@ -134,27 +134,25 @@ export default function SurveyPage() {
 
   if (loadError) {
     return (
-      <>
-        <SiteHeader />
-        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-          <p style={{ color: "red" }}>Could not load survey: {loadError}</p>
+      <AuroraPublic>
+        <div className="ap-card ap-survey">
+          <p className="ap-error">Could not load survey: {loadError}</p>
           <p style={{ marginTop: 8 }}>
             Please refresh the page. If it keeps happening, contact the person who shared this link.
           </p>
-        </main>
-      </>
+        </div>
+      </AuroraPublic>
     );
   }
 
   // Still fetching (items null) or hydrating localStorage — a genuine loading state.
   if (items === null || !hydrated) {
     return (
-      <>
-        <SiteHeader />
-        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
+      <AuroraPublic>
+        <div className="ap-card ap-survey">
           <p>Loading…</p>
-        </main>
-      </>
+        </div>
+      </AuroraPublic>
     );
   }
 
@@ -162,10 +160,9 @@ export default function SurveyPage() {
   // which returns [] with no error). Show a clear message — never keep spinning.
   if (items.length === 0 || sections.length === 0) {
     return (
-      <>
-        <SiteHeader />
-        <main style={{ maxWidth: 600, margin: "80px auto", padding: 24 }}>
-          <h1 style={{ fontSize: 20 }}>Survey unavailable</h1>
+      <AuroraPublic>
+        <div className="ap-card ap-survey">
+          <h1 style={{ fontSize: 26 }}>Survey unavailable</h1>
           <p style={{ marginTop: 8 }}>
             No survey questions were returned, so the scan can’t be shown right now. The survey may
             not be published yet, or the questions couldn’t be read.
@@ -173,8 +170,8 @@ export default function SurveyPage() {
           <p style={{ marginTop: 8 }}>
             Please refresh, and if it keeps happening, contact the person who shared this link.
           </p>
-        </main>
-      </>
+        </div>
+      </AuroraPublic>
     );
   }
 
@@ -182,17 +179,12 @@ export default function SurveyPage() {
 
   if (!started) {
     return (
-      <>
-        <SiteHeader
-          sticky
-          right={
-            <span className="mono" style={{ color: "var(--muted)" }}>
-              School Culture Scan
-            </span>
-          }
-        />
-        <main className="sv-body sv-intro">
-          <h1>Before you start</h1>
+      <AuroraPublic right={<span className="ap-prog"><span className="lbl">School Culture Scan</span></span>}>
+        <div className="ap-card ap-survey">
+          <p className="ev-eyebrow">Culture Scan</p>
+          <h1>
+            Before you <em>start</em>
+          </h1>
           <p>
             Twenty-six questions, about six minutes. There are no right answers, and none of this is
             about your teaching.
@@ -202,7 +194,7 @@ export default function SurveyPage() {
             whether it’s safe to say a lesson didn’t work, and whether the adults here are pulling in
             the same direction.
           </p>
-          <div className="privacy">
+          <div className="ap-privacy">
             <b>Your answers are anonymous, structurally.</b>
             <p>
               Not “we promise not to look.” When you submit, your responses are stored against a
@@ -217,17 +209,17 @@ export default function SurveyPage() {
           </p>
           <button
             type="button"
-            className="btn"
+            className="ev-btn primary"
             style={{ marginTop: 16 }}
             onClick={() => setStarted(true)}
           >
             Start
           </button>
-          <p className="sv-fine">
+          <p className="ap-fine">
             You can leave and come back. Your answers stay on this device until you submit.
           </p>
-        </main>
-      </>
+        </div>
+      </AuroraPublic>
     );
   }
 
@@ -284,11 +276,9 @@ export default function SurveyPage() {
   }
 
   return (
-    <>
-      <SiteHeader
-        sticky
+    <AuroraPublic
         right={
-          <div className="prog">
+          <div className="ap-prog">
             {/* The dimension name is deliberately never shown while answering —
                 seeing the name of a thing changes how people rate it. Only the
                 section number appears here. */}
@@ -300,16 +290,16 @@ export default function SurveyPage() {
             </div>
           </div>
         }
-      />
-      <main className="sv-body">
+      >
+      <main className="ap-survey">
         {currentItems.map((item) => (
-          <fieldset key={item.id} className="item">
-            <legend className="q">{item.text}</legend>
-            <div className="scale">
+          <fieldset key={item.id} className="ap-item">
+            <legend>{item.text}</legend>
+            <div className="ap-scale">
               {SCALE.map((s) => {
                 const id = `${item.id}-${s.value}`;
                 return (
-                  <div key={s.value} className="scale-opt">
+                  <div key={s.value} className="ap-opt">
                     <input
                       type="radio"
                       id={id}
@@ -326,14 +316,14 @@ export default function SurveyPage() {
           </fieldset>
         ))}
 
-        <div className="sv-nav">
+        <div className="ap-nav">
           <span className="left" aria-live="polite">
             {remainingLabel}
           </span>
           <div className="actions">
             <button
               type="button"
-              className="btn btn-ghost"
+              className="ev-btn"
               onClick={() =>
                 currentSection === 0 ? setStarted(false) : setCurrentSection((s) => s - 1)
               }
@@ -343,7 +333,7 @@ export default function SurveyPage() {
             {isLast ? (
               <button
                 type="button"
-                className="btn"
+                className="ev-btn primary"
                 disabled={!allAnsweredOnScreen || submitting}
                 onClick={handleSubmit}
               >
@@ -352,7 +342,7 @@ export default function SurveyPage() {
             ) : (
               <button
                 type="button"
-                className="btn"
+                className="ev-btn primary"
                 disabled={!allAnsweredOnScreen}
                 onClick={() => setCurrentSection((s) => s + 1)}
               >
@@ -362,8 +352,8 @@ export default function SurveyPage() {
           </div>
         </div>
 
-        {submitError && <p className="sv-error">{submitError}</p>}
+        {submitError && <p className="ap-surveyerr">{submitError}</p>}
       </main>
-    </>
+    </AuroraPublic>
   );
 }

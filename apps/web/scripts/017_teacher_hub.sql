@@ -42,7 +42,7 @@ as $$
   );
 $$;
 
-revoke all on function public.is_pair_member(uuid) from public;
+revoke all on function public.is_pair_member(uuid) from anon, public;
 grant execute on function public.is_pair_member(uuid) to authenticated;
 
 -- ------------------------------------------------------ 1. pair chat
@@ -203,8 +203,10 @@ begin
    where schemaname = 'public' and tablename in ('future_notes', 'platform_time', 'growth_goals', 'growth_entries');
 
   -- Every pair policy must go through the pair check; every own policy through my_profile_id().
+  -- Only OUR six tables: the database may already hold other tables' policies for signed-out visitors (the survey form needs them).
   select count(*) into leaky from pg_policies
    where schemaname = 'public'
+     and tablename in ('pair_messages', 'pair_game_sessions', 'future_notes', 'platform_time', 'growth_goals', 'growth_entries')
      and ((tablename in ('pair_messages', 'pair_game_sessions') and coalesce(qual, '') || coalesce(with_check, '') not like '%is_pair_member%')
        or (tablename in ('future_notes', 'platform_time', 'growth_goals', 'growth_entries') and coalesce(qual, '') || coalesce(with_check, '') not like '%my_profile_id%')
        or 'anon' = any(roles) or 'public' = any(roles));

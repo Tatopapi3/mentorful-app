@@ -141,7 +141,7 @@ begin
 end;
 $$;
 
-revoke all on function public.ctle_progress() from public;
+revoke all on function public.ctle_progress() from anon, public;
 grant execute on function public.ctle_progress() to authenticated;
 
 -- ------------------------------------------------------------ self-test

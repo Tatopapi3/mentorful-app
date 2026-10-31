@@ -146,7 +146,7 @@ begin
 end;
 $$;
 
-revoke all on function public.growth_activity(integer) from public;
+revoke all on function public.growth_activity(integer) from anon, public;
 grant execute on function public.growth_activity(integer) to authenticated;
 
 -- ------------------------------------------------------------ self-test
