@@ -13,6 +13,16 @@ Written Oct 30, 2026. Nothing here has been applied to a real database yet, and 
 - **Not yet done:** the five new database scripts have not been applied to any real project (see "Database"), so nothing
   has been tried against real sign-ins. Only one profile in the copy of Nick's data is linked to a login.
 
+## The pages before sign-in
+
+The landing page, sign-in, the Culture Scan survey and its thank-you page are in the Aurora look too, inside one shared frame,
+`src/components/aurora/public-frame.tsx` (`AuroraPublic`), with styles in `src/app/aurora-public.css` (class names start with `ap-`).
+Only the look changed: each page keeps its own logic, so **Eric can change how the survey works without touching how it looks**.
+When you add a screen (a code-entry step, a closed-survey message), wrap it in `<AuroraPublic>` and use the `ap-card`, `ap-item`,
+`ap-error` and `ev-btn` classes the existing screens use. Two things on the thank-you page to know about: the "32 of 50 teachers have
+finished, the scan closes Friday" block is **invented placeholder data** (the code says so); replace it with a real aggregate or remove it
+before a real school sees it. The standalone Culture Scan report at `/report` keeps its original slide design.
+
 ## Teacher dashboard (`/dashboard`)
 
 | Tab | What is there |
