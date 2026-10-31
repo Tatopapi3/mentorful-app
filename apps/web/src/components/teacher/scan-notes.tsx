@@ -132,7 +132,7 @@ export function ScanNotes({ ready }: { ready: boolean }) {
   }
 
   return (
-    <section className="ev-panel ta-composer ta-scan" id="scan" aria-labelledby="ta-scan-h">
+    <section className="ev-panel ta-composer ta-snap" id="scan" aria-labelledby="ta-scan-h">
       <p className="ev-eyebrow">Scan notes</p>
       <h2 id="ta-scan-h">
         From paper to <em>notes</em>.
@@ -147,7 +147,7 @@ export function ScanNotes({ ready }: { ready: boolean }) {
       ) : (
         <div aria-live="polite">
           {step === "idle" ? (
-            <div className="ta-scan-actions">
+            <div className="ta-snap-actions">
               <button type="button" className="ev-btn primary" onClick={openCamera}>
                 <Icon name="camera" size={16} /> Use the camera
               </button>
@@ -162,9 +162,9 @@ export function ScanNotes({ ready }: { ready: boolean }) {
           ) : null}
 
           {step === "camera" ? (
-            <div className="ta-scan-camera">
+            <div className="ta-snap-camera">
               <video ref={video} playsInline muted aria-label="Camera preview" />
-              <div className="ta-scan-actions">
+              <div className="ta-snap-actions">
                 <button type="button" className="ev-btn primary" onClick={capture}>
                   <Icon name="camera" size={16} /> Take photo
                 </button>
@@ -176,9 +176,9 @@ export function ScanNotes({ ready }: { ready: boolean }) {
           ) : null}
 
           {step === "reading" ? (
-            <div className="ta-scan-reading">
+            <div className="ta-snap-reading">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {shot ? <img src={shot} alt="The page you photographed" className="ta-scan-shot" /> : null}
+              {shot ? <img src={shot} alt="The page you photographed" className="ta-snap-shot" /> : null}
               <p role="status" className="ev-muted">
                 Reading the page…
               </p>
@@ -186,9 +186,9 @@ export function ScanNotes({ ready }: { ready: boolean }) {
           ) : null}
 
           {step === "review" ? (
-            <div className="ta-scan-review">
+            <div className="ta-snap-review">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {shot ? <img src={shot} alt="The page you photographed" className="ta-scan-shot" /> : null}
+              {shot ? <img src={shot} alt="The page you photographed" className="ta-snap-shot" /> : null}
               <div className="ev-field">
                 <label htmlFor="ta-scan-text">
                   What we read {source === "sample" ? <span className="ev-badge">Sample reading</span> : null}
@@ -198,7 +198,7 @@ export function ScanNotes({ ready }: { ready: boolean }) {
                   {text.length} of {MAX_NOTE} characters. Fix anything it got wrong before you save.
                 </small>
               </div>
-              <div className="ta-scan-actions">
+              <div className="ta-snap-actions">
                 <button type="button" className="ev-btn primary" disabled={saving || !text.trim()} onClick={save}>
                   {saving ? "Saving…" : "Save to my notes"}
                 </button>
@@ -210,11 +210,11 @@ export function ScanNotes({ ready }: { ready: boolean }) {
           ) : null}
 
           {step === "saved" ? (
-            <div className="ta-scan-saved">
+            <div className="ta-snap-saved">
               <p role="status">
                 <Icon name="check" size={16} /> Saved privately. It&rsquo;s in your Growth notes, and only you can read it.
               </p>
-              <div className="ta-scan-actions">
+              <div className="ta-snap-actions">
                 <Link href={`${base}/growth`} className="ev-btn primary">
                   Open my Growth notes
                 </Link>
