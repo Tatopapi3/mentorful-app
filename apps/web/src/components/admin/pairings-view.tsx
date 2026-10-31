@@ -1,4 +1,5 @@
 import { StackBar } from "@/components/admin/diagrams";
+import { Constellation } from "@/components/aurora/constellation";
 import { AdminFrame, Chip, CycleSwitcher, LinkBtn, Muted, Notice, Panel, Row, StatGrid, SubmitBtn, basePath, type Skin } from "@/components/admin/kit";
 import { decidePairing, publishRound } from "@/app/admin/pairings/actions";
 import { buildFacts } from "@/lib/admin/facts";
@@ -6,10 +7,13 @@ import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { participationRates, quietLabel } from "@/lib/admin/participation";
+import { coverage, departmentMatrix, gaps } from "@/lib/admin/network";
 import { pairingSplit } from "@/lib/admin/visuals";
 import { orientPairs, randomizePairs, seededRandom } from "@/lib/pairing/randomize";
 
 type Params = Record<string, string | string[] | undefined>;
+/** The first draft a leader opens. Demo Day sets DRAFT_SEED to one that pairs the two teachers of the scene. */
+const FIRST_SEED = Number(process.env.DRAFT_SEED) || 1;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
 
 // Pairing review: decide on the pairs teachers asked for, and draft a randomized round for everyone still
@@ -37,6 +41,11 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
       })()
     : null;
 
+  // What approving the draft would do to the department network: which missing links it closes.
+  const before = departmentMatrix(snap);
+  const afterM = draft ? departmentMatrix({ people: snap.people, pairs: [...snap.pairs, ...draft.pairs.map((p, i) => ({ id: `draft-${i}`, a: p.host.id, b: p.visitor.id, domain: null, tag: null }))] }) : null;
+  const closed = afterM ? gaps(before).filter((g) => !gaps(afterM).some((x) => x.a === g.a && x.b === g.b)) : [];
+  const cov = { before: coverage(before), after: afterM ? coverage(afterM) : null };
   const crosses = (a: string, b: string) => byId.get(a)?.dept !== byId.get(b)?.dept;
   const crossing = snap.pairs.filter((x) => crosses(x.a, x.b)).length;
   const split = pairingSplit(facts.pairCount, snap.quietPairs ?? null, crossing);
@@ -117,13 +126,29 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
             ) : !draft ? (
               <>
                 <Muted skin={skin}>
-                  A round pairs these {pool.length} teachers across departments and grades, so people who rarely talk end up together. You review it before anyone is paired. Teachers with a request waiting are left out.
+                  A new round pairs these {pool.length} teachers across departments and grades, so people who rarely talk end up together. You review it before anyone is paired. Teachers with a request waiting are left out.
                 </Muted>
-                <LinkBtn skin={skin} href={q({ seed: "1" })} primary>Draft a round</LinkBtn>
+                <LinkBtn skin={skin} href={q({ seed: String(FIRST_SEED) })} primary>Draft new round</LinkBtn>
               </>
             ) : (
               <>
-                <Muted skin={skin}>This is a draft. Nothing is saved until you publish it. The first person is observed, and the second visits.</Muted>
+                <Muted skin={skin}>This is a draft. Nothing is saved until you approve it. The first person is observed, and the second visits.</Muted>
+                {cov.after && (
+                  <p style={{ margin: "10px 0 14px", font: "600 17px var(--ev-body, system-ui)" }}>
+                    {closed.length > 0
+                      ? `This round closes ${closed.length === 1 ? "a gap" : `${closed.length} gaps`}: ${closed.map((g) => `${g.a} and ${g.b}`).join(", ")}. `
+                      : "This round doesn't close a department gap. "}
+                    Connected departments go from {cov.before.connected} of {cov.before.possible} to {cov.after.connected} of {cov.after.possible}.
+                  </p>
+                )}
+                <Constellation
+                  base="/admin"
+                  people={snap.people.map((p) => ({ id: p.id, name: p.name, dept: p.dept, grade: null }))}
+                  pairs={snap.pairs.map((p) => ({ a: p.a, b: p.b }))}
+                  requests={[]}
+                  drafts={draft.pairs.map((p) => ({ a: p.host.id, b: p.visitor.id }))}
+                  draftLabel="New round"
+                />
                 {draft.pairs.map((p) => (
                   <Row
                     key={`${p.host.id}:${p.visitor.id}`}
@@ -142,9 +167,9 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
                   {draft.pairs.map((p) => (
                     <input key={`${p.host.id}:${p.visitor.id}`} type="hidden" name="pair" value={`${p.host.id}:${p.visitor.id}`} />
                   ))}
-                  <SubmitBtn skin={skin} primary>Publish {draft.pairs.length} {draft.pairs.length === 1 ? "pair" : "pairs"}</SubmitBtn>
-                  <LinkBtn skin={skin} href={q({ seed: String((Number.isFinite(seed) ? seed : 0) + 1) })}>Draft a different round</LinkBtn>
-                  <LinkBtn skin={skin} href={q({})}>Discard the draft</LinkBtn>
+                  <SubmitBtn skin={skin} primary>Approve {draft.pairs.length} {draft.pairs.length === 1 ? "pair" : "pairs"}</SubmitBtn>
+                  <LinkBtn skin={skin} href={q({})}>Reject</LinkBtn>
+                  <LinkBtn skin={skin} href={q({ seed: String((Number.isFinite(seed) ? seed : 0) + 1) })}>Draft another round</LinkBtn>
                 </form>
               </>
             )}

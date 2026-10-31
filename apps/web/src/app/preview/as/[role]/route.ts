@@ -9,5 +9,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ role: strin
   const next = url.searchParams.get("next") ?? "/preview";
   const res = NextResponse.redirect(new URL(next.startsWith("/") ? next : "/preview", url.origin));
   res.cookies.set("preview_as", role === "teacher" ? "teacher" : "admin", { path: "/" });
+  // Demo Day: the same teacher screen, as the second teacher of the scene (see lib/preview/stageTables.ts).
+  res.cookies.set("preview_who", url.searchParams.get("who") === "second" ? "second" : "", { path: "/", maxAge: url.searchParams.get("who") === "second" ? undefined : 0 });
   return res;
 }

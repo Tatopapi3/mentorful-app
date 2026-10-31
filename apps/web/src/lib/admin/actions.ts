@@ -50,7 +50,7 @@ export function buildActions(f: Facts, base: LookBase = "/admin"): AdminAction[]
       title: `Pair the ${f.unpaired} unpaired ${plural(f.unpaired, "teacher", "teachers")}`,
       detail: `${f.paired} of ${f.faculty} teachers have a partner. Pairs that mix departments connect people who rarely talk.`,
       href: `${base}/pairings`,
-      cta: "Draft a round",
+      cta: "Draft new round",
     });
   }
 

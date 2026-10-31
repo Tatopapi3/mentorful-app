@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { previewEnabled } from "@/lib/preview";
-import { JOURNAL_COOKIE } from "@/lib/preview/journal";
+import { JOURNAL_COOKIE, resetMemoryJournal } from "@/lib/preview/journal";
 
 /** Demo only: forget this visitor's changes and go back to the starting data. */
 export async function GET(request: Request) {
@@ -9,5 +9,6 @@ export async function GET(request: Request) {
   const next = url.searchParams.get("next") ?? "/preview";
   const res = NextResponse.redirect(new URL(next.startsWith("/") ? next : "/preview", url.origin));
   res.cookies.set(JOURNAL_COOKIE, "", { path: "/", maxAge: 0 });
+  resetMemoryJournal();
   return res;
 }

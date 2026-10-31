@@ -7,9 +7,22 @@ import { cookies } from "next/headers";
 import type { Row, Tables, Write } from "./mockQuery";
 
 export const JOURNAL_COOKIE = "demo_changes";
+
+/**
+ * PREVIEW_JOURNAL=memory keeps the changes in this server's memory instead of a cookie. That is for running the demo on one
+ * machine (Demo Day): a cookie holds about 4 KB, which is too small for approving a round of pairs, and the browser quietly
+ * drops one that is too big. There is one visitor then, so one shared list; /preview/reset empties it. Never for the
+ * deployed demo, where every request may land on a different server.
+ */
+const inMemory = () => process.env.PREVIEW_JOURNAL === "memory";
+const mem = globalThis as unknown as { __previewJournal?: Write[] };
+export const resetMemoryJournal = () => {
+  mem.__previewJournal = [];
+};
 const MAX = 3600;
 
 export async function readJournal(): Promise<Write[]> {
+  if (inMemory()) return [...(mem.__previewJournal ?? [])];
   try {
     const v = (await cookies()).get(JOURNAL_COOKIE)?.value;
     const j = v ? JSON.parse(decodeURIComponent(v)) : [];
@@ -20,6 +33,10 @@ export async function readJournal(): Promise<Write[]> {
 }
 
 export async function writeJournal(journal: Write[]): Promise<void> {
+  if (inMemory()) {
+    mem.__previewJournal = [...journal];
+    return;
+  }
   let j = journal;
   let value = encodeURIComponent(JSON.stringify(j));
   while (value.length > MAX && j.length > 1) {

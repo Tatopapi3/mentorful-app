@@ -1,6 +1,7 @@
 import { demoCount, respondentLabel, respondentsText } from "@/lib/report/gates";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { AdminFrame, Chip, LinkBtn, Muted, Panel, Row, StatGrid, basePath, type Skin } from "@/components/admin/kit";
+import { AutoPrint, PrintButton } from "@/components/admin/print-bar";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { participationRates } from "@/lib/admin/participation";
@@ -25,8 +26,9 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
   return (
     <AdminFrame skin={skin} eyebrow={`Board summary · ${snap.cycle?.name ?? "No cycle"} · ${today}`} title={snap.school.name} sub={headlineSentence(facts)}>
       <div className="ev-noprint" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
+        <PrintButton className="ev-btn sm primary" />
         {snap.scan && <LinkBtn skin={skin} href={csv}>Download the results (CSV)</LinkBtn>}
-        <Muted skin={skin}>To keep this page, press Cmd+P (Ctrl+P on Windows) and choose Save as PDF.</Muted>
+        <AutoPrint enabled={searchParams.print === "1"} />
       </div>
 
       <StatGrid

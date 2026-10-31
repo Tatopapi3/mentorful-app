@@ -39,7 +39,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
       cta: "Review it",
     })),
     ...(facts.unpaired > 0
-      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Draft a round" }]
+      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Draft new round" }]
       : []),
   ];
 

@@ -1,0 +1,60 @@
+import { describe, expect, it } from "vitest";
+import { buildStageTables, STAGE_CHARACTERS, STAGE_DRAFT_SEED } from "@/lib/preview/stageTables";
+import { departmentMatrix, crossCount, gaps } from "@/lib/admin/network";
+import { orientPairs, randomizePairs, seededRandom } from "@/lib/pairing/randomize";
+
+const t = buildStageTables();
+const teachers = t.profiles.filter((p) => p.role === "teacher");
+const name = (id: unknown) => {
+  const p = t.profiles.find((x) => x.id === id)!;
+  return `${p.first_name} ${p.last_name}`;
+};
+const people = teachers.map((p) => ({ id: String(p.id), name: name(p.id), dept: String(p.department) }));
+const pairsOf = (rows = t.pairings) => rows.map((p) => ({ id: String(p.id), a: String(p.host_id), b: String(p.visitor_id), domain: null, tag: null }));
+
+describe("the stage dataset", () => {
+  it("is a small faculty where every department clears the privacy floor", () => {
+    expect(teachers).toHaveLength(32);
+    const m = departmentMatrix({ people, pairs: pairsOf() });
+    expect(m.omitted).toEqual([]);
+    expect(m.depts).toEqual(["Arts", "English", "History", "Math", "Science"]);
+    expect(t.schools[0].faculty_headcount).toBe(32);
+  });
+
+  it("has no pair at all between English and Science, the biggest gap in the school", () => {
+    const m = departmentMatrix({ people, pairs: pairsOf() });
+    expect(gaps(m)[0]).toEqual({ a: "English", b: "Science" });
+    expect(crossCount(m, "English", "Science")).toBe(0);
+    // The two biggest departments, so no other missing link outweighs it.
+    expect(m.size.English + m.size.Science).toBeGreaterThan(Math.max(...gaps(m).slice(1).map((g) => m.size[g.a] + m.size[g.b])));
+  });
+
+  it("leaves four English and four Science teachers without a partner, and casts them from those", () => {
+    const paired = new Set(t.pairings.flatMap((p) => [p.host_id, p.visitor_id]));
+    const pool = teachers.filter((p) => !paired.has(p.id));
+    expect(pool.filter((p) => p.department === "English")).toHaveLength(4);
+    expect(pool.filter((p) => p.department === "Science")).toHaveLength(4);
+    expect(pool.map((p) => `${p.first_name} ${p.last_name}`)).toEqual(expect.arrayContaining([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second]));
+    expect(teachers.filter((p) => p.auth_user_id).map((p) => `${p.first_name} ${p.last_name}`).sort()).toEqual([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second].sort());
+  });
+
+  it("opens with a draft that pairs the two characters and crosses every pair", () => {
+    const paired = new Set(t.pairings.flatMap((p) => [p.host_id, p.visitor_id]));
+    // The pairing screen draws its pool from the snapshot, which is ordered by last name.
+    const pool = teachers.filter((p) => !paired.has(p.id)).sort((a, b) => String(a.last_name).localeCompare(String(b.last_name)));
+    const { pairs } = randomizePairs({ teachers: pool.map((p) => ({ id: String(p.id), department: String(p.department), gradeLevel: null })), exclusions: [], pastPairs: [], random: seededRandom(STAGE_DRAFT_SEED) });
+    const draft = orientPairs(pairs, new Map(), seededRandom(STAGE_DRAFT_SEED + 1));
+    expect(draft).toHaveLength(4);
+    expect(draft.every((d) => d.host.department !== d.visitor.department)).toBe(true);
+    expect(draft.some((d) => [name(d.host.id), name(d.visitor.id)].sort().join() === [STAGE_CHARACTERS.first, STAGE_CHARACTERS.second].sort().join())).toBe(true);
+    // Approving it closes the English and Science gap.
+    const after = departmentMatrix({ people, pairs: [...pairsOf(), ...pairsOf(draft.map((d, i) => ({ id: `d${i}`, host_id: d.host.id, visitor_id: d.visitor.id }) as never))] });
+    expect(crossCount(after, "English", "Science")).toBe(4);
+    expect(gaps(after).some((g) => g.a === "English" && g.b === "Science")).toBe(false);
+  });
+
+  it("has nine logged conversations, one per pair at most, all submitted", () => {
+    expect(t.conversation_logs).toHaveLength(9);
+    expect(t.conversation_logs.every((l) => l.status === "submitted")).toBe(true);
+  });
+});

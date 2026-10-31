@@ -65,11 +65,11 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
         <Row
           skin={skin}
           title="Where the program stands, how far the pairs reach, and what to do next"
-          detail="Pairing, department connections, participation, teacher growth (once enough teachers share) and next steps in 16:9 slides. Download it as a PowerPoint file to edit, or open it and save it as a PDF to share."
+          detail="Pairing, department connections, participation, teacher growth (once enough teachers share) and next steps in 16:9 slides. Download it as a PDF to share, or as a PowerPoint file to edit."
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Get skin={skin} href={`/admin/export/slides.pptx${q}`} primary>Download PowerPoint</Get>
-            <Get skin={skin} href={`/admin/export/slides${q}`}>Open as slides, save as PDF</Get>
+            <Get skin={skin} href={`/admin/export/slides${q ? `${q}&print=1` : "?print=1"}`} primary>Download PDF</Get>
+            <Get skin={skin} href={`/admin/export/slides.pptx${q}`}>Download PowerPoint</Get>
           </div>
         </Row>
       </Panel>
@@ -85,8 +85,11 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
       </Panel>
 
       <Panel skin={skin} title="Board summary" eyebrow="One page">
-        <Row skin={skin} title="Where things stand, the numbers and the next moves, on one page" detail="Made for a staff meeting handout. Press Print and choose Save as PDF to keep it.">
-          <Get skin={skin} href={`${base}/summary${q}`}>Open the board summary</Get>
+        <Row skin={skin} title="Where things stand, the numbers and the next moves, on one page" detail="Made for a staff meeting handout, one page you can keep as a PDF.">
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Get skin={skin} href={`${base}/summary${q ? `${q}&print=1` : "?print=1"}`} primary>Download PDF</Get>
+            <Get skin={skin} href={`${base}/summary${q}`}>Open the board summary</Get>
+          </div>
         </Row>
       </Panel>
 

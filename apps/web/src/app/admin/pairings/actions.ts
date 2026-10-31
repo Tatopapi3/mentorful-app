@@ -26,7 +26,7 @@ export async function decidePairing(formData: FormData) {
   done(to, "notice", decision === "approved" ? "Pair approved. It now counts as an active pair." : "Request declined.", cycle);
 }
 
-/** Publish a reviewed randomized round as approved pairs. Nothing is saved until this is pressed. */
+/** Approve a reviewed randomized round: the draft becomes approved pairs. Nothing is saved until this is pressed. */
 export async function publishRound(formData: FormData) {
   const to = back(formData.get("back"));
   const admin = await requireAdmin();
@@ -60,5 +60,5 @@ export async function publishRound(formData: FormData) {
   }));
   const { error } = await supabase.from("pairings").insert(rows);
   if (error) done(to, "error", `Couldn't publish the round: ${error.message}`, cycleId);
-  done(to, "notice", `Published ${rows.length} ${rows.length === 1 ? "pair" : "pairs"}.`, cycleId);
+  done(to, "notice", `Approved ${rows.length} new ${rows.length === 1 ? "pair" : "pairs"}.`, cycleId);
 }

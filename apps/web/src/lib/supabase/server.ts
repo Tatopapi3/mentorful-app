@@ -32,6 +32,7 @@ export async function createClient() {
     const role: PreviewRole = cookieStore.get("preview_as")?.value === "teacher" ? "teacher" : "admin";
     const journal = await readJournal();
     return createPreviewClient(role, {
+      who: cookieStore.get("preview_who")?.value === "second" ? "second" : undefined,
       journal,
       onWrite: async (w) => {
         journal.push(w);

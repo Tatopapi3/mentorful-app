@@ -8,6 +8,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { buildTables, IDS } from "./fixtures";
 import { buildNickTables } from "./nickTables";
+import { AUTH_SECOND, buildStageTables } from "./stageTables";
 import { overlay } from "./journal";
 import { addHubTables } from "./hubTables";
 import { addLookbookTables, lookbookRows } from "./lookbookTables";
@@ -26,6 +27,7 @@ export const previewEnabled = () =>
 const g = globalThis as unknown as { __previewTables?: Tables };
 
 export function previewTables(): Tables {
+  if (!g.__previewTables && process.env.PREVIEW_DATASET === "stage") g.__previewTables = buildStageTables();
   if (!g.__previewTables && process.env.PREVIEW_DATASET === "nick") g.__previewTables = buildNickTables();
   if (!g.__previewTables) g.__previewTables = buildTables(process.env.NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID ?? "preview-survey", process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID ?? IDS.school);
   if (!(g.__previewTables as Tables).pair_messages) {
@@ -47,7 +49,7 @@ export function previewTables(): Tables {
   return g.__previewTables;
 }
 
-export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boolean; journal?: Write[]; onWrite?: (w: Write) => void | Promise<void> } = {}) {
+export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boolean; who?: "second"; journal?: Write[]; onWrite?: (w: Write) => void | Promise<void> } = {}) {
   // With a journal the visitor gets their own copy of the data; without one they share the process's data (the local preview).
   const base = previewTables();
   const journaled = opts.journal ? overlay(base, opts.journal) : base;
@@ -55,7 +57,7 @@ export function createPreviewClient(role: PreviewRole, opts: { bypassRls?: boole
   // the shared tables and is never journaled (it is only harmless demo numbers).
   const tables = opts.journal ? (new Proxy(journaled, { get: (t, n) => (n === "platform_time" ? base.platform_time : (t as Tables)[n as string]), set: (t, n, v) => ((t as Tables)[n as string] = v, true) }) as Tables) : base;
   const onWrite = opts.onWrite ? (w: Write) => (w.table === "platform_time" ? undefined : opts.onWrite!(w)) : undefined;
-  const me = tables.profiles.find((p) => p.auth_user_id === (role === "admin" ? IDS.authAdmin : IDS.authTeacher))!;
+  const me = tables.profiles.find((p) => p.auth_user_id === (role === "admin" ? IDS.authAdmin : opts.who === "second" ? AUTH_SECOND : IDS.authTeacher))!;
   const visible: Visibility = (table, rows) => {
     if (opts.bypassRls) return rows;
     // The few row-level rules that shape what each page can show. The real ones live in Nick's scripts 009 and 011.
