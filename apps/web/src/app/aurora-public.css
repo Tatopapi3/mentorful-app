@@ -53,13 +53,14 @@
 .ap-privacy { margin: 22px 0; padding: 20px 22px; border-radius: 20px; background: var(--ev-grad-soft); border: 1px solid var(--ev-line); }
 .ap-privacy b { display: block; margin-bottom: 6px; font: 600 16px var(--ev-display); letter-spacing: -0.03em; }
 .ap-privacy p { margin: 0; color: var(--ev-ink); font-size: 15px; }
-.ap-fine { font-size: 13.5px; color: var(--ev-muted); margin-top: 14px; }
-.ap-item { margin: 0 0 16px; padding: 22px 24px; border: 1px solid var(--ev-line); border-radius: 22px; background: var(--ev-panel); box-shadow: var(--ev-shadow); backdrop-filter: blur(12px); min-inline-size: 0; }
+.ap-fine { font-size: 13.5px; color: var(--ev-muted); margin-top: 20px; }
+.ap-item { scroll-margin-top: 96px; margin: 0 0 16px; padding: 22px 24px; border: 1px solid var(--ev-line); border-radius: 22px; background: var(--ev-panel); box-shadow: var(--ev-shadow); backdrop-filter: blur(12px); min-inline-size: 0; }
 .ap-item legend { float: left; width: 100%; padding: 0; margin: 0 0 14px; font: 500 17px/1.45 var(--ev-display); letter-spacing: -0.02em; color: var(--ev-ink); }
 .ap-item .ap-scale { clear: both; }
 .ap-scale { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .ap-opt { position: relative; }
-.ap-opt input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+/* The radio itself is visually hidden but stays focusable and in the accessibility tree; the label is the click target. */
+.ap-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
 .ap-opt label { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 54px; padding: 8px 6px; border: 1px solid var(--ev-line); border-radius: 14px; background: var(--ev-panel-solid); color: var(--ev-ink); font-size: 12.5px; line-height: 1.25; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; }
 .ap-opt input:hover + label { border-color: var(--ev-teal-deep); }
 .ap-opt input:checked + label { background: var(--ev-grad); color: var(--ev-on-grad); border-color: transparent; font-weight: 600; }
