@@ -12,11 +12,10 @@ technical detail for each item.
    closes means nobody can work out a person's answer by watching the totals change as responses arrive.
 3. **The master key.** One place in the code (`src/lib/report/data.ts`) reads every survey answer with a key that skips the
    database's protections. Nick wants that key restricted and replaced with a database function that only ever returns totals.
-4. **The named faculty map.** In Reports, the faculty map draws every teacher as a dot **with their name**, and a line for who
-   is paired with whom. Only the school lead sees it. Nick asked that the Overview page not list every teacher, so the question
-   is whether the map should show names either. Options: keep names (a principal can see who is isolated), or show only
-   departments, with groups under 5 hidden, like the rest of the dashboard. Nothing the map shows is private from a school
-   lead today, since they approve the pairs, but a name next to "no partner" can feel like a judgement. This is Nick's call.
+4. **The named faculty map: decided.** In Reports, the faculty map draws every teacher as a dot **with their name**, and a line
+   for who is paired with whom. Only the school lead sees it. Nick's request (Oct 29) was only that the Overview page not list
+   every teacher, so the names stay on the map in Reports and Overview never shows them. Nothing to build; if Nick later wants
+   departments only, that is a small change.
 5. **Functions anyone can call without signing in.** Some of Nick's database helper functions can be run by a visitor who isn't
    signed in. Most should be closed; `survey_is_open` has to stay open for the survey.
 6. **The Culture Scan report page (`/report`) is public.** It was left open for the pilot so a principal could open it in a demo.

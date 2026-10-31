@@ -108,8 +108,9 @@ Nick's Oct 29 answers that are still open, and where each one goes:
    restricted and rotated now (he holds it), and "reports read from the database instead of the master key" on the
    hardening roadmap: replace the service-key read with a security-definer function that returns only the aggregates.
 4. **The named faculty map.** The map in Reports (and `/admin/map` and the Pairing page) shows named teachers to the
-   school lead. Nick asked that Overview not list every teacher; the map lives in Reports at the lead's request. Before real
-   data goes in, decide whether it stays named. Everything downloadable (deck, CSVs) is aggregate only.
+   school lead. Nick asked that Overview not list every teacher; the map lives in Reports at the lead's request. Decided (Juan, Oct 31, reading
+   Nick's Oct 29 email): Nick only meant Overview, so **names stay on the map in Reports** and Overview never lists teachers.
+   Everything downloadable (deck, CSVs) is aggregate only.
 5. **Functions callable without signing in.** The Supabase security advisor lists Nick's `SECURITY DEFINER` helpers as
    executable by `anon`: `concern_domain_counts`, `is_admin`, `is_school_admin`, `my_email`, `my_profile_id`,
    `my_school_id`, `survey_is_open`, `rls_auto_enable`, `handle_new_user`, `survey_items_single_active_version`. Revoke
