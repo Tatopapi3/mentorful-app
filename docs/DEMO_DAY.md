@@ -22,18 +22,19 @@ Use the deployed link, not Sign in. The demo has no accounts: it signs you in as
 2. Use **one tab only.** Who you are (the principal, or one of two teachers) is stored in the browser and shared by every tab, so a
    second tab on another role would change the first.
 3. The bar at the bottom of every screen shows who you are and switches you in one click: **Juan** (principal),
-   **Henry** (English teacher), **Owen** (Science teacher). **Reset** puts everything back to the start.
+   **Afiya** (English teacher), **Stefano** (Science teacher). **Reset** puts everything back to the start.
 4. Press **Reset** before every run, and again after rehearsing.
 5. Keep the local copy as a backup: `cd apps/web && npm run demo`, then http://localhost:3400/demo. Same screens, no internet.
    On the local copy, changes live in the server's memory instead of the browser.
 
-Henry White and Owen Perez are real people on the faculty map. To cast someone else, change `STAGE_CHARACTERS` in
-`src/lib/preview/stageTables.ts`, then pick a draft seed again (`tests/stage-dataset.test.ts` fails until the draft still pairs the two).
+Afiya A. and Stefano B. are the team's two Pursuit teachers, standing in for two sandbox teachers (English and Science). To cast
+someone else, change `STAGE_CHARACTERS` and `CAST_SLOTS` in `src/lib/preview/stageTables.ts`, then pick a draft seed again
+(`tests/stage-dataset.test.ts` fails until the draft still pairs the two).
 
 ## Before every run
 
 Press **Reset**. It forgets everything done on stage: 32 teachers, 12 pairs, 9 logged conversations, English and Science with no
-pair between them, Henry and Owen without a partner ("Your partner is on the way").
+pair between them, Afiya and Stefano without a partner ("Your partner is on the way").
 
 ## The beats, and what the screen does
 
@@ -41,10 +42,10 @@ pair between them, Henry and Owen without a partner ("Your partner is on the way
 2. **Constellation.** English and Science are the biggest missing link in the school.
 3. **Pairing, Draft new round** (Juan). One click. The map draws four new links between English and Science, and the line above it
    says "This round closes a gap: English and Science. Connected departments go from 7 of 10 to 8 of 10."
-   Henry White and Owen Perez are the first pair. **Approve 4 pairs** saves it; **Reject** throws the draft away.
-4. **Switch to Henry.** After Approve, Home shows Owen Perez as an active partnership. Log a conversation: pick the topic,
+   Afiya A. and Stefano B. are in the first pair. **Approve 4 pairs** saves it; **Reject** throws the draft away.
+4. **Switch to Afiya.** After Approve, Home shows Stefano B. as an active partnership. Log a conversation: pick the topic,
    write a line, **Save draft**, then **Submit this entry** (two clicks, as in the real app).
-5. **Switch to Owen.** Open Chat (bottom right) and send a message; it shows on Henry's side.
+5. **Switch to Stefano.** Open Chat (bottom right) and send a message; it shows on Afiya's side.
 6. **Switch to Juan, Pulse again.** Logged conversations goes from 9 to 10. The text of the entry is nowhere on the admin side.
 7. **Trust page.** The live check shows what leadership can read.
 8. **Reports.** The faculty map, and **Download PDF** for the deck (opens the print dialog; choose Save as PDF).

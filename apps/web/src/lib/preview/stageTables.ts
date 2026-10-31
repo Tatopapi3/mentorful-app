@@ -16,11 +16,19 @@ import data from "./nick-data.json";
 import { IDS } from "./fixtures";
 import type { Row, Tables } from "./mockQuery";
 
-/** First is the English teacher you sign in as by default; second is the Science teacher (`?who=second`). */
-export const STAGE_CHARACTERS = { first: "Henry White", second: "Owen Perez" } as const;
+/**
+ * The two teachers who play the scene, as they appear on screen: the first is the English teacher you are by default, the
+ * second is the Science teacher (`?who=second`). The team cast two of its Pursuit teachers for fun. Each stands in the place of
+ * one of Nick's sandbox teachers (CAST_SLOTS), keeping that person's department and strengths and taking a new name.
+ */
+export const STAGE_CHARACTERS = { first: "Afiya A.", second: "Stefano B." } as const;
+const CAST_SLOTS = {
+  first: { slot: "Henry White", first_name: "Afiya", last_name: "A." },
+  second: { slot: "Owen Perez", first_name: "Stefano", last_name: "B." },
+} as const;
 export const AUTH_SECOND = "auth-teacher-2";
-/** The draft the pairing screen opens with: this seed pairs the two characters, and every new pair crosses departments (tests/stage-dataset.test.ts). */
-export const STAGE_DRAFT_SEED = 2;
+/** The draft the pairing screen opens with: this seed pairs the two characters, and every new pair crosses departments. The next seed (18) does too, so "Draft another round" still tells the same story (tests/stage-dataset.test.ts). */
+export const STAGE_DRAFT_SEED = 17;
 
 const FACULTY: Record<string, string[]> = {
   English: ["Henry White", "Ella Jackson", "James Thomas", "Mason Davis", "Amelia Chen", "Evelyn Anderson", "Logan Wilson", "Harper Lopez"],
@@ -66,7 +74,10 @@ export function buildStageTables(): Tables {
   const teachers = Object.values(FACULTY).flat().map((n) => {
     const p = byName.get(n);
     if (!p) throw new Error(`stage dataset: ${n} is not on the faculty map`);
-    p.auth_user_id = n === STAGE_CHARACTERS.first ? IDS.authTeacher : n === STAGE_CHARACTERS.second ? AUTH_SECOND : null;
+    p.auth_user_id = n === CAST_SLOTS.first.slot ? IDS.authTeacher : n === CAST_SLOTS.second.slot ? AUTH_SECOND : null;
+    for (const c of [CAST_SLOTS.first, CAST_SLOTS.second]) {
+      if (n === c.slot) Object.assign(p, { first_name: c.first_name, last_name: c.last_name, email: `${c.first_name.toLowerCase()}.${c.last_name.toLowerCase().replace(".", "")}@demo.mentorful.co` });
+    }
     return p;
   });
 

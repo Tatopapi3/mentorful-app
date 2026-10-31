@@ -12,9 +12,10 @@ const OPEN = [
   { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
   { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
 ];
+// In a demo build these two open as a sample person (principal, teacher) instead of asking for a sign-in.
 const SIGNED_IN = [
-  { href: "/admin/reports", title: "Reports and faculty map", blurb: "A staff network, drawn from data." },
-  { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
+  { href: "/preview/as/admin?next=/admin/pulse", title: "Principal\u2019s dashboard", blurb: "Pulse, pairing, reports and the faculty map." },
+  { href: "/preview/as/teacher?next=/dashboard", title: "Teacher\u2019s dashboard", blurb: "What a teacher sees day to day." },
 ];
 const DEMO = process.env.PREVIEW_MOCK === "1";
 // Demo Day: no sign-in on the stage, one door to the launcher instead.

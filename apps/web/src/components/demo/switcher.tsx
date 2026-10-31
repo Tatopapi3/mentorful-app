@@ -1,5 +1,5 @@
 /**
- * Demo Day only: a small bar at the bottom of every screen that says who you are right now and switches you to someone else
+ * Demo builds only: a small bar at the bottom of every screen that says who you are right now and switches you to someone else
  * in one click. The demo has no sign-in. Who you are is kept in a browser cookie, shared by every tab, so the bar is how you
  * move between the principal and the two teachers without opening the wrong screen. It is hidden when printing.
  */
@@ -7,13 +7,19 @@ import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
 
 export type StageRole = "admin" | "first" | "second";
 
-const PEOPLE: { role: StageRole; label: string; sub: string; href: string }[] = [
+const PLAIN: { role: StageRole; label: string; sub: string; href: string }[] = [
+  { role: "admin", label: "Principal", sub: "school lead", href: "/preview/as/admin?next=/admin/pulse" },
+  { role: "first", label: "Teacher", sub: "sample", href: "/preview/as/teacher?next=/dashboard" },
+];
+
+const STAGE_PEOPLE: { role: StageRole; label: string; sub: string; href: string }[] = [
   { role: "admin", label: "Juan", sub: "principal", href: "/preview/as/admin?next=/admin/pulse" },
   { role: "first", label: STAGE_CHARACTERS.first.split(" ")[0], sub: "English", href: "/preview/as/teacher?next=/dashboard" },
   { role: "second", label: STAGE_CHARACTERS.second.split(" ")[0], sub: "Science", href: "/preview/as/teacher?who=second&next=/dashboard" },
 ];
 
-export function DemoSwitcher({ current }: { current: StageRole }) {
+export function DemoSwitcher({ current, stage = true }: { current: StageRole; stage?: boolean }) {
+  const PEOPLE = stage ? STAGE_PEOPLE : PLAIN;
   return (
     <nav className="demo-switcher" aria-label="Demo Day: who you are">
       <style>{`
@@ -34,7 +40,7 @@ export function DemoSwitcher({ current }: { current: StageRole }) {
         </a>
       ))}
       <span className="sep" aria-hidden />
-      <a href="/preview/reset?next=/demo" aria-label="Reset the demo to its starting point">
+      <a href={stage ? "/preview/reset?next=/demo" : "/preview/reset?next=/"} aria-label="Reset the demo to its starting point">
         Reset
         <small>start over</small>
       </a>

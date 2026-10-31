@@ -43,8 +43,9 @@ export const metadata: Metadata = {
     "The school culture platform for teachers and the people who lead them.",
 };
 
-// Demo Day only: the stage dataset adds a bar for switching between the principal and the two teachers.
-const STAGE = process.env.PREVIEW_MOCK === "1" && process.env.PREVIEW_DATASET === "stage";
+// Demo builds only (PREVIEW_MOCK=1): a bar for switching between the principal and a teacher. The stage dataset has two teachers.
+const PREVIEW = process.env.PREVIEW_MOCK === "1";
+const STAGE = PREVIEW && process.env.PREVIEW_DATASET === "stage";
 
 export default async function RootLayout({
   children,
@@ -52,9 +53,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let who: StageRole = "admin";
-  if (STAGE) {
+  if (PREVIEW) {
     const jar = await cookies();
-    who = jar.get("preview_as")?.value === "teacher" ? (jar.get("preview_who")?.value === "second" ? "second" : "first") : "admin";
+    who = jar.get("preview_as")?.value === "teacher" ? (STAGE && jar.get("preview_who")?.value === "second" ? "second" : "first") : "admin";
   }
   return (
     <html lang="en">
@@ -62,7 +63,7 @@ export default async function RootLayout({
         className={`${lora.variable} ${publicSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
-        {STAGE ? <DemoSwitcher current={who} /> : null}
+        {PREVIEW ? <DemoSwitcher current={who} stage={STAGE} /> : null}
         <BranchBadge />
       </body>
     </html>
