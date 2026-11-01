@@ -73,7 +73,7 @@ Three lines: **Culture Scan: under 50%** · **English and Science: zero conversa
 
 ## Timing and trimming
 
-About 480 spoken words, so roughly 3:30 of talking and 1:30 of clicking, with the last line landing at about 4:50.
+About 400 spoken words, plus your two one-line intros (roughly 440): about 3:10 of talking and 1:40 of clicking, so the last line lands near 4:50. Time it out loud once; the clicks are the part that runs long.
 If you run long, cut in this order: the "Tomorrow I walk into the board meeting" beat (Juan, 4:00), then the Trust page, then each person's one-line intro.
 
 ## Notes
