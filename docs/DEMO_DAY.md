@@ -50,7 +50,7 @@ pair between them, Ms. Afiya and Mr. Stefano without a partner ("Your partner is
 5. **Switch to Mr. Stefano.** Open Chat (bottom right) and send a message; it shows on Ms. Afiya's side.
 6. **Switch to Juan, Pulse again.** Logged conversations goes from 9 to 10. The text of the entry is nowhere on the admin side.
 7. **Trust page.** The live check shows what leadership can read.
-8. **Reports.** The faculty map, and **Download PDF** for the deck (opens the print dialog; choose Save as PDF).
+8. **Reports.** The faculty map, and **Download PDF** for the leadership deck, the board summary or the faculty connection (each saves a real PDF file, no print dialog).
    The deck has counts and department totals only, no names. The faculty map does show names, so keep the line to "no names in the deck".
 
 ## Limits to know
