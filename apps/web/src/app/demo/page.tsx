@@ -6,6 +6,9 @@ import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
 export const metadata = { title: "Demo Day" };
 export const dynamic = "force-dynamic";
 
+const TOTAL_SECS = BEATS.reduce((n, b) => n + b.secs, 0);
+const TOTAL_LABEL = `${Math.floor(TOTAL_SECS / 60)}:${String(TOTAL_SECS % 60).padStart(2, "0")}`;
+
 export default function Demo() {
   return (
     <AuroraPublic>
@@ -73,12 +76,16 @@ export default function Demo() {
       </ol>
 
       <h2 style={{ marginTop: 36 }}>The script, word for word</h2>
-      <p className="ev-muted">About 470 spoken words, plus the clicks. Each of the four gets 25 to 30 seconds to introduce themselves; fill the [brackets] with your own lines. Each block: the time it starts, who speaks, what is on screen.</p>
+      <p className="ev-muted">
+        {TOTAL_LABEL} in all. Every block shows when it starts and how many seconds it gets, speaking and clicking together. Juan, Bernard and Bertrand get 25 seconds (about 50 words) for their intros; Eric gets about 40 because he also says what Mentorful is. Fill the [brackets] with your own words; each says how many words it should be.
+      </p>
       <div style={{ display: "grid", gap: 12 }}>
         {BEATS.map((b) => (
           <article key={`${b.t}-${b.who}`} className="ap-card" style={{ padding: 18 }}>
             <p style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
-              <span className="ev-badge">{b.t}</span>
+              <span className="ev-badge">
+                {b.t} · {b.secs}s
+              </span>
               <b>{b.who}</b>
               <span className="ev-muted">on {b.screen}</span>
             </p>
