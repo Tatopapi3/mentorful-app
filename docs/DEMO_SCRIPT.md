@@ -7,20 +7,20 @@ Follows the team's 5-minute guide: intros, then the problem, then the live demo,
 The story's numbers belong to a sample school, so say "a school we'll call Lincoln High" and keep "sample school" visible on the slide.
 The 85% is on screen: the sample scan reads 5.1 out of 6 for collective efficacy. The "a year ago" numbers are in the story only (slide).
 
-Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Slide A is one slide (see the end).
+Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Four slides in all, at `/demo/slides` on the stage link.
 
 | Time | Who | Screen |
 | --- | --- | --- |
-| 0:00 | Eric | Title slide |
-| 0:40 | Juan, Bernard, Bertrand | Title slide |
-| 1:00 | Eric | Slide A |
-| 1:35 | Juan | Pulse, then Constellation |
-| 2:05 | Juan | Pairing |
+| 0:00 | Eric | Slide 1 |
+| 0:40 | Juan, Bernard, Bertrand | Slide 1 |
+| 1:10 | Eric | Slides 2 and 3 |
+| 1:45 | Juan | Pulse, then Constellation |
+| 2:10 | Juan | Pairing |
 | 2:30 | Eric, Bernard (Ms. Afiya) | Ms. Afiya's screen |
 | 3:05 | Bertrand (Mr. Stefano) | Mr. Stefano's screen |
 | 3:20 | Eric, Juan | Pulse, Trust |
 | 4:00 | Juan | Reports |
-| 4:25 | Eric | Title slide |
+| 4:25 | Eric | Slide 4 |
 
 ## The script
 
@@ -36,8 +36,11 @@ Screens: stage link, one tab, switch people with the bar at the bottom. Press **
 **BERTRAND (1:00)**
 "I'm Bertrand. [one line about you]. I built pairing and the pair chat."
 
-**ERIC (1:10)** *(Slide A)*
-"Picture a school we'll call Lincoln High. A year ago its Culture Scan came back under fifty percent. Teachers who shared a hallway had never spoken. Most said they would not admit a mistake to a colleague. The principal wanted to help, but the moment she asked, the honest answers stopped. So the school adopted Mentorful. Tonight, the principal is Juan, one year later."
+**ERIC (1:10)** *(Slide 2)*
+"Picture a school we'll call Lincoln High. A year ago its Culture Scan came back under fifty percent. Teachers who shared a hallway had never spoken. Most said they would not admit a mistake to a colleague. The principal wanted to help, but the moment she asked, the honest answers stopped."
+
+**ERIC (1:30)** *(Slide 3)*
+"So the school adopted Mentorful. It pairs teachers across departments, and what they write stays private by design. Tonight, the principal is Juan, one year later."
 
 **JUAN (1:45)** *(Pulse, then Constellation)*
 "This year's scan: five point one out of six. Eighty-five percent. And see this? Any group under five, I can't see. Not because I didn't click. Because I'm not allowed to. But one thing still keeps me up." *(Constellation)* "English and Science. Same building, same kids. Zero connections."
@@ -63,13 +66,17 @@ Screens: stage link, one tab, switch people with the bar at the bottom. Press **
 **JUAN (4:00)** *(Reports)*
 "Tomorrow I walk into the board meeting with evidence: who is connected, and a deck with no teacher's name in it. One click, a PDF."
 
-**ERIC (4:25)** *(Title slide)*
+**ERIC (4:25)** *(Slide 4)*
 "A year ago, under fifty percent. Today, eighty-five. Two teachers who were strangers are coaching each other, the principal has proof, and nobody had to feel watched. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you."
 
-## Slide A (the only new slide)
+## The four slides
 
-Title: **Lincoln High, a year ago** (small label: "Sample school").
-Three lines: **Culture Scan: under 50%** · **English and Science: zero conversations** · **"I wouldn't admit a mistake to a colleague": most staff**.
+1. **Title and team:** "Evidence for principals. Privacy for teachers." and who is who.
+2. **Lincoln High, a year ago** (small label "Sample school"): Culture Scan under 50%; English and Science, zero conversations; most staff would not admit a mistake to a colleague.
+3. **What the school adopted:** pairs across departments; private by design; groups under 5 hidden.
+4. **A year later:** under 50% to 85%, and the closing line.
+
+Open them at `/demo/slides` on the stage link (arrow keys to move, F for full screen).
 
 ## Timing and trimming
 

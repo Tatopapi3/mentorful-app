@@ -1,0 +1,46 @@
+/* Demo Day slides: four 16:9 slides in the Aurora palette. Sizes use the slide's own width (cqw), so they scale. */
+.dd-wrap { display: grid; gap: 14px; justify-items: center; padding: 8px 0 24px; }
+.dd-bar { width: min(100%, 1180px); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.dd-bar .dd-count { color: var(--ev-muted); font-size: 14px; margin-right: auto; }
+.dd-stage { width: min(100%, 1180px); aspect-ratio: 16 / 9; container-type: inline-size; position: relative; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 60px -34px rgba(79, 70, 229, 0.6); border: 1px solid var(--ev-line); background: #fff; }
+.dd-slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; padding: 5.5cqw 6cqw; color: #14122b; background: #fff; }
+.dd-slide[data-on="true"] { display: flex; }
+.dd-slide.dark { background: linear-gradient(135deg, #1b1760, #0d0b2b); color: #f2f1ff; }
+.dd-kick { font: 600 1.1cqw var(--ev-sans); letter-spacing: 0.2em; text-transform: uppercase; color: #0a7268; margin: 0 0 1.4cqw; }
+.dark .dd-kick { color: #5eead4; }
+.dd-slide h2 { font: 600 5cqw/1.08 var(--ev-display); letter-spacing: -0.03em; margin: 0 0 1.6cqw; color: inherit; max-width: 88%; }
+.dd-slide h2 em { font-family: var(--ev-serif); font-style: italic; font-weight: 400; background: linear-gradient(135deg, #0ea5a4, #4f46e5); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.05em; }
+.dark h2 em { background: linear-gradient(135deg, #5eead4, #9a9cff); -webkit-background-clip: text; background-clip: text; }
+.dd-lead { font-size: 1.9cqw; line-height: 1.5; color: #4b4966; margin: 0 0 2.4cqw; max-width: 80%; }
+.dark .dd-lead { color: #c9c8f0; }
+.dd-tag { display: inline-block; font: 600 1.05cqw var(--ev-sans); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.5cqw 1.2cqw; border-radius: 999px; background: rgba(245, 158, 11, 0.16); color: #8f5106; margin-bottom: 1.6cqw; align-self: flex-start; }
+.dd-grid { display: grid; gap: 1.8cqw; grid-template-columns: repeat(3, 1fr); }
+.dd-grid.four { grid-template-columns: repeat(4, 1fr); }
+.dd-card { border: 1px solid #e0def5; border-radius: 1.6cqw; padding: 2cqw; background: #faf9ff; display: grid; gap: 0.6cqw; align-content: start; }
+.dark .dd-card { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.16); }
+.dd-card strong { font: 600 3.6cqw/1.05 var(--ev-display); letter-spacing: -0.03em; color: #4f46e5; }
+.dark .dd-card strong { color: #5eead4; }
+.dd-card b { font: 600 1.7cqw/1.25 var(--ev-display); letter-spacing: -0.01em; }
+.dd-card span { font-size: 1.45cqw; line-height: 1.45; color: #4b4966; }
+.dark .dd-card span { color: #c9c8f0; }
+.dd-roster .dd-card strong { font-size: 2.3cqw; color: inherit; letter-spacing: -0.02em; }
+.dd-versus { display: flex; align-items: baseline; gap: 3cqw; margin: 1cqw 0 2.6cqw; }
+.dd-versus .big { font: 600 11cqw/1 var(--ev-display); letter-spacing: -0.05em; }
+.dd-versus .before { opacity: 0.55; text-decoration: line-through; text-decoration-thickness: 0.5cqw; }
+.dd-versus .after { background: linear-gradient(135deg, #5eead4, #9a9cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dd-versus .arrow { font-size: 6cqw; opacity: 0.6; }
+.dd-foot { position: absolute; left: 6cqw; right: 6cqw; bottom: 2.2cqw; display: flex; justify-content: space-between; font-size: 1.05cqw; color: #8b89a8; }
+.dark .dd-foot { color: #a5a3c6; }
+@media (max-width: 700px) { .dd-card { padding: 1.2cqw; } }
+@media print {
+  @page { size: 13.333in 7.5in; margin: 0; }
+  .ap-header, .ap-foot, .dd-bar, .demo-switcher { display: none !important; }
+  .ap-main { width: auto; padding: 0; }
+  .dd-wrap { display: block; padding: 0; }
+  .dd-stage { width: 13.333in; height: 7.5in; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; position: static; overflow: visible; }
+  .dd-slide { position: relative; display: flex !important; width: 13.333in; height: 7.5in; break-after: page; page-break-after: always; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* The role bar is for the app screens; it would sit on top of a slide. */
+body:has(.dd-wrap) .demo-switcher { display: none; }

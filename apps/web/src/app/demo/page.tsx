@@ -1,31 +1,29 @@
 import Link from "next/link";
 import { AuroraPublic } from "@/components/aurora/public-frame";
+import { BEATS, NOTES, STORY, TRIM } from "@/lib/demo/script";
 import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
 
 export const metadata = { title: "Demo Day" };
 export const dynamic = "force-dynamic";
 
-const BEATS: { who: string; what: string }[] = [
-  { who: "Juan", what: "Pulse: the focus banner says 8 teachers still need a partner. Point at the privacy badge." },
-  { who: "Juan", what: "Constellation: English and Science are the biggest missing link in the school." },
-  { who: "Juan", what: "Pairing, then Draft new round. The map draws new links between English and Science. Approve 4 pairs." },
-  { who: STAGE_CHARACTERS.first, what: "Home now shows a partner. Log a conversation, Save draft, then Submit this entry." },
-  { who: STAGE_CHARACTERS.second, what: "Open Chat (bottom right) and send a message. It appears on the other teacher's screen." },
-  { who: "Juan", what: "Pulse again: logged conversations goes from 9 to 10. The words of the entry are nowhere on this side." },
-  { who: "Juan", what: "Trust page: the live check shows what leadership can read." },
-  { who: "Juan", what: "Reports: the faculty map and Download PDF for the deck. Then Present." },
-];
-
 export default function Demo() {
   return (
     <AuroraPublic>
-      <p className="ev-eyebrow">Demo Day stage</p>
+      <p className="ev-eyebrow">Demo Day stage · Nov 9 · 5 minutes</p>
       <h1>
         Three screens, <em>one story.</em>
       </h1>
       <p className="ev-lead">
         No sign-in. Use the bar at the bottom of every screen to change who you are, and <b>Reset</b> before each run. Use one tab: the
         role is shared by every tab in this browser.
+      </p>
+      <p style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <Link className="ev-btn primary" href="/demo/slides">
+          Open the slides (4)
+        </Link>
+        <Link className="ev-btn" href="/preview/reset?next=/demo">
+          Reset the demo
+        </Link>
       </p>
 
       <div className="ap-demos" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
@@ -35,23 +33,67 @@ export default function Demo() {
         </Link>
         <Link className="ap-demo" href="/preview/as/teacher?next=/dashboard">
           <b>{STAGE_CHARACTERS.first}, English</b>
-          <span>The teacher dashboard: partner, journal, chat.</span>
+          <span>The teacher dashboard: partner, journal, chat. Bernard.</span>
         </Link>
         <Link className="ap-demo" href="/preview/as/teacher?who=second&next=/dashboard">
           <b>{STAGE_CHARACTERS.second}, Science</b>
-          <span>The same dashboard, as the other teacher.</span>
+          <span>The same dashboard, as the other teacher. Bertrand.</span>
         </Link>
       </div>
 
-      <h2 style={{ marginTop: 32 }}>The scene</h2>
-      <ol style={{ paddingLeft: 20, display: "grid", gap: 8 }}>
-        {BEATS.map((b, i) => (
-          <li key={i}>
-            <b>{b.who}.</b> {b.what}
+      <h2 style={{ marginTop: 36 }}>The story</h2>
+      <p className="ev-lead" style={{ maxWidth: 760 }}>
+        {STORY.title}. {STORY.note}
+      </p>
+      <ol style={{ listStyle: "none", padding: 0, display: "grid", gap: 10, gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+        {STORY.arc.map((a) => (
+          <li key={a.label} className="ap-card" style={{ padding: 18 }}>
+            <p className="ev-eyebrow" style={{ margin: 0 }}>
+              {a.label}
+            </p>
+            <p style={{ margin: "8px 0 0" }}>{a.text}</p>
           </li>
         ))}
       </ol>
+
+      <h2 style={{ marginTop: 36 }}>The script, word for word</h2>
+      <p className="ev-muted">About 400 spoken words, plus the clicks. Each block: the time it starts, who speaks, what is on screen.</p>
+      <div style={{ display: "grid", gap: 12 }}>
+        {BEATS.map((b) => (
+          <article key={`${b.t}-${b.who}`} className="ap-card" style={{ padding: 18 }}>
+            <p style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
+              <span className="ev-badge">{b.t}</span>
+              <b>{b.who}</b>
+              <span className="ev-muted">on {b.screen}</span>
+            </p>
+            {b.action ? (
+              <p className="ev-muted" style={{ margin: "8px 0 0", fontStyle: "italic" }}>
+                {b.action}
+              </p>
+            ) : null}
+            <p style={{ margin: "8px 0 0", fontSize: 17 }}>&ldquo;{b.say}&rdquo;</p>
+          </article>
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: 36 }}>If you run long, cut in this order</h2>
+      <ol>
+        {TRIM.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ol>
+
+      <h2 style={{ marginTop: 28 }}>Remember</h2>
+      <ul>
+        {NOTES.map((n) => (
+          <li key={n}>{n}</li>
+        ))}
+      </ul>
+
       <p style={{ marginTop: 24 }}>
+        <Link className="ev-btn primary" href="/demo/slides">
+          Open the slides (4)
+        </Link>{" "}
         <Link className="ev-btn" href="/preview/reset?next=/demo">
           Reset the demo
         </Link>
