@@ -29,10 +29,10 @@ export type Member = { name: string; plays: string; built: string; screen: strin
 
 /** Everyone on stage: who they play, what they built, which screen is theirs, and when they speak. */
 export const CAST: Member[] = [
-  { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:10, 1:30, 2:30, 3:20, 4:25" },
-  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 1:45, 2:10, 3:25, 4:00" },
-  { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "0:50, 2:45" },
-  { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:00, 3:05" },
+  { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:54, 2:10, 3:08, 3:50, 4:35" },
+  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:30, 2:22, 2:48, 3:54, 4:20" },
+  { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "0:58, 3:18" },
+  { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:26, 3:38" },
 ];
 
 export const BEATS: Beat[] = [
@@ -40,84 +40,105 @@ export const BEATS: Beat[] = [
     t: "0:00",
     who: "Eric",
     screen: "Slide 1",
-    say: "Hi everyone, we're the Mentorful team, and we built this for a real client, a teacher-led startup founded by Mike and Nick. Their idea is simple: the best coach for a teacher is the teacher down the hall. Schools pair teachers up, and a short survey, the Culture Scan, measures whether the whole staff is getting stronger together. I'm Eric, and I own privacy: no teacher can ever be singled out.",
+    say: "Hi everyone, we're the Mentorful team, building for a real client, a teacher-led startup founded by Mike and Nick. Their idea is simple: the best coach for a teacher is the teacher down the hall. Schools pair teachers up, and a short survey, the Culture Scan, measures whether the whole staff is getting stronger together. I'm Eric. [one line about your background]. On Mentorful, I own privacy: no teacher can ever be singled out.",
   },
-  { t: "0:40", who: "Juan", screen: "Slide 1", say: "I'm Juan, a former technical recruiter. I built the principal's dashboard." },
-  { t: "0:50", who: "Bernard", screen: "Slide 1", say: "I'm Bernard. [one line about you]. I built the teacher dashboard." },
-  { t: "1:00", who: "Bertrand", screen: "Slide 1", say: "I'm Bertrand. [one line about you]. I built pairing and the pair chat." },
   {
-    t: "1:10",
+    t: "0:30",
+    who: "Juan",
+    screen: "Slide 1",
+    say: "I'm Juan. For seven years I was a technical recruiter, matching people to the right teams. Outside work I'm a gamer and a sports fan, and I've always loved a good stat screen, because it shows who's improving. Pursuit is where I learned to build those myself. On Mentorful, I built the principal's dashboard.",
+  },
+  {
+    t: "0:58",
+    who: "Bernard",
+    screen: "Slide 1",
+    say: "I'm Bernard. Before Pursuit, I [what you did, where you're from]. What got me into building was [the moment or reason]. At Pursuit I learned to [one skill you're proud of]. On Mentorful, I built the teacher dashboard, the part teachers use every week.",
+  },
+  {
+    t: "1:26",
+    who: "Bertrand",
+    screen: "Slide 1",
+    say: "I'm Bertrand. Before Pursuit, I [what you did, where you're from]. What pulled me in was [the moment or reason]. At Pursuit I learned to [one skill you're proud of]. On Mentorful, I built pairing and the pair chat. Eric, take it away.",
+  },
+  {
+    t: "1:54",
     who: "Eric",
     screen: "Slide 2",
-    say: "Picture a school we'll call Lincoln High. A year ago its Culture Scan came back under fifty percent. Teachers who shared a hallway had never spoken. Most said they would not admit a mistake to a colleague. The principal wanted to help, but the moment she asked, the honest answers stopped.",
-  },
-  {
-    t: "1:30",
-    who: "Eric",
-    screen: "Slide 3",
-    say: "So the school adopted Mentorful. It pairs teachers across departments, and what they write stays private by design. Tonight, the principal is Juan, one year later.",
-  },
-  {
-    t: "1:45",
-    who: "Juan",
-    screen: "Pulse, then Constellation",
-    action: "Switch to Juan. Point at the Culture Scan and the privacy badge. Open Constellation.",
-    say: "This year's scan: five point one out of six. Eighty-five percent. And see this? Any group under five, I can't see. Not because I didn't click. Because I'm not allowed to. But one thing still keeps me up. English and Science. Same building, same kids. Zero connections.",
+    say: "Picture a school we'll call Lincoln High. A year ago its Culture Scan came back under fifty percent. Teachers who shared a hallway had never spoken, and the honest answers stopped the moment the principal asked.",
   },
   {
     t: "2:10",
+    who: "Eric",
+    screen: "Slide 3",
+    say: "So the school adopted Mentorful: pairs across departments, and what teachers write stays private. Tonight, the principal is Juan, one year later.",
+  },
+  {
+    t: "2:22",
+    who: "Juan",
+    screen: "Pulse, then Constellation",
+    action: "Switch to Juan. Point at the Culture Scan and the privacy badge. Open Constellation.",
+    say: "This year's scan: five point one out of six. Eighty-five percent. Any group under five, I can't see, because I'm not allowed to. But one thing still keeps me up. English and Science. Same building. Zero connections.",
+  },
+  {
+    t: "2:48",
     who: "Juan",
     screen: "Pairing",
     action: "Click Draft new round. The map draws the new links. Click Approve 4 pairs.",
-    say: "So I let Mentorful draft a round across departments. One click. English and Science, connected. I still make the call. Approved.",
+    say: "So I let Mentorful draft a round. One click. English and Science, connected. I still make the call. Approved.",
   },
   {
-    t: "2:30",
+    t: "3:08",
     who: "Eric",
     screen: "Ms. Afiya's screen",
-    say: "One of those new pairs: Ms. Afiya in English and Mr. Stefano in Science. A month ago they had never spoken. Today they spent twenty minutes on essays written by AI.",
+    say: "Ms. Afiya in English, Mr. Stefano in Science. Strangers a month ago. Today, twenty minutes on essays written by AI.",
   },
   {
-    t: "2:45",
+    t: "3:18",
     who: "Bernard, as Ms. Afiya",
     screen: "Ms. Afiya's screen",
     action: "Switch to Ms. Afiya. Log a conversation, write a line, Save draft, Submit this entry.",
     say: "That was the most useful conversation I've had all semester. Let me log it. Ten seconds. And this note? Only I can read it.",
   },
   {
-    t: "3:05",
+    t: "3:38",
     who: "Bertrand, as Mr. Stefano",
     screen: "Mr. Stefano's screen",
     action: "Switch to Mr. Stefano. Open Chat, send the message.",
     say: "Sending you my rubric tonight. Same time next week?",
   },
-  { t: "3:20", who: "Eric", screen: "Mr. Stefano's screen", say: "So, principal. What do you see?" },
   {
-    t: "3:25",
+    t: "3:50",
+    who: "Eric",
+    screen: "Mr. Stefano's screen",
+    say: "So, principal. What do you see?",
+  },
+  {
+    t: "3:54",
     who: "Juan",
     screen: "Pulse, then Trust",
     action: "Switch to Juan. Show Pulse (logged conversations 9 to 10), then the Trust page.",
     say: "One more logged conversation. But what they said? I can't read a word of it. I can count it. I can't read it. That's why teachers tell the truth.",
   },
   {
-    t: "4:00",
+    t: "4:20",
     who: "Juan",
     screen: "Reports",
     action: "Open Reports. Show the faculty map, then Download PDF for the deck.",
-    say: "Tomorrow I walk into the board meeting with evidence: who is connected, and a deck with no teacher's name in it. One click, a PDF.",
+    say: "Tomorrow the board gets evidence, and a deck with no teacher's name in it. One click, a PDF.",
   },
   {
-    t: "4:25",
+    t: "4:35",
     who: "Eric",
     screen: "Slide 4",
-    say: "A year ago, under fifty percent. Today, eighty-five. Two teachers who were strangers are coaching each other, the principal has proof, and nobody had to feel watched. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you.",
+    say: "A year ago, under fifty percent. Today, eighty-five. Two strangers are coaching each other, the principal has proof, and nobody had to feel watched. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you.",
   },
 ];
 
 export const TRIM = [
-  "The \"Tomorrow I walk into the board meeting\" beat (Juan, 4:00).",
-  "The Trust page (Juan, 3:25): keep the line, skip the page.",
-  "Each person's one-line intro.",
+  "The Trust page (Juan, 3:54): keep the line, skip the page.",
+  "The \"Tomorrow the board gets evidence\" beat (Juan, 4:20).",
+  "Slide 3 (Eric, 2:10): say its line over Slide 2.",
+  "The \"[one skill you're proud of]\" sentence in each intro.",
 ];
 
 export const NOTES = [

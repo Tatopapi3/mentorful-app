@@ -73,7 +73,7 @@ export default function Demo() {
       </ol>
 
       <h2 style={{ marginTop: 36 }}>The script, word for word</h2>
-      <p className="ev-muted">About 400 spoken words, plus the clicks. Each block: the time it starts, who speaks, what is on screen.</p>
+      <p className="ev-muted">About 470 spoken words, plus the clicks. Each of the four gets 25 to 30 seconds to introduce themselves; fill the [brackets] with your own lines. Each block: the time it starts, who speaks, what is on screen.</p>
       <div style={{ display: "grid", gap: 12 }}>
         {BEATS.map((b) => (
           <article key={`${b.t}-${b.who}`} className="ap-card" style={{ padding: 18 }}>

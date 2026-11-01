@@ -20,9 +20,9 @@ describe("the Demo Day script", () => {
     expect(secs[secs.length - 1]).toBeLessThan(300);
   });
 
-  it("is short enough to say in about three minutes, leaving room for the clicks", () => {
+  it("is short enough to say in under four minutes at a stage pace, leaving room for the clicks", () => {
     const spoken = BEATS.reduce((n, b) => n + words(b.say), 0);
-    expect(spoken).toBeLessThan(480);
+    expect(spoken).toBeLessThan(520);
   });
 });
 
