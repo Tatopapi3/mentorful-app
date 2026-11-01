@@ -11,7 +11,7 @@ import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 const LABEL = { do: "Do this", watch: "Keep an eye on", good: "Going well" } as const;
 
 // A one-page summary for a staff meeting or the board: where things stand, the numbers, and the next moves.
-// Print it, or save it as a PDF from the browser's print dialog.
+// Download it as a PDF file, or print it.
 export default async function SummaryView({ skin, searchParams }: { skin: Skin; searchParams: Record<string, string | string[] | undefined> }) {
   const admin = await requireAdmin();
   if (!admin) return null;
@@ -26,7 +26,8 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
   return (
     <AdminFrame skin={skin} eyebrow={`Board summary · ${snap.cycle?.name ?? "No cycle"} · ${today}`} title={snap.school.name} sub={headlineSentence(facts)}>
       <div className="ev-noprint" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, alignItems: "center" }}>
-        <PrintButton className="ev-btn sm primary" />
+        <LinkBtn skin={skin} href={`/admin/export/summary.pdf${cycleParam ? `?cycle=${cycleParam}` : ""}`} primary>Download PDF</LinkBtn>
+        <PrintButton className="ev-btn sm">Print</PrintButton>
         {snap.scan && <LinkBtn skin={skin} href={csv}>Download the results (CSV)</LinkBtn>}
         <AutoPrint enabled={searchParams.print === "1"} />
       </div>
