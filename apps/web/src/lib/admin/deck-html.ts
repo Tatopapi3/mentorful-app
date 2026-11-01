@@ -30,7 +30,7 @@ function slide(s: DeckSlide, deck: Deck, n: number): string {
   return `<section class="slide"><div class="in"><p class="kick">${esc(s.kicker)}</p><h2>${esc(s.title)}</h2>${s.lead ? `<p class="lead">${esc(s.lead)}</p>` : ""}${s.blocks.map(block).join("")}</div><footer><span>Mentorful · ${esc(deck.school)} · ${esc(deck.cycle)} · Counts only: no names, answers or conversations</span><span>${n}</span></footer></section>`;
 }
 
-export function deckToHtml(deck: Deck, links: { pptx: string; back: string; autoPrint?: boolean }): string {
+export function deckToHtml(deck: Deck, links: { pptx: string; pdf: string; back: string; autoPrint?: boolean }): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(deck.school)} · Leadership deck</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap">
@@ -85,7 +85,7 @@ footer{display:flex;justify-content:space-between;padding:0 5.4cqw 1.6cqw;font-s
 }
 @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style></head><body>
-<div class="bar-top"><b>${esc(deck.school)} · Leadership deck</b><a href="${esc(links.back)}">Back to Reports</a><a class="go" href="${esc(links.pptx)}">Download PowerPoint</a><button type="button" onclick="window.print()">Download PDF</button></div>${links.autoPrint ? `<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},500)})</script>` : ""}
+<div class="bar-top"><b>${esc(deck.school)} · Leadership deck</b><a href="${esc(links.back)}">Back to Reports</a><a href="${esc(links.pptx)}">Download PowerPoint</a><a class="go" href="${esc(links.pdf)}">Download PDF</a><button type="button" onclick="window.print()">Print</button></div>${links.autoPrint ? `<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},500)})</script>` : ""}
 <main class="deck">${deck.slides.map((s, i) => slide(s, deck, i + 1)).join("")}</main>
 </body></html>`;
 }

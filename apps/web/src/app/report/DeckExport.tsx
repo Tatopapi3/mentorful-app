@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SLIDE_H, SLIDE_W } from "@/lib/report/deck";
 
 /**
@@ -195,6 +195,14 @@ export function DeckToolbar({ count }: { count: number }) {
       setProgress(null);
     }
   }
+
+  // "Download PDF" on the Reports page opens this page with ?download=pdf and the file is saved straight away.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("download") !== "pdf") return;
+    const t = setTimeout(() => void downloadPdf(), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>

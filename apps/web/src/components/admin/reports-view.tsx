@@ -53,10 +53,11 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
           <FacultyMapClient users={detail.mapUsers} edges={detail.mapEdges} height="100%" />
         </div>
         <Muted skin={skin}>
-          Switch the map between a grid, pairings, departments and strengths, and click anyone to see who they are paired with. It is a live view and is never part of a download. The same picture, as department totals with groups under 5 left out, is the “Faculty connection” slide in the leadership deck and the spreadsheet below.
+          Switch the map between a grid, pairings, departments and strengths, and click anyone to see who they are paired with. It is a live view with names, so it stays inside Mentorful. The PDF and the spreadsheet below carry the same picture as department totals, with groups under 5 left out and no names.
         </Muted>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-          <Get skin={skin} href={`/admin/export/connection.csv${q}`} primary>Download faculty connection (CSV)</Get>
+          <Get skin={skin} href={`/admin/export/connection.pdf${q}`} primary>Download faculty connection (PDF)</Get>
+          <Get skin={skin} href={`/admin/export/connection.csv${q}`}>Download faculty connection (CSV)</Get>
           <Get skin={skin} href={`${base}/map${q}`}>Open the map full size</Get>
         </div>
       </Panel>
@@ -68,8 +69,9 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
           detail="Pairing, department connections, participation, teacher growth (once enough teachers share) and next steps in 16:9 slides. Download it as a PDF to share, or as a PowerPoint file to edit."
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Get skin={skin} href={`/admin/export/slides${q ? `${q}&print=1` : "?print=1"}`} primary>Download PDF</Get>
+            <Get skin={skin} href={`/admin/export/slides.pdf${q}`} primary>Download PDF</Get>
             <Get skin={skin} href={`/admin/export/slides.pptx${q}`}>Download PowerPoint</Get>
+            <Get skin={skin} href={`/admin/export/slides${q}`}>Preview the slides</Get>
           </div>
         </Row>
       </Panel>
@@ -80,14 +82,17 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
           title="The four dimensions, how they connect, and where to start"
           detail="The six-slide report built from the Culture Scan. Download the whole deck as a PDF or PowerPoint, or save single slides as images."
         >
-          <Get skin={skin} href="/report" primary>Open the report</Get>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Get skin={skin} href="/report?download=pdf" primary>Download PDF</Get>
+            <Get skin={skin} href="/report">Open the report</Get>
+          </div>
         </Row>
       </Panel>
 
       <Panel skin={skin} title="Board summary" eyebrow="One page">
         <Row skin={skin} title="Where things stand, the numbers and the next moves, on one page" detail="Made for a staff meeting handout, one page you can keep as a PDF.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Get skin={skin} href={`${base}/summary${q ? `${q}&print=1` : "?print=1"}`} primary>Download PDF</Get>
+            <Get skin={skin} href={`/admin/export/summary.pdf${q}`} primary>Download PDF</Get>
             <Get skin={skin} href={`${base}/summary${q}`}>Open the board summary</Get>
           </div>
         </Row>
@@ -99,7 +104,7 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
         </Row>
       </Panel>
 
-      <Muted skin={skin}>Everything you download contains counts and averages only. Groups under five are left out, survey answers are anonymous, and nothing shows what teachers said to each other. The faculty map is a live view for you and is not part of any download.</Muted>
+      <Muted skin={skin}>Everything you download contains counts and averages only. Groups under five are left out, survey answers are anonymous, and nothing shows what teachers said to each other. The named faculty map is a live view for you and is not part of any download.</Muted>
     </AdminFrame>
   );
 }

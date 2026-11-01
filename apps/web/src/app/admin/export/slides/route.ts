@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const snap = await loadAdminSnapshot(admin, { cycleId: cycle });
   const deck = buildDeck(snap, await loadPreviousSnapshot(admin, snap), new Date());
   const q = cycle ? `?cycle=${encodeURIComponent(cycle)}` : "";
-  return new Response(deckToHtml(deck, { pptx: `/admin/export/slides.pptx${q}`, back: "/admin/reports", autoPrint: params.get("print") === "1" }), {
+  return new Response(deckToHtml(deck, { pptx: `/admin/export/slides.pptx${q}`, pdf: `/admin/export/slides.pdf${q}`, back: "/admin/reports", autoPrint: params.get("print") === "1" }), {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
   });
 }
