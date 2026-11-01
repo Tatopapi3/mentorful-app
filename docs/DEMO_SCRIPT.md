@@ -7,7 +7,7 @@ Follows the team's 5-minute guide: intros, then the problem, then the live demo,
 The story's numbers belong to a sample school, so say "a school we'll call Lincoln High" and keep "sample school" visible on the slide.
 The 85% is on screen: the sample scan reads 5.1 out of 6 for collective efficacy. The "a year ago" numbers are in the story only (slide).
 
-Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Four slides in all, at `/demo/slides` on the stage link.
+Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Four slides in all, at `/demo/slides` on the stage link. The first page of the stage link (`/demo`, the "show" tab) is the one the audience can see; the word-for-word script is on the "Script (for us)" tab, `/demo/script`.
 
 | Starts | Seconds | Who | Screen |
 | --- | --- | --- | --- |
