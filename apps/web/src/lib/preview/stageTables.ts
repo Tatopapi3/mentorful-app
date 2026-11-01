@@ -18,13 +18,13 @@ import type { Row, Tables } from "./mockQuery";
 
 /**
  * The two teachers who play the scene, as they appear on screen: the first is the English teacher you are by default, the
- * second is the Science teacher (`?who=second`). The team cast two of its Pursuit teachers for fun. Each stands in the place of
+ * second is the Science teacher (`?who=second`). The team cast two of its Pursuit teachers for fun, as Ms. Afiya and Mr. Stefano. Each stands in the place of
  * one of Nick's sandbox teachers (CAST_SLOTS), keeping that person's department and strengths and taking a new name.
  */
-export const STAGE_CHARACTERS = { first: "Afiya A.", second: "Stefano B." } as const;
+export const STAGE_CHARACTERS = { first: "Ms. Afiya", second: "Mr. Stefano" } as const;
 const CAST_SLOTS = {
-  first: { slot: "Henry White", first_name: "Afiya", last_name: "A." },
-  second: { slot: "Owen Perez", first_name: "Stefano", last_name: "B." },
+  first: { slot: "Henry White", first_name: "Ms. Afiya", last_name: "" },
+  second: { slot: "Owen Perez", first_name: "Mr. Stefano", last_name: "" },
 } as const;
 export const AUTH_SECOND = "auth-teacher-2";
 /** The draft the pairing screen opens with: this seed pairs the two characters, and every new pair crosses departments. The next seed (18) does too, so "Draft another round" still tells the same story (tests/stage-dataset.test.ts). */
@@ -59,6 +59,17 @@ const LOGGED: [number, number][] = [[0, 34], [1, 29], [2, 22], [3, 19], [4, 15],
 
 const DAY = 86_400_000;
 
+/** The chance that an answer below 6 goes up one step, by dimension (tests/stage-dataset.test.ts checks where the means land). */
+const LIFT: Record<string, number> = { structural: 1, relational: 0.7, cognitive: 0.64, efficacy: 0.62 };
+
+function lcg(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+}
+
 export function buildStageTables(): Tables {
   const src = structuredClone(data) as unknown as Record<string, Row[]>;
   const school = src.schools[0];
@@ -76,7 +87,7 @@ export function buildStageTables(): Tables {
     if (!p) throw new Error(`stage dataset: ${n} is not on the faculty map`);
     p.auth_user_id = n === CAST_SLOTS.first.slot ? IDS.authTeacher : n === CAST_SLOTS.second.slot ? AUTH_SECOND : null;
     for (const c of [CAST_SLOTS.first, CAST_SLOTS.second]) {
-      if (n === c.slot) Object.assign(p, { first_name: c.first_name, last_name: c.last_name, email: `${c.first_name.toLowerCase()}.${c.last_name.toLowerCase().replace(".", "")}@demo.mentorful.co` });
+      if (n === c.slot) Object.assign(p, { first_name: c.first_name, last_name: c.last_name, email: `${c.first_name.toLowerCase().replace(/[^a-z]+/g, ".")}@demo.mentorful.co` });
     }
     return p;
   });
@@ -126,7 +137,18 @@ export function buildStageTables(): Tables {
   // The Culture Scan: the first 32 respondents, one per teacher, so the page reads as a school where everyone answered.
   const respondents = [...new Set(src.survey_responses.map((r) => String(r.respondent)))].slice(0, teachers.length);
   const keep = new Set(respondents);
-  const survey_responses = src.survey_responses.filter((r) => keep.has(String(r.respondent))).map((r) => ({ ...r, synthetic: false }));
+  const dimension = new Map(src.survey_items.map((i) => [String(i.id), String(i.dimension)]));
+  const reversed = new Map(src.survey_items.map((i) => [String(i.id), i.reverse === true]));
+  // The story is a school one year into Mentorful: the scan is high (collective efficacy about 5.1 of 6, 85%), with the
+  // structural dimension, who talks to whom, still the lowest. Each answer below 6 moves up one step with a fixed chance.
+  const rnd = lcg(85);
+  const survey_responses = src.survey_responses
+    .filter((r) => keep.has(String(r.respondent)))
+    .map((r) => {
+      let v = Number(r.scored_value);
+      if (v < 6 && rnd() < LIFT[dimension.get(String(r.item_id)) ?? "efficacy"]) v += 1;
+      return { ...r, scored_value: v, raw_value: reversed.get(String(r.item_id)) ? 7 - v : v, synthetic: false };
+    });
 
   return {
     schools: [{ ...school, faculty_headcount: teachers.length }],

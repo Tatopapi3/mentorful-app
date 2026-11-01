@@ -4,11 +4,9 @@ import { departmentMatrix, crossCount, gaps } from "@/lib/admin/network";
 import { orientPairs, randomizePairs, seededRandom } from "@/lib/pairing/randomize";
 
 const t = buildStageTables();
+const nm = (p: { first_name?: unknown; last_name?: unknown }) => [p.first_name, p.last_name].filter(Boolean).join(" ");
 const teachers = t.profiles.filter((p) => p.role === "teacher");
-const name = (id: unknown) => {
-  const p = t.profiles.find((x) => x.id === id)!;
-  return `${p.first_name} ${p.last_name}`;
-};
+const name = (id: unknown) => nm(t.profiles.find((x) => x.id === id)!);
 const people = teachers.map((p) => ({ id: String(p.id), name: name(p.id), dept: String(p.department) }));
 const pairsOf = (rows = t.pairings) => rows.map((p) => ({ id: String(p.id), a: String(p.host_id), b: String(p.visitor_id), domain: null, tag: null }));
 
@@ -34,8 +32,8 @@ describe("the stage dataset", () => {
     const pool = teachers.filter((p) => !paired.has(p.id));
     expect(pool.filter((p) => p.department === "English")).toHaveLength(4);
     expect(pool.filter((p) => p.department === "Science")).toHaveLength(4);
-    expect(pool.map((p) => `${p.first_name} ${p.last_name}`)).toEqual(expect.arrayContaining([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second]));
-    expect(teachers.filter((p) => p.auth_user_id).map((p) => `${p.first_name} ${p.last_name}`).sort()).toEqual([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second].sort());
+    expect(pool.map((p) => nm(p))).toEqual(expect.arrayContaining([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second]));
+    expect(teachers.filter((p) => p.auth_user_id).map((p) => nm(p)).sort()).toEqual([STAGE_CHARACTERS.first, STAGE_CHARACTERS.second].sort());
   });
 
   it("opens with a draft that pairs the two characters and crosses every pair, and so does the next one", () => {
@@ -55,6 +53,19 @@ describe("the stage dataset", () => {
     const after = departmentMatrix({ people, pairs: [...pairsOf(), ...pairsOf(draft.map((d, i) => ({ id: `d${i}`, host_id: d.host.id, visitor_id: d.visitor.id }) as never))] });
     expect(crossCount(after, "English", "Science")).toBe(4);
     expect(gaps(after).some((g) => g.a === "English" && g.b === "Science")).toBe(false);
+  });
+
+  it("tells a school one year into Mentorful: collective efficacy near 85% of 6, structural still the lowest", () => {
+    const dim = new Map(t.survey_items.map((i) => [String(i.id), String(i.dimension)]));
+    const mean = (d: string) => {
+      const v = t.survey_responses.filter((r) => dim.get(String(r.item_id)) === d).map((r) => Number(r.scored_value));
+      return v.reduce((a, b) => a + b, 0) / v.length;
+    };
+    expect(mean("efficacy") / 6).toBeGreaterThan(0.84);
+    expect(mean("efficacy") / 6).toBeLessThan(0.87);
+    const others = ["relational", "cognitive", "efficacy"].map(mean);
+    expect(mean("structural")).toBeLessThan(Math.min(...others) - 0.8);
+    expect(new Set(t.survey_responses.map((r) => r.respondent)).size).toBe(32);
   });
 
   it("has nine logged conversations, one per pair at most, all submitted", () => {

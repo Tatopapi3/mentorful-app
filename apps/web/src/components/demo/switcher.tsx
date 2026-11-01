@@ -14,8 +14,8 @@ const PLAIN: { role: StageRole; label: string; sub: string; href: string }[] = [
 
 const STAGE_PEOPLE: { role: StageRole; label: string; sub: string; href: string }[] = [
   { role: "admin", label: "Juan", sub: "principal", href: "/preview/as/admin?next=/admin/pulse" },
-  { role: "first", label: STAGE_CHARACTERS.first.split(" ")[0], sub: "English", href: "/preview/as/teacher?next=/dashboard" },
-  { role: "second", label: STAGE_CHARACTERS.second.split(" ")[0], sub: "Science", href: "/preview/as/teacher?who=second&next=/dashboard" },
+  { role: "first", label: STAGE_CHARACTERS.first, sub: "English", href: "/preview/as/teacher?next=/dashboard" },
+  { role: "second", label: STAGE_CHARACTERS.second, sub: "Science", href: "/preview/as/teacher?who=second&next=/dashboard" },
 ];
 
 export function DemoSwitcher({ current, stage = true }: { current: StageRole; stage?: boolean }) {
@@ -24,7 +24,7 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
     <nav className="demo-switcher" aria-label="Demo Day: who you are">
       <style>{`
         .demo-switcher{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:2147483000;display:flex;gap:4px;align-items:center;padding:5px;border-radius:999px;background:#14122b;color:#f2f1ff;font:500 13px/1 system-ui,sans-serif;box-shadow:0 10px 30px -10px rgba(20,18,43,.7)}
-        .demo-switcher a{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:7px 14px;border-radius:999px;color:#f2f1ff;text-decoration:none;min-width:84px}
+        .demo-switcher a{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:7px 14px;border-radius:999px;color:#f2f1ff;text-decoration:none;min-width:96px}
         .demo-switcher a small{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#a5a3c6}
         .demo-switcher a[aria-current=true]{background:linear-gradient(135deg,#0ea5a4,#4f46e5)}
         .demo-switcher a[aria-current=true] small{color:#e6e5ff}

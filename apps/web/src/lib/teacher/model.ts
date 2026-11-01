@@ -125,8 +125,9 @@ const DAY = 86_400_000;
 export const fullName = (p: { first_name: string | null; last_name: string | null } | null | undefined) =>
   (p ? [p.first_name, p.last_name].filter(Boolean).join(" ").trim() : "") || "A colleague";
 
+/** Initials for an avatar. A leading title (Ms., Mr., Mrs., Dr.) is not part of anyone's initials. */
 export const initialsOf = (name: string) =>
-  name.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("") || "?";
+  name.split(/\s+/).filter((w) => w && !/^(ms|mr|mrs|mx|dr)\.?$/i.test(w)).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("") || "?";
 
 const whenOf = (l: Pick<LogRow, "submitted_at" | "created_at">) => l.submitted_at ?? l.created_at;
 
