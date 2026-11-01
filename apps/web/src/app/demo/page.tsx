@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AuroraPublic } from "@/components/aurora/public-frame";
-import { BEATS, NOTES, STORY, TRIM } from "@/lib/demo/script";
+import { BEATS, CAST, NOTES, STORY, TRIM } from "@/lib/demo/script";
 import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
 
 export const metadata = { title: "Demo Day" };
@@ -26,6 +26,22 @@ export default function Demo() {
         </Link>
       </p>
 
+      <h2 style={{ marginTop: 28 }}>The cast</h2>
+      <div className="ap-demos" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
+        {CAST.map((m) => (
+          <div key={m.name} className="ap-card" style={{ padding: 18, display: "grid", gap: 6, alignContent: "start" }}>
+            <b style={{ fontSize: 20 }}>{m.name}</b>
+            <span>
+              <b>{m.plays}</b>
+            </span>
+            <span className="ev-muted">Built: {m.built}</span>
+            <span className="ev-muted">Screen: {m.screen}</span>
+            <span className="ev-muted">Speaks at {m.speaks}</span>
+          </div>
+        ))}
+      </div>
+
+      <h2 style={{ marginTop: 28 }}>Open a screen</h2>
       <div className="ap-demos" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
         <Link className="ap-demo" href="/preview/as/admin?next=/admin/pulse">
           <b>Juan, the principal</b>

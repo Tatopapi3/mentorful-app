@@ -25,3 +25,19 @@ describe("the Demo Day script", () => {
     expect(spoken).toBeLessThan(480);
   });
 });
+
+describe("the cast", () => {
+  it("lists the four people, with Eric as the narrator", async () => {
+    const { CAST } = await import("@/lib/demo/script");
+    expect(CAST.map((m) => m.name)).toEqual(["Eric", "Juan", "Bernard", "Bertrand"]);
+    expect(CAST[0].plays).toMatch(/narrator/i);
+  });
+
+  it("says when each person speaks, matching the script", async () => {
+    const { CAST } = await import("@/lib/demo/script");
+    for (const m of CAST) {
+      const times = BEATS.filter((b) => b.who.split(",")[0] === m.name).map((b) => b.t);
+      expect(m.speaks.split(", "), m.name).toEqual(times);
+    }
+  });
+});

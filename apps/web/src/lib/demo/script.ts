@@ -25,6 +25,16 @@ export const STORY = {
   note: "The story's numbers belong to a sample school: say \"a school we'll call Lincoln High\". The 85% is on screen (the sample scan reads 5.1 out of 6 for collective efficacy); the \"a year ago\" numbers are in the story and on Slide 2 only.",
 } as const;
 
+export type Member = { name: string; plays: string; built: string; screen: string; speaks: string };
+
+/** Everyone on stage: who they play, what they built, which screen is theirs, and when they speak. */
+export const CAST: Member[] = [
+  { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:10, 1:30, 2:30, 3:20, 4:25" },
+  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 1:45, 2:10, 3:25, 4:00" },
+  { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "0:50, 2:45" },
+  { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:00, 3:05" },
+];
+
 export const BEATS: Beat[] = [
   {
     t: "0:00",
