@@ -5,6 +5,7 @@ import { DIMENSIONS, type Dimension } from "@/lib/report/stats";
 import { loadParticipation } from "./participation";
 import type { AdminContext } from "./require";
 import type { AdminPair, AdminSnapshot, ScanSummary } from "./facts";
+import { STAGE_LAST_YEAR } from "@/lib/preview/stageTables";
 
 type Row = { id: string; host_id: string; visitor_id: string; domain: string | null; strategic_tag: string | null };
 
@@ -63,6 +64,8 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
     requests: ((pending.data ?? []) as Row[]).map(toPair),
     conversations: typeof count === "number" ? count : 0,
     scan,
+    // The Demo Day stage tells a school whose scan fell since last year; nothing else has an earlier scan to compare with.
+    scanBefore: scan && process.env.PREVIEW_DATASET === "stage" ? { n: STAGE_LAST_YEAR.n, means: { ...STAGE_LAST_YEAR.means }, ci: { ...STAGE_LAST_YEAR.ci }, includesSynthetic: false } : null,
     stats: report.status === "ok" ? report.stats : null,
     participation,
     quietPairs,

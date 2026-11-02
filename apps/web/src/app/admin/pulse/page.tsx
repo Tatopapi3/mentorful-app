@@ -11,6 +11,7 @@ import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
 import { headlineTitle, progress } from "@/lib/admin/network";
 import { loadAdminSnapshot, loadPreviousSnapshot } from "@/lib/admin/snapshot";
+import { scanChange, scanChangeSentence } from "@/lib/admin/scan-change";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
   const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
+  const change = scanChange(snap);
 
   const waiting = [
     ...snap.requests.slice(0, 2).map((r) => ({
@@ -69,9 +71,14 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
               <h2>
                 {facts.scan.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
               </h2>
+              {change && (
+                <p style={{ fontSize: 15, fontWeight: 600, margin: "-2px 0 6px", color: change.cteNow < change.cteBefore ? "#fbbf24" : "#5eead4" }}>
+                  {change.cteNow < change.cteBefore ? "▼" : "▲"} {scanChangeSentence(change)}
+                </p>
+              )}
               <p style={{ fontSize: 13, marginTop: -4 }}>Collective teacher efficacy: the Efficacy dimension average, from {respondentsText(facts.scan)}.</p>
               <div style={{ margin: "18px 0 22px", maxWidth: 560 }}>
-                <DimensionBars means={scan.means} ci={scan.ci} dark />
+                <DimensionBars means={scan.means} ci={scan.ci} before={change?.before} dark />
               </div>
             </>
           ) : (

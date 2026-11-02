@@ -33,6 +33,8 @@ export type AdminSnapshot = {
   /** Total conversations logged, from the count function (leadership never reads the rows). */
   conversations: number;
   scan: ScanSummary | null;
+  /** The same school's scan from the year before, when there is one to compare with (the Demo Day stage only). */
+  scanBefore?: ScanSummary | null;
   /** The full report aggregates (for the network and the findings), when a scan has results. */
   stats?: ReportStats | null;
   /** Participation counts from the database function, or null when it is not available. */

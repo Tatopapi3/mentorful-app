@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildStageTables, STAGE_CHARACTERS, STAGE_DRAFT_SEED } from "@/lib/preview/stageTables";
+import { buildStageTables, STAGE_CHARACTERS, STAGE_DRAFT_SEED, STAGE_LAST_YEAR } from "@/lib/preview/stageTables";
 import { departmentMatrix, crossCount, gaps } from "@/lib/admin/network";
 import { orientPairs, randomizePairs, seededRandom } from "@/lib/pairing/randomize";
 
@@ -55,16 +55,22 @@ describe("the stage dataset", () => {
     expect(gaps(after).some((g) => g.a === "English" && g.b === "Science")).toBe(false);
   });
 
-  it("tells a school one year into Mentorful: collective efficacy near 85% of 6, structural still the lowest", () => {
+  it("tells a school whose scan fell: collective efficacy near 70% of 6 (last year 85%), structural the lowest and the one that fell most", () => {
     const dim = new Map(t.survey_items.map((i) => [String(i.id), String(i.dimension)]));
     const mean = (d: string) => {
       const v = t.survey_responses.filter((r) => dim.get(String(r.item_id)) === d).map((r) => Number(r.scored_value));
       return v.reduce((a, b) => a + b, 0) / v.length;
     };
-    expect(mean("efficacy") / 6).toBeGreaterThan(0.84);
-    expect(mean("efficacy") / 6).toBeLessThan(0.87);
+    expect(mean("efficacy") / 6).toBeGreaterThan(0.69);
+    expect(mean("efficacy") / 6).toBeLessThan(0.715);
     const others = ["relational", "cognitive", "efficacy"].map(mean);
     expect(mean("structural")).toBeLessThan(Math.min(...others) - 0.8);
+    // Last year was 85% and every dimension was higher; structural fell the most.
+    expect(STAGE_LAST_YEAR.means.efficacy / 6).toBeGreaterThan(0.84);
+    expect(STAGE_LAST_YEAR.means.efficacy / 6).toBeLessThan(0.86);
+    const fall = (d: "structural" | "relational" | "cognitive" | "efficacy") => STAGE_LAST_YEAR.means[d] - mean(d);
+    for (const d of ["structural", "relational", "cognitive", "efficacy"] as const) expect(fall(d)).toBeGreaterThan(0.5);
+    expect(fall("structural")).toBeGreaterThan(Math.max(fall("relational"), fall("cognitive"), fall("efficacy")));
     expect(new Set(t.survey_responses.map((r) => r.respondent)).size).toBe(32);
   });
 

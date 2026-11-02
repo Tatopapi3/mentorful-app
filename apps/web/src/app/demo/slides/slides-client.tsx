@@ -95,58 +95,68 @@ export function Slides() {
           </h2>
           <div className="dd-grid">
             <div className="dd-card">
-              <strong>Under 50%</strong>
+              <strong>85%</strong>
               <b>Culture Scan</b>
-              <span>Less than half of the staff said the school felt like a place to learn from each other.</span>
+              <span>5.1 out of 6. The staff said the school felt like a place to learn from each other.</span>
+            </div>
+            <div className="dd-card">
+              <strong>Every</strong>
+              <b>teacher had a partner</b>
+              <span>Pairs across departments, drafted by the principal in one click and approved by the principal.</span>
+            </div>
+            <div className="dd-card">
+              <strong>Private</strong>
+              <b>by design</b>
+              <span>The principal saw how many conversations happened, never what was said. The honest answers kept coming.</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="dd-slide" data-on={i === 2} aria-label="Slide 3: this year, the scan fell">
+          <span className="dd-tag">Sample school</span>
+          <p className="dd-kick">This year</p>
+          <div className="dd-versus">
+            <span className="big before">85%</span>
+            <span className="arrow" aria-hidden>
+              →
+            </span>
+            <span className="big after">70%</span>
+          </div>
+          <h2>
+            The scan fell. <em>Now find out why.</em>
+          </h2>
+          <div className="dd-grid">
+            <div className="dd-card">
+              <strong>Structural</strong>
+              <b>fell the most</b>
+              <span>Who talks to whom. Down 1.4 points since last year, the lowest of the four dimensions.</span>
+            </div>
+            <div className="dd-card">
+              <strong>8</strong>
+              <b>new teachers, no partner</b>
+              <span>Four in English and four in Science. Nobody has paired them yet.</span>
             </div>
             <div className="dd-card">
               <strong>Zero</strong>
               <b>English and Science</b>
               <span>Same building, same students, no conversations between the two departments.</span>
             </div>
-            <div className="dd-card">
-              <strong>Most</strong>
-              <b>Would not admit a mistake</b>
-              <span>To a colleague. And when the principal asked, the honest answers stopped.</span>
-            </div>
           </div>
         </section>
 
-        <section className="dd-slide" data-on={i === 2} aria-label="Slide 3: what the school adopted">
-          <p className="dd-kick">What the school adopted</p>
-          <h2>
-            Pairs that cross departments. <em>Privacy by design.</em>
-          </h2>
-          <div className="dd-grid">
-            <div className="dd-card">
-              <b>1. Pair across departments</b>
-              <span>The principal drafts a round in one click, reviews it, and approves it. The principal still makes the call.</span>
-            </div>
-            <div className="dd-card">
-              <b>2. Private by design</b>
-              <span>What teachers write to each other never reaches leadership. The principal sees how many conversations happened, never what was said.</span>
-            </div>
-            <div className="dd-card">
-              <b>3. Groups under five are hidden</b>
-              <span>No result can point at one person. The survey is anonymous, and small groups are left out.</span>
-            </div>
-          </div>
-          <span className="dd-tag" style={{ marginTop: "2cqw" }}>Sample school</span>
-        </section>
-
-        <section className="dd-slide dark" data-on={i === 3} aria-label="Slide 4: a year later">
-          <p className="dd-kick">One year later</p>
+        <section className="dd-slide dark" data-on={i === 3} aria-label="Slide 4: where to focus next year">
+          <p className="dd-kick">Next year</p>
           <div className="dd-versus">
-            <span className="big before">&lt;50%</span>
+            <span className="big before">85%</span>
             <span className="arrow" aria-hidden>
               →
             </span>
-            <span className="big after">85%</span>
+            <span className="big after">70%</span>
           </div>
           <h2>
-            Two strangers are now <em>coaching each other.</em>
+            Now the principal knows <em>where to focus.</em>
           </h2>
-          <p className="dd-lead">The principal has proof. Nobody had to feel watched to get there.</p>
+          <p className="dd-lead">Structural, and the gap between English and Science. Two strangers are coaching each other, and nobody had to feel watched. Next spring&rsquo;s scan is the proof.</p>
           <div className="dd-foot">
             <span>Mentorful · Evidence for principals. Privacy for teachers.</span>
             <span>Sample school. Thank you.</span>

@@ -40,8 +40,8 @@ pair between them, Ms. Afiya and Mr. Stefano without a partner ("Your partner is
 
 ## The beats, and what the screen does
 
-1. **Pulse.** "Pair the 8 unpaired teachers", 9 logged conversations, the privacy badge.
-2. **Constellation.** English and Science are the biggest missing link in the school.
+1. **Pulse.** The Culture Scan reads 4.2 of 6 and says "Down 0.9 since last year (5.1 to 4.2, 85% to 70%). Structural moved most (down 1.4)", with an orange tick on each bar for last year. Then "Pair the 8 unpaired teachers", 9 logged conversations, the privacy badge.
+2. **Constellation.** The scan shows what fell; the map shows where. English and Science are the biggest missing link in the school.
 3. **Pairing, Draft new round** (Juan). One click. The map draws four new links between English and Science, and the line above it
    says "This round closes a gap: English and Science. Connected departments go from 7 of 10 to 8 of 10."
    Ms. Afiya and Mr. Stefano are in the first pair. **Approve 4 pairs** saves it; **Reject** throws the draft away.

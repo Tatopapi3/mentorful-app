@@ -14,6 +14,7 @@ import { buildActions, PLC_FOR_DOMAIN } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import { scanChange, scanChangeSentence } from "@/lib/admin/scan-change";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { buildFindings } from "@/lib/report/findings";
 
@@ -39,6 +40,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const findings = snap.stats ? buildFindings(snap.stats) : null;
   const trends = await loadTrendsData(admin, snap);
   const scan = snap.scan;
+  const change = scanChange(snap);
   const early = scan ? scan.n < REPRESENTATIVE_SHARE * facts.faculty : false;
 
   const domains = Object.entries(facts.domainCounts).sort((a, b) => b[1] - a[1]);
@@ -74,9 +76,10 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             <h2>
               {facts.scan!.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
             </h2>
+            {change && <p style={{ fontSize: 15, fontWeight: 600, margin: "-2px 0 6px", color: change.cteNow < change.cteBefore ? "#b45309" : "#0a7268" }}>{change.cteNow < change.cteBefore ? "▼" : "▲"} {scanChangeSentence(change)}</p>}
             <p className="ev-small">Collective teacher efficacy: the Efficacy average, ±{facts.scan!.cteCi.toFixed(1)} (95%), from {respondentsText(scan)}.</p>
             <div style={{ maxWidth: 640, margin: "16px 0 4px" }}>
-              <DimensionBars means={scan.means} ci={scan.ci} />
+              <DimensionBars means={scan.means} ci={scan.ci} before={change?.before} />
             </div>
           </section>
 

@@ -59,8 +59,22 @@ const LOGGED: [number, number][] = [[0, 34], [1, 29], [2, 22], [3, 19], [4, 15],
 
 const DAY = 86_400_000;
 
-/** The chance that an answer below 6 goes up one step, by dimension (tests/stage-dataset.test.ts checks where the means land). */
-const LIFT: Record<string, number> = { structural: 1, relational: 0.7, cognitive: 0.64, efficacy: 0.62 };
+/**
+ * The chance that an answer drops one step, by dimension: this year's Culture Scan has fallen since last year, most in the
+ * structural dimension (who talks to whom). tests/stage-dataset.test.ts checks where the means land.
+ */
+const DROP: Record<string, number> = { structural: 0.6, relational: 0.38, cognitive: 0.4, efficacy: 0.46 };
+
+/**
+ * Last year's scan for the same school, as the story tells it: collective efficacy 5.1 of 6 (85%), every dimension higher.
+ * Only the stage uses it, to show how far this year's scan has fallen (the real product has one scan per survey).
+ */
+export const STAGE_LAST_YEAR = {
+  label: "Last year",
+  n: 32,
+  means: { structural: 4.03, relational: 5.19, cognitive: 5.08, efficacy: 5.1 },
+  ci: { structural: 0.36, relational: 0.2, cognitive: 0.24, efficacy: 0.28 },
+} as const;
 
 function lcg(seed: number) {
   let s = seed;
@@ -139,14 +153,14 @@ export function buildStageTables(): Tables {
   const keep = new Set(respondents);
   const dimension = new Map(src.survey_items.map((i) => [String(i.id), String(i.dimension)]));
   const reversed = new Map(src.survey_items.map((i) => [String(i.id), i.reverse === true]));
-  // The story is a school one year into Mentorful: the scan is high (collective efficacy about 5.1 of 6, 85%), with the
-  // structural dimension, who talks to whom, still the lowest. Each answer below 6 moves up one step with a fixed chance.
+  // The story is a school that scored 85% a year ago and has slipped: collective efficacy about 4.2 of 6 (70%), with the
+  // structural dimension, who talks to whom, falling most. Each answer above 1 drops one step with a fixed chance.
   const rnd = lcg(85);
   const survey_responses = src.survey_responses
     .filter((r) => keep.has(String(r.respondent)))
     .map((r) => {
       let v = Number(r.scored_value);
-      if (v < 6 && rnd() < LIFT[dimension.get(String(r.item_id)) ?? "efficacy"]) v += 1;
+      if (v > 1 && rnd() < DROP[dimension.get(String(r.item_id)) ?? "efficacy"]) v -= 1;
       return { ...r, scored_value: v, raw_value: reversed.get(String(r.item_id)) ? 7 - v : v, synthetic: false };
     });
 

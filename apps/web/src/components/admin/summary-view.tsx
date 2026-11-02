@@ -5,6 +5,7 @@ import { AutoPrint, PrintButton } from "@/components/admin/print-bar";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { participationRates } from "@/lib/admin/participation";
+import { scanChange } from "@/lib/admin/scan-change";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
 
@@ -19,6 +20,8 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, basePath(skin)).filter((a) => a.severity !== "good").slice(0, 3);
+  const change = scanChange(snap);
+  const sinceLast = change ? ` · ${change.cteNow < change.cteBefore ? "down" : "up"} ${Math.abs(change.cteNow - change.cteBefore).toFixed(1)} since last year` : "";
   const rates = snap.participation ? participationRates(snap.participation) : null;
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const csv = `/admin/export/results.csv${cycleParam ? `?cycle=${cycleParam}` : ""}`;
@@ -38,13 +41,13 @@ export default async function SummaryView({ skin, searchParams }: { skin: Skin; 
           { label: "Have a partner", value: facts.pairedPct === null ? "n/a" : `${facts.pairedPct}%`, note: `${facts.paired} of ${facts.faculty} teachers` },
           { label: "Cross departments", value: facts.crossPct === null ? "n/a" : `${facts.crossPct}%`, note: `${facts.crossPairs} of ${facts.pairCount} pairs` },
           { label: "Logged conversations", value: String(facts.conversations), note: facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet" },
-          { label: "CTE score", value: facts.scan ? facts.scan.cte.toFixed(1) : "n/a", note: facts.scan ? `out of 6 · ${respondentLabel(facts.scan.n, demoCount(facts.scan))}` : "no scan results" },
+          { label: "CTE score", value: facts.scan ? facts.scan.cte.toFixed(1) : "n/a", note: facts.scan ? `out of 6 · ${respondentLabel(facts.scan.n, demoCount(facts.scan))}${sinceLast}` : "no scan results" },
         ]}
       />
 
       {snap.scan && (
         <Panel skin={skin} title="Culture Scan" eyebrow="School-wide averages" count={respondentsText(snap.scan)}>
-          <DimensionBars means={snap.scan.means} ci={snap.scan.ci} />
+          <DimensionBars means={snap.scan.means} ci={snap.scan.ci} before={change?.before} />
         </Panel>
       )}
 

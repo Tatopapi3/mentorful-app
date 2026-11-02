@@ -18,23 +18,23 @@ export type Beat = {
 };
 
 export const STORY = {
-  title: "A school one year into Mentorful",
+  title: "A school whose Culture Scan fell, one year into Mentorful",
   arc: [
-    { label: "A year ago", text: "Lincoln High, a sample school. Its Culture Scan came back under 50%. Teachers who shared a hallway had never spoken." },
-    { label: "The turn", text: "The school adopted Mentorful: pairs across departments, and what teachers write stays private." },
-    { label: "Tonight", text: "One year later the scan reads 85%. The principal closes the last gap, English and Science, and shows the board evidence with no teacher's name in the deck." },
+    { label: "A year ago", text: "Lincoln High, a sample school, adopted Mentorful: pairs across departments, and what teachers write stays private. Its Culture Scan reached 85%." },
+    { label: "This year", text: "Eight new teachers joined with no partner. The scan fell to 70%, most in Structural, and English and Science still have zero connections." },
+    { label: "Tonight", text: "The principal finds where, closes the English and Science gap, and takes next year's focus to the board, with no teacher's name in the deck." },
   ],
-  note: "The story's numbers belong to a sample school: say \"a school we'll call Lincoln High\". The 85% is on screen (the sample scan reads 5.1 out of 6 for collective efficacy); the \"a year ago\" numbers are in the story and on Slide 2 only.",
+  note: "The story's numbers belong to a sample school: say \"a school we'll call Lincoln High\". Both numbers are on screen: Pulse shows this year's scan (4.2 of 6, 70%) with last year's (5.1, 85%) as an orange tick on each bar. The scan is anonymous and has no departments, so it shows what fell (Structural) and the Constellation shows where (English and Science).",
 } as const;
 
 export type Member = { name: string; plays: string; built: string; screen: string; speaks: string };
 
 /** Everyone on stage: who they play, what they built, which screen is theirs, and when they speak. */
 export const CAST: Member[] = [
-  { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:55, 2:13, 3:10, 3:48, 4:32" },
-  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 2:24, 2:50, 3:52, 4:18" },
-  { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "1:05, 3:20" },
-  { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:30, 3:38" },
+  { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:55, 2:13, 3:11, 3:49, 4:33" },
+  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 2:25, 2:51, 3:53, 4:19" },
+  { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "1:05, 3:21" },
+  { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:30, 3:39" },
 ];
 
 const mmss = (n: number) => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
@@ -69,20 +69,20 @@ const BEAT_DATA: Omit<Beat, "t">[] = [
     secs: 18,
     who: "Eric",
     screen: "Slide 2",
-    say: "Picture a school we'll call Lincoln High. A year ago its Culture Scan came back under fifty percent. Teachers who shared a hallway had never spoken, and the honest answers stopped the moment the principal asked.",
+    say: "Picture a school we'll call Lincoln High. A year after adopting Mentorful, its Culture Scan hit eighty-five percent. Every teacher had a partner, and the honest answers kept coming.",
   },
   {
-    secs: 11,
+    secs: 12,
     who: "Eric",
     screen: "Slide 3",
-    say: "So the school adopted Mentorful: pairs across departments, and what teachers write stays private. Tonight, the principal is Juan, one year later.",
+    say: "Then this year it fell to seventy percent. Eight new teachers, no partners. Tonight the principal is Juan, and he has to find out why.",
   },
   {
     secs: 26,
     who: "Juan",
     screen: "Pulse, then Constellation",
-    action: "Switch to Juan. Point at the Culture Scan and the privacy badge. Open Constellation.",
-    say: "This year's scan: five point one out of six. Eighty-five percent. Any group under five, I can't see, because I'm not allowed to. But one thing still keeps me up. English and Science. Same building. Zero connections.",
+    action: "Switch to Juan. Point at the Culture Scan (4.2, down 0.9) and the orange last-year ticks. Open Constellation.",
+    say: "This year's scan: four point two out of six. Seventy percent, down from eighty-five. Structural fell the most. Any group under five, I can't see, because I'm not allowed to. But the map shows me where. English and Science. Same building. Zero connections.",
   },
   {
     secs: 20,
@@ -129,28 +129,31 @@ const BEAT_DATA: Omit<Beat, "t">[] = [
     who: "Juan",
     screen: "Reports",
     action: "Open Reports. Show the faculty map, then Download PDF for the deck.",
-    say: "Tomorrow the board gets evidence, and a deck with no teacher's name in it. One click, a PDF.",
+    say: "Tomorrow the board gets evidence: where we fell, and where we focus next year. No teacher's name in the deck. One click, a PDF.",
   },
   {
     secs: 20,
     who: "Eric",
     screen: "Slide 4",
-    say: "A year ago, under fifty percent. Today, eighty-five. Two strangers are coaching each other, the principal has proof, and nobody had to feel watched. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you.",
+    say: "A year ago, eighty-five. This year, seventy. Now the principal knows where to focus. Two strangers are coaching each other, and nobody had to feel watched. Next spring's scan is the proof. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you.",
   },
 ];
 
 export const BEATS: Beat[] = BEAT_DATA.map((b, i, all) => ({ ...b, t: startOf(all, i) }));
 
+const at = (who: string, screen: string) => BEATS.find((b) => b.who === who && b.screen === screen)?.t ?? "?";
+
 export const TRIM = [
-  "The Trust page (Juan, 3:44): keep the line, skip the page.",
-  "The \"Tomorrow the board gets evidence\" beat (Juan, 4:18).",
-  "Slide 3 (Eric, 1:48): say its line over Slide 2.",
+  `The Trust page (Juan, ${at("Juan", "Pulse, then Trust")}): keep the line, skip the page.`,
+  `The "Tomorrow the board gets evidence" beat (Juan, ${at("Juan", "Reports")}).`,
+  `Slide 3 (Eric, ${at("Eric", "Slide 3")}): say its line over Slide 2.`,
   "The \"[one skill you're proud of]\" sentence in each intro.",
 ];
 
 export const NOTES = [
   "Do not say \"no names anywhere\". The faculty map in Reports shows names; the deck has none. Say \"no teacher's name in the deck\".",
   "Say \"sample school\". The numbers are a story, and the screens run on made-up data.",
+  "The scan is anonymous and has no departments. Say the scan shows what fell and the map shows where; never say a department scored low.",
   "Use one tab. The bar at the bottom of every screen switches who you are; do not open a second tab.",
   "Press Reset before every run, and after rehearsing.",
 ];
