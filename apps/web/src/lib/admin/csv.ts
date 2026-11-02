@@ -16,8 +16,17 @@ export function csvEscape(v: string | number | null | undefined): string {
  * The school-wide results as a spreadsheet: aggregates only. Survey answers are anonymous and carry no
  * department, so there is nothing here to break down by group and no row that points at a person.
  */
+export type Row = (string | number | null)[];
+
 export function resultsCsv(snap: AdminSnapshot, facts: Facts): string {
-  const rows: (string | number | null)[][] = [["section", "metric", "value"]];
+  return toCsv(resultsRows(snap, facts));
+}
+
+const toCsv = (rows: Row[]) => rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
+
+/** The results as rows (header first), shared by the CSV and the Excel file so they always say the same thing. */
+export function resultsRows(snap: AdminSnapshot, facts: Facts): Row[] {
+  const rows: Row[] = [["section", "metric", "value"]];
   const add = (section: string, metric: string, value: string | number | null) => rows.push([section, metric, value]);
 
   add("school", "School", snap.school.name);
@@ -55,7 +64,7 @@ export function resultsCsv(snap: AdminSnapshot, facts: Facts): string {
     add("participation", "Teachers active (%)", r.activePct);
     for (const d of r.departments) add("active teachers by department (%)", d.department, d.pct);
   }
-  return rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
+  return rows;
 }
 
 /**
@@ -64,18 +73,25 @@ export function resultsCsv(snap: AdminSnapshot, facts: Facts): string {
  * teachers are left out, a pair count under 5 is withheld, and no row names a person.
  */
 export function connectionCsv(snap: AdminSnapshot, prev: AdminSnapshot | null): string {
+  const { table, notes } = connectionRows(snap, prev);
+  return toCsv([...table, [], ...notes]);
+}
+
+/** The faculty connection as a department table plus a few facts about the school, shared by the CSV and the Excel file. */
+export function connectionRows(snap: AdminSnapshot, prev: AdminSnapshot | null): { table: Row[]; notes: Row[] } {
   const m = departmentMatrix(snap);
   const cov = coverage(m);
   const orbit = facultyOrbit(snap, snap.participation ?? null, prev);
-  const rows: (string | number | null)[][] = [["department", "teachers", "pairs that cross departments", "pairs inside the department", "departments reached", "departments possible", "pairs that have talked (%)"]];
+  const rows: Row[] = [["department", "teachers", "pairs that cross departments", "pairs inside the department", "departments reached", "departments possible", "pairs that have talked (%)"]];
   for (const p of orbit.planets) {
     rows.push([p.dept, p.teachers, cellText(p.across >= 5 ? p.across : null), cellText(p.within >= 5 ? p.within : null), p.reach, p.possible, p.activePct === null ? "n/a" : p.activePct]);
   }
-  rows.push([]);
-  rows.push(["school", snap.school.name]);
-  rows.push(["cycle", snap.cycle?.name ?? ""]);
-  rows.push(["department connections that exist", cov.connected]);
-  rows.push(["department connections possible", cov.possible]);
-  if (m.omitted.length > 0) rows.push(["note", `${m.omitted.length} department${m.omitted.length === 1 ? "" : "s"} with fewer than 5 teachers left out to protect privacy`]);
-  return rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
+  const notes: Row[] = [
+    ["school", snap.school.name],
+    ["cycle", snap.cycle?.name ?? ""],
+    ["department connections that exist", cov.connected],
+    ["department connections possible", cov.possible],
+  ];
+  if (m.omitted.length > 0) notes.push(["note", `${m.omitted.length} department${m.omitted.length === 1 ? "" : "s"} with fewer than 5 teachers left out to protect privacy`]);
+  return { table: rows, notes };
 }

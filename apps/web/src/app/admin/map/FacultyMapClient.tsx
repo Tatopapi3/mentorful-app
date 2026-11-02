@@ -32,7 +32,7 @@ type UserNode = {
   teachingStyle?: string | null;
 };
 
-type LayoutMode = "grid" | "pairings" | "department" | "strength";
+type LayoutMode = "pairings" | "department" | "strength";
 
 function firstTag(v: any): string {
   if (!v) return "None";
@@ -53,7 +53,7 @@ export default function FacultyMapClient(props: {
   height?: number | string;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("department");
 
   // Keep nodes in state so we can animate positions between layouts.
   const [nodes, setNodes] = useState<Node[]>(() => {
@@ -234,22 +234,6 @@ export default function FacultyMapClient(props: {
       );
     }
 
-    // Grid mode: gently push toward original grid-like anchors
-    if (mode === "grid") {
-      const cols = 10;
-      const cellX = 150;
-      const cellY = 95;
-      const anchors = new Map<string, { x: number; y: number }>();
-      props.users.forEach((u, i) => {
-        const x = (i % cols) * cellX + 30;
-        const y = Math.floor(i / cols) * cellY + 30;
-        anchors.set(u.id, { x, y });
-      });
-
-      sim.force("x", forceX((d: any) => anchors.get(d.id)?.x ?? 0).strength(0.22));
-      sim.force("y", forceY((d: any) => anchors.get(d.id)?.y ?? 0).strength(0.22));
-    }
-
     // Run fixed ticks (no continuous sim)
     for (let i = 0; i < 220; i++) sim.tick();
     sim.stop();
@@ -316,7 +300,7 @@ export default function FacultyMapClient(props: {
           }}
         >
           <div style={{ fontWeight: 700, marginRight: 8 }}>Layout</div>
-          {(["grid", "pairings", "department", "strength"] as LayoutMode[]).map(
+          {(["department", "pairings", "strength"] as LayoutMode[]).map(
             (m) => (
               <button
                 key={m}
@@ -332,13 +316,7 @@ export default function FacultyMapClient(props: {
                   fontWeight: 600,
                 }}
               >
-                {m === "grid"
-                  ? "Grid"
-                  : m === "pairings"
-                    ? "Pairings"
-                    : m === "department"
-                      ? "Department"
-                      : "Strength"}
+                {m === "pairings" ? "Pairings" : m === "department" ? "Department" : "Strength"}
               </button>
             )
           )}

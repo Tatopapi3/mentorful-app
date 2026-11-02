@@ -53,10 +53,11 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
           <FacultyMapClient users={detail.mapUsers} edges={detail.mapEdges} height="100%" />
         </div>
         <Muted skin={skin}>
-          Switch the map between a grid, pairings, departments and strengths, and click anyone to see who they are paired with. It is a live view with names, so it stays inside Mentorful. The PDF and the spreadsheet below carry the same picture as department totals, with groups under 5 left out and no names.
+          Switch the map between departments, pairings and strengths, and click anyone to see who they are paired with. It is a live view with names, so it stays inside Mentorful. The PDF and the spreadsheet below carry the same picture as department totals, with groups under 5 left out and no names.
         </Muted>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
           <Get skin={skin} href={`/admin/export/connection.pdf${q}`} primary>Download faculty connection (PDF)</Get>
+          <Get skin={skin} href={`/admin/export/connection.xlsx${q}`}>Download faculty connection (Excel)</Get>
           <Get skin={skin} href={`/admin/export/connection.csv${q}`}>Download faculty connection (CSV)</Get>
           <Get skin={skin} href={`${base}/map${q}`}>Open the map full size</Get>
         </div>
@@ -93,14 +94,15 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
         <Row skin={skin} title="Where things stand, the numbers and the next moves, on one page" detail="Made for a staff meeting handout, one page you can keep as a PDF.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Get skin={skin} href={`/admin/export/summary.pdf${q}`} primary>Download PDF</Get>
+            <Get skin={skin} href={`/admin/export/summary.xlsx${q}`}>Download Excel</Get>
             <Get skin={skin} href={`${base}/summary${q}`}>Open the board summary</Get>
           </div>
         </Row>
       </Panel>
 
-      <Panel skin={skin} title="Results" eyebrow="Spreadsheet">
-        <Row skin={skin} title="Culture Scan results as a CSV" detail="School-wide averages and counts, for your own charts.">
-          {snap.scan ? <Get skin={skin} href={`/admin/export/results.csv${q}`}>Download results (CSV)</Get> : <Muted skin={skin}>Available once the Culture Scan has results.</Muted>}
+      <Panel skin={skin} title="Results" eyebrow="Excel">
+        <Row skin={skin} title="Culture Scan results as an Excel file" detail="School-wide averages and counts, for your own charts. Opens in Excel, Numbers and Google Sheets.">
+          {snap.scan ? <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Get skin={skin} href={`/admin/export/results.xlsx${q}`} primary>Download results (Excel)</Get><Get skin={skin} href={`/admin/export/results.csv${q}`}>Download results (CSV)</Get></div> : <Muted skin={skin}>Available once the Culture Scan has results.</Muted>}
         </Row>
       </Panel>
 
