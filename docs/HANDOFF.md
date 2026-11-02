@@ -147,3 +147,12 @@ Pedagogy games, video calls and the CTLE tracker (built, off), Partnership Pulse
 between co-mentors (file sharing in pair chat is the start; it needs Bertrand's 016 for the storage bucket), per-field profile
 choices, reports reading from the database instead of the master key, Bertrand's pairing exclusion rules and MCP server
 (not taken; see his branch).
+
+## Decisions (Juan, Nov 2)
+
+- The faculty map in Reports keeps teacher names for the school lead. Downloads (PDF, Excel, CSV, deck) are department totals only.
+- The archetype panel stays. Per-field profile choices are a later enhancement.
+- Culture Scan averages are flagged Low (below 3.5) and Watch (3.5 to 4.5); see `src/lib/admin/scan-level.ts`. Confirm the cutoffs with Nick.
+- "Down since last year" exists only on the Demo Day stage. The real product has one survey with no year.
+- A private test site is closed with `SITE_ACCESS_KEY` (see `src/proxy.ts`); leave it unset in production.
+- Moving this to Nick's project: `docs/NICK_SETUP.md`.

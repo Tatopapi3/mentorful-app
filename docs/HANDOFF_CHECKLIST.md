@@ -36,14 +36,25 @@ technical detail for each item.
     the app builds and runs fine. Eleven are "uses `any`" in Nick's faculty map file (`FacultyMapClient.tsx`, where the map's
     drawing library doesn't have types), and one is in the survey page (it sets state inside an effect). Fixing means giving
     those pieces proper types; it is tidy-up, and Nick's files, so best done together.
-12. **Send Nick the must-have list.** It is written (`docs/MUST_HAVE_NOV4_DRAFT.md`) and not sent, on purpose, until after Demo Day.
+12. **The must-have list for Nick.** It is written (`docs/MUST_HAVE_NOV4_DRAFT.md`). Decision (Juan, Nov 2): no reply is being sent for now, and Nick does not need to review the two decks.
 
 ## C. Decisions and later features (not blockers)
 
-13. **Lookbook default.** Teachers appear in the lookbook unless they hide themselves. Nick can ask for opt-in instead.
-14. **Archetype panel.** Kept, with an explanation. Nick asked whether it should exist at all.
+13. **Lookbook default.** Teachers appear in the lookbook unless they hide themselves. Nick can ask for opt-in instead. Decision (Juan, Nov 2): per-field choices (item 17) stay a later enhancement; for now it is the fixed set of name, department and strengths with one hide switch.
+14. **Archetype panel.** Kept, with an explanation. Decision (Juan, Nov 2): it stays.
 15. **Switched off, but built.** Games, video calls and the CTLE hours tracker. Each comes back with one setting
     (`NEXT_PUBLIC_FEATURE_GAMES`, `_VIDEO`, `_CTLE`).
 16. **Partnership Pulse Check.** Planned for after November 4.
 17. **Per-field lookbook choices.** Nick named this as the later improvement (teachers choosing which of name, department and
     strengths show).
+
+## D. Added Nov 2
+
+18. **Culture Scan warning levels.** Insights and Pulse mark each average **Low** (below 3.5, the scale's middle), **Watch** (3.5 to
+    4.5) or on track. These cutoffs are a first reading, in one place (`src/lib/admin/scan-level.ts`); Nick can confirm or change them.
+19. **"Down since last year" is a stage-only demo.** The real product reads one survey with no link to a school year, so it cannot
+    compare years. Making it real means tying the survey to a cycle, running the scan each year and letting Pulse compare the two.
+20. **Named faculty map: confirmed (Juan, Nov 2).** The live map in Reports shows names to the school lead. The PDF, Excel and CSV
+    versions are department totals only, with no names.
+21. **Setting it up on Nick's project:** `docs/NICK_SETUP.md`.
+22. **Private test site:** set `SITE_ACCESS_KEY` on a non-production deployment to close it to anyone without the key (`src/proxy.ts`).
