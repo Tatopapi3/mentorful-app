@@ -5,7 +5,8 @@ import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
 import { DimensionBars } from "@/components/aurora/dimension-bars";
 import { Ring } from "@/components/aurora/ring";
-import { SeverityTag } from "@/components/aurora/severity";
+import { LevelTag, SeverityTag, WarnIcon } from "@/components/aurora/severity";
+import { scanLevel } from "@/lib/admin/scan-level";
 import { buildActions } from "@/lib/admin/actions";
 import { buildFacts, headlineSentence } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
@@ -26,7 +27,9 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
   const snap = await loadAdminSnapshot(admin, { cycleId: cycleParam });
   const facts = buildFacts(snap);
   const actions = buildActions(facts, base).slice(0, 6);
-  const focus = actions.find((a) => a.severity === "do") ?? actions[0];
+  // Teachers still without a partner is the one thing that has to be acted on, so it leads and is drawn as an alert.
+  const needsPairs = facts.unpaired > 0;
+  const focus = (needsPairs ? actions.find((a) => a.id === "unpaired") : undefined) ?? actions.find((a) => a.severity === "do") ?? actions[0];
   const headline = headlineTitle(progress(snap, await loadPreviousSnapshot(admin, snap)));
   const nameOf = new Map(snap.people.map((p) => [p.id, p.name]));
   const scan = snap.scan;
@@ -41,7 +44,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
       cta: "Review it",
     })),
     ...(facts.unpaired > 0
-      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Draft new round" }]
+      ? [{ key: "unpaired", eyebrow: "Pairing", title: `${facts.unpaired} ${facts.unpaired === 1 ? "teacher needs" : "teachers need"} a partner`, line: "Pairs that cross departments connect people who rarely talk.", cta: "Draft new round", alert: true }]
       : []),
   ];
 
@@ -55,7 +58,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
       {snap.school.priority && <p className="ev-small">Strategic priority: {snap.school.priority}</p>}
 
       <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/pulse`} />
-      {focus && <FocusBanner lead={focus.title} body={focus.detail} href={focus.href} cta="See why" />}
+      {focus && <FocusBanner lead={focus.title} body={focus.detail} href={focus.href} cta={focus.id === "unpaired" ? "Draft new round" : "See why"} tone={needsPairs && focus.id === "unpaired" ? "alert" : undefined} />}
       <div className="v3-rings" style={{ marginTop: 18 }}>
         <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />
@@ -69,7 +72,10 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
           {scan && facts.scan ? (
             <>
               <h2>
-                {facts.scan.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
+                {facts.scan.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>{" "}
+                <span style={{ fontSize: "0.5em", verticalAlign: "middle" }}>
+                  <LevelTag level={scanLevel(scan.means.efficacy)} dark />
+                </span>
               </h2>
               {change && (
                 <p style={{ fontSize: 15, fontWeight: 600, margin: "-2px 0 6px", color: change.cteNow < change.cteBefore ? "#fbbf24" : "#5eead4" }}>
@@ -99,8 +105,11 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
             </div>
           )}
           {waiting.map((d) => (
-            <div key={d.key} className="ev-panel" style={{ padding: 20, marginBottom: 12 }}>
-              <small>{d.eyebrow}</small>
+            <div key={d.key} className={`ev-panel${"alert" in d && d.alert ? " ev-alert-box" : ""}`} style={{ padding: 20, marginBottom: 12 }}>
+              <small style={"alert" in d && d.alert ? { display: "inline-flex", alignItems: "center", gap: 6, color: "var(--ev-alert)", fontWeight: 700 } : undefined}>
+                {"alert" in d && d.alert && <WarnIcon size={15} />}
+                {"alert" in d && d.alert ? "Needs your attention" : d.eyebrow}
+              </small>
               <strong style={{ display: "block", font: "600 16px var(--ev-display)", letterSpacing: "-0.02em", margin: "4px 0" }}>{d.title}</strong>
               <p className="ev-small">{d.line}</p>
               <Link href={`${base}/pairings`} className="ev-btn primary sm">{d.cta}</Link>

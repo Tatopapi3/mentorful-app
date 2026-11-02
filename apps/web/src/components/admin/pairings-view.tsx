@@ -118,7 +118,7 @@ export default async function PairingsView({ skin, searchParams }: { skin: Skin;
             })}
           </Panel>
 
-          <Panel skin={skin} title="Everyone still unpaired" count={`${pool.length} ${pool.length === 1 ? "teacher" : "teachers"}`} eyebrow="Randomized round">
+          <Panel skin={skin} title="Everyone still unpaired" count={`${pool.length} ${pool.length === 1 ? "teacher" : "teachers"}`} eyebrow="Randomized round" tone={pool.length > 0 ? "alert" : undefined}>
             {pool.length < 2 ? (
               <Muted skin={skin}>
                 {pool.length === 0 ? "Every teacher has a partner or a request waiting." : "Only one teacher is left, so there is nobody to pair them with."}
