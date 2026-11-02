@@ -245,7 +245,9 @@ export function summaryPdf(s: SummaryPdfInput): ArrayBuffer {
 
   const gap = 10;
   const cardW = (w - gap * (s.stats.length - 1)) / s.stats.length;
-  const cardH = 78;
+  // A note can run to a few lines ("out of 6 · n=32 · down 0.9 since last year"), so the cards grow to hold it.
+  const noteLines = Math.max(...s.stats.map((st) => wrapped(d, st.note, cardW - 20, { font: "helvetica", size: 8 }).length));
+  const cardH = Math.max(78, 52 + noteLines * 10 + 10);
   s.stats.forEach((st, i) => {
     const cx = PM + i * (cardW + gap);
     fill(d, C.white);
