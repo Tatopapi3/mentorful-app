@@ -11,6 +11,10 @@ describe("the Excel writer", () => {
     const zip = await open(await workbook([{ name: "Results", rows: [["metric", "value"], ["Respondents", 32]] }], "Test"));
     for (const part of ["[Content_Types].xml", "_rels/.rels", "xl/workbook.xml", "xl/_rels/workbook.xml.rels", "xl/styles.xml", "xl/worksheets/sheet1.xml"]) expect(zip.file(part), part).not.toBeNull();
   });
+  it("holds plain files only, no folder entries", async () => {
+    const zip = await open(await workbook([{ name: "S", rows: [["h"], [1]] }], "T"));
+    expect(Object.keys(zip.files).filter((n) => n.endsWith("/"))).toEqual([]);
+  });
   it("writes numbers as numbers and text as text, with a bold header", async () => {
     const zip = await open(await workbook([{ name: "S", rows: [["metric", "value"], ["Efficacy", "4.70"], ["Cycle", "Fall 2026"], ["Count", 32]] }], "T"));
     const xml = await zip.file("xl/worksheets/sheet1.xml")!.async("string");
