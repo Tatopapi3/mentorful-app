@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WarnIcon } from "@/components/aurora/severity";
 import { NETWORK_MIN_RESPONDENTS, networkAllowed } from "@/lib/report/gates";
 import type { DeptMatrix } from "@/lib/admin/network";
 import { cultureBubbles, flowArcs } from "@/lib/admin/visuals";
@@ -137,19 +138,28 @@ export function StackBar({ parts }: { parts: { label: string; value: number; ton
 }
 
 /** The highlighted line at the top of Pulse: the one thing to focus on, with a way to see why. */
-export function FocusBanner({ lead, body, href, cta }: { lead: string; body: string; href: string; cta: string }) {
+export function FocusBanner({ lead, body, href, cta, tone }: { lead: string; body: string; href: string; cta: string; /** "alert" when something still has to be done, for example teachers with no partner. */ tone?: "alert" }) {
+  const alert = tone === "alert";
+  const accent = alert ? "var(--ev-alert, #a3243b)" : amber;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", background: amberSoft, border: `1px solid ${amber}`, borderRadius: 14, padding: "16px 22px", margin: "22px 0 0" }}>
-      <span aria-hidden style={{ width: 44, height: 44, borderRadius: "50%", background: amber, color: "#fff", display: "grid", placeItems: "center", flex: "none" }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
+    <div
+      role={alert ? "alert" : undefined}
+      style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", background: alert ? "var(--ev-alert-soft, rgba(244,63,94,.1))" : amberSoft, border: `${alert ? 2 : 1}px solid ${accent}`, boxShadow: alert ? "0 0 0 4px var(--ev-alert-soft, rgba(244,63,94,.1))" : undefined, borderRadius: 14, padding: "16px 22px", margin: "22px 0 0" }}
+    >
+      <span aria-hidden style={{ width: 44, height: 44, borderRadius: "50%", background: accent, color: "#fff", display: "grid", placeItems: "center", flex: "none" }}>
+        {alert ? (
+          <WarnIcon size={24} />
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
+        )}
       </span>
       <div style={{ flex: "1 1 320px", minWidth: 0 }}>
-        <div style={{ font: "500 11px var(--ev-mono, var(--font-mono, monospace))", letterSpacing: "0.14em", textTransform: "uppercase", color: amber, marginBottom: 3 }}>Your focus this cycle</div>
+        <div style={{ font: "600 11px var(--ev-mono, var(--font-mono, monospace))", letterSpacing: "0.14em", textTransform: "uppercase", color: accent, marginBottom: 3 }}>{alert ? "Needs your attention" : "Your focus this cycle"}</div>
         <div style={{ fontSize: 16, lineHeight: 1.5 }}>
           <strong>{lead}.</strong> {body}
         </div>
       </div>
-      <Link href={href} prefetch={false} style={{ color: amber, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+      <Link href={href} prefetch={false} style={{ color: accent, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
         {cta} ›
       </Link>
     </div>

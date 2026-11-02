@@ -114,7 +114,17 @@ export function HeatGrid({ activity, hidden = [] }: { activity: Activity; hidden
 /** Conversations by week: departments down, weeks across, with an all-departments row first. Anything under 5 is a hatched dot. */
 export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: string[] }) {
   const cell = { padding: "8px 6px", textAlign: "center" as const, border: `1px solid ${line}`, fontSize: 12.5, minWidth: 54 };
-  const shade = (n: number | null) => (n === null ? "transparent" : `color-mix(in srgb, ${teal} ${Math.round(16 + (n / weekly.max) * 66)}%, transparent)`);
+  // Five solid steps, each with a text colour that reads on it (4.5:1 or better), so a quiet week is still legible.
+  const STEPS = [
+    { bg: "#dff5f1", fg: "#0f172a" },
+    { bg: "#a8e3da", fg: "#0f172a" },
+    { bg: "#58c4b6", fg: "#0f172a" },
+    { bg: "#17776d", fg: "#ffffff" },
+    { bg: "#0a4f49", fg: "#ffffff" },
+  ];
+  const step = (n: number) => STEPS[Math.min(STEPS.length - 1, Math.floor((n / Math.max(1, weekly.max)) * (STEPS.length - 0.001)))];
+  const shade = (n: number | null) => (n === null ? "transparent" : step(n).bg);
+  const ink2 = (n: number | null) => (n === null ? muted : step(n).fg);
   const hatch = `repeating-linear-gradient(135deg, transparent 0 5px, ${line} 5px 6px)`;
   return (
     <>
@@ -134,8 +144,8 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
             <tr>
               <th scope="row" style={{ ...cell, border: 0, borderBottom: `1px solid ${line}`, textAlign: "left", fontWeight: 700 }}>All departments</th>
               {weekly.totals.map((t) => (
-                <td key={t.week} style={{ ...cell, background: shade(t.n), fontWeight: 600, color: t.n === null ? muted : ink }} title={t.n === null ? "Fewer than 5 conversations" : `${t.n} conversations`}>
-                  <span style={{ display: "inline-block", minWidth: 24, padding: "1px 7px", borderRadius: 6, background: "var(--ev-panel-solid, #fff)", color: "var(--ev-ink, #14122b)" }}>{t.n === null ? "·" : t.n}</span>
+                <td key={t.week} style={{ ...cell, background: shade(t.n), fontWeight: 700, fontSize: 14, color: ink2(t.n) }} title={t.n === null ? "Fewer than 5 conversations" : `${t.n} conversations`}>
+                  {t.n === null ? "·" : t.n}
                 </td>
               ))}
             </tr>
@@ -147,8 +157,8 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
                 {weekly.weeks.map((w) => {
                   const n = weekly.cell(d, w);
                   return (
-                    <td key={w} style={{ ...cell, background: n === null ? hatch : shade(n), color: n === null ? muted : ink, fontWeight: n === null ? 400 : 600 }} title={n === null ? "Fewer than 5 conversations" : `${n} conversations`}>
-                      <span style={{ display: "inline-block", minWidth: 24, padding: "1px 7px", borderRadius: 6, background: "var(--ev-panel-solid, #fff)", color: "var(--ev-ink, #14122b)" }}>{n === null ? "·" : n}</span>
+                    <td key={w} style={{ ...cell, background: n === null ? hatch : shade(n), color: ink2(n), fontWeight: n === null ? 400 : 700, fontSize: n === null ? 12.5 : 14 }} title={n === null ? "Fewer than 5 conversations" : `${n} conversations`}>
+                      {n === null ? "·" : n}
                     </td>
                   );
                 })}
@@ -157,6 +167,13 @@ export function WeekHeat({ weekly, hidden = [] }: { weekly: Weekly; hidden?: str
           </tbody>
         </table>
       </div>
+      <p style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "10px 0 0", fontSize: 12.5, color: muted }}>
+        <span>Fewer conversations</span>
+        {STEPS.map((st) => (
+          <span key={st.bg} aria-hidden style={{ width: 26, height: 14, borderRadius: 4, background: st.bg, border: `1px solid ${line}` }} />
+        ))}
+        <span>More. The number is how many conversations that week; a dot means fewer than 5, hidden to protect privacy.</span>
+      </p>
       <HiddenGroups names={hidden} />
     </>
   );

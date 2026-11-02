@@ -14,6 +14,8 @@ import { buildActions, PLC_FOR_DOMAIN } from "@/lib/admin/actions";
 import { buildFacts, departmentConnections } from "@/lib/admin/facts";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import { scanLevel } from "@/lib/admin/scan-level";
+import { LevelTag } from "@/components/aurora/severity";
 import { DOMAIN_LABEL } from "@/lib/domains";
 import { buildFindings } from "@/lib/report/findings";
 
@@ -70,10 +72,21 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           )}
 
           <section className="ev-panel" style={{ marginTop: 22 }}>
-            <p className="ev-eyebrow">Culture Scan{scan.includesSynthetic ? " · demo data" : ""}</p>
-            <h2>
-              {facts.scan!.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>
-            </h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <p className="ev-eyebrow">Culture Scan{scan.includesSynthetic ? " · demo data" : ""}</p>
+                <h2>
+                  {facts.scan!.cte.toFixed(1)} <span style={{ opacity: 0.6, fontSize: "0.6em" }}>CTE score, out of 6</span>{" "}
+                  <span style={{ fontSize: "0.5em", verticalAlign: "middle" }}>
+                    <LevelTag level={scanLevel(scan.means.efficacy)} />
+                  </span>
+                </h2>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <a className="ev-btn sm primary" href="/report">Open the Culture Scan report</a>
+                <a className="ev-btn sm" href="/report?download=pdf">Download PDF</a>
+              </div>
+            </div>
             <p className="ev-small">Collective teacher efficacy: the Efficacy average, ±{facts.scan!.cteCi.toFixed(1)} (95%), from {respondentsText(scan)}.</p>
             <div style={{ maxWidth: 640, margin: "16px 0 4px" }}>
               <DimensionBars means={scan.means} ci={scan.ci} />

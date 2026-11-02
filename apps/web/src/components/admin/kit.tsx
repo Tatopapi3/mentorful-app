@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { WarnIcon } from "@/components/aurora/severity";
 
 /**
  * A few building blocks the leadership pages share. The pages still pass a `skin`, which is now always "aurora"
@@ -21,11 +22,15 @@ export function AdminFrame({ skin, eyebrow, title, sub, children }: { skin: Skin
   );
 }
 
-export function Panel({ skin, title, count, eyebrow, children }: { skin: Skin; title: string; count?: ReactNode; eyebrow?: string; children: ReactNode }) {
+export function Panel({ skin, title, count, eyebrow, tone, children }: { skin: Skin; title: string; count?: ReactNode; eyebrow?: string; /** "alert" for a panel the school lead has to act on: a deep outline and a caution icon. */ tone?: "alert"; children: ReactNode }) {
+  const alert = tone === "alert";
   return (
-    <section className="ev-panel" style={{ marginTop: 22 }}>
-      {(eyebrow || count !== undefined) && <p className="ev-eyebrow">{[eyebrow, count].filter((x) => x !== undefined && x !== "").join(" · ")}</p>}
-      <h2>{title}</h2>
+    <section className={`ev-panel${alert ? " ev-alert-box" : ""}`} style={{ marginTop: 22 }}>
+      {(eyebrow || count !== undefined || alert) && <p className={`ev-eyebrow${alert ? " alert" : ""}`}>{[alert ? "Needs your attention" : eyebrow, count].filter((x) => x !== undefined && x !== "").join(" · ")}</p>}
+      <h2 className={alert ? "ev-alert-title" : undefined}>
+        {alert && <WarnIcon size={26} />}
+        {title}
+      </h2>
       {children}
     </section>
   );

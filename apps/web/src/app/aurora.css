@@ -113,9 +113,17 @@
 .ev-signout { background: none; border: 0; padding: 0; color: var(--ev-teal); font-size: 11px; cursor: pointer; text-decoration: underline; }
 .ev-top, .ev-identity { display: none; }
 
-.ev-main { position: relative; flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 44px 28px 70px; animation: ev-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.ev-main { position: relative; flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 44px 28px 70px; animation: ev-rise 0.38s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .ev-wide { max-width: 1260px; }
-@keyframes ev-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* Each page slides in from the right, like the next slide in a deck. The bar stays put. */
+@keyframes ev-rise { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ev-main { animation: none; } }
+/* Something the school lead has to act on: a deep outline and a caution icon, never colour alone. */
+.ev-panel.ev-alert-box, .ev-alert-box { border: 2px solid var(--ev-alert); background: var(--ev-alert-soft); box-shadow: 0 0 0 4px var(--ev-alert-soft); }
+.ev-alert-title { display: inline-flex; align-items: center; gap: 10px; }
+.ev-alert-title svg { color: var(--ev-alert); }
+.ev-eyebrow.alert { color: var(--ev-alert); font-weight: 700; }
+.ev-eyebrow.alert::before { background: var(--ev-alert); }
 .ev-foot { width: min(1180px, calc(100% - 48px)); margin: 0 auto; border-top: 1px solid var(--ev-line); padding: 18px 0 28px; font-size: 12px; color: var(--ev-muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
 .ev-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--ev-teal); font: 600 11px var(--ev-sans); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; }
