@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuroraPublic } from "@/components/aurora/public-frame";
 
 /**
@@ -23,6 +24,8 @@ const STAGE = DEMO && process.env.PREVIEW_DATASET === "stage";
 const DEMOS = DEMO ? [...OPEN, ...SIGNED_IN] : OPEN;
 
 export default function Home() {
+  // The walkthrough build has no landing page: it opens on the principal's Pulse, ready to record.
+  if (process.env.NEXT_PUBLIC_WALKTHROUGH === "1") redirect("/preview/as/admin?next=/admin/pulse");
   return (
     <AuroraPublic>
       <section className="ap-hero">

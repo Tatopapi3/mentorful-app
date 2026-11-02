@@ -40,7 +40,7 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
         </a>
       ))}
       <span className="sep" aria-hidden />
-      <a href={stage ? "/preview/reset?next=/demo" : "/preview/reset?next=/"} aria-label="Reset the demo to its starting point">
+      <a href={stage && process.env.NEXT_PUBLIC_WALKTHROUGH !== "1" ? "/preview/reset?next=/demo" : "/preview/reset?next=/"} aria-label="Reset the demo to its starting point">
         Reset
         <small>start over</small>
       </a>
