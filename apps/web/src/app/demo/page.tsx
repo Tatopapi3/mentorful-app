@@ -29,7 +29,7 @@ export default function Demo() {
       </p>
 
       <h2 style={{ marginTop: 28 }}>Tonight&rsquo;s cast</h2>
-      <div className="ap-demos" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
+      <div className="ap-demos" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
         {CAST.map((m) => (
           <div key={m.name} className="ap-card" style={{ padding: 18, display: "grid", gap: 6, alignContent: "start" }}>
             <b style={{ fontSize: 20 }}>{m.name}</b>
@@ -45,7 +45,7 @@ export default function Demo() {
       <p className="ev-lead" style={{ maxWidth: 760 }}>
         {STORY.title}.
       </p>
-      <ol style={{ listStyle: "none", padding: 0, display: "grid", gap: 10, gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+      <ol style={{ listStyle: "none", padding: 0, display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         {STORY.arc.map((a) => (
           <li key={a.label} className="ap-card" style={{ padding: 18 }}>
             <p className="ev-eyebrow" style={{ margin: 0 }}>
@@ -59,7 +59,7 @@ export default function Demo() {
         Lincoln High is a sample school. The screens run on made-up data.</p>
 
       <h2 style={{ marginTop: 28 }}>Three screens</h2>
-      <div className="ap-demos" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+      <div className="ap-demos" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <Link className="ap-demo" href="/preview/as/admin?next=/admin/pulse">
           <b>Juan, the principal</b>
           <span>Pulse, Pairing, Constellation, Reports.</span>

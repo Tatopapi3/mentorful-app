@@ -35,6 +35,7 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
         .demo-switcher a:hover:not([aria-current=true]){background:rgba(255,255,255,.12)}
         .demo-switcher a:focus-visible{outline:2px solid #5eead4;outline-offset:2px}
         .demo-switcher .sep{width:1px;height:26px;background:rgba(255,255,255,.2);margin:0 4px}
+        @media (max-width:480px){.demo-switcher{max-width:calc(100vw - 12px);gap:0}.demo-switcher a,.demo-switcher button{min-width:0;padding:7px 9px}.demo-switcher .sep{margin:0 2px}}
         @media print{.demo-switcher{display:none}}
       `}</style>
       {PEOPLE.map((p) => (
