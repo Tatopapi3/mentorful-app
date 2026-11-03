@@ -46,6 +46,20 @@ function hashTo01(s: string) {
   return (h >>> 0) / 4294967295;
 }
 
+const CROSS_COLOR = "#0d9488";
+const SAME_COLOR = "#b4b4c6";
+
+/** One soft color per department, so a card says where a teacher is from at a glance. */
+function deptPalette(depts: string[]) {
+  const sorted = Array.from(new Set(depts)).sort();
+  const out = new Map<string, { fill: string; line: string }>();
+  sorted.forEach((d, i) => {
+    const hue = Math.round((i * 360) / Math.max(1, sorted.length) + 12) % 360;
+    out.set(d, { fill: `hsl(${hue} 80% 93%)`, line: `hsl(${hue} 55% 42%)` });
+  });
+  return out;
+}
+
 export default function FacultyMapClient(props: {
   users: UserNode[];
   edges: { id: string; source: string; target: string; label?: string }[];
@@ -54,6 +68,36 @@ export default function FacultyMapClient(props: {
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("department");
+
+  const deptOf = useMemo(() => new Map(props.users.map((u) => [u.id, (u.department ?? "Unassigned").toString()])), [props.users]);
+  const palette = useMemo(() => deptPalette(Array.from(deptOf.values())), [deptOf]);
+
+  function makeNode(u: UserNode, position: { x: number; y: number }): Node {
+    const dept = deptOf.get(u.id) ?? "Unassigned";
+    const c = palette.get(dept);
+    return {
+      id: u.id,
+      position,
+      data: {
+        label: (
+          <div style={{ lineHeight: 1.25 }}>
+            <div style={{ fontWeight: 700, color: "#14122b" }}>{u.name}</div>
+            <div style={{ fontSize: 10.5, color: c?.line ?? "#666", fontWeight: 600 }}>{dept}</div>
+          </div>
+        ),
+      },
+      style: {
+        padding: 6,
+        borderRadius: 10,
+        border: `1.5px solid ${c?.line ?? "#ddd"}`,
+        fontSize: 12,
+        cursor: "pointer",
+        width: 130,
+        textAlign: "center",
+        background: c?.fill ?? "white",
+      },
+    };
+  }
 
   // Keep nodes in state so we can animate positions between layouts.
   const [nodes, setNodes] = useState<Node[]>(() => {
@@ -69,21 +113,7 @@ export default function FacultyMapClient(props: {
       const x = (i % cols) * cellX + jitterX;
       const y = Math.floor(i / cols) * cellY + jitterY;
 
-      return {
-        id: u.id,
-        position: { x, y },
-        data: { label: u.name },
-        style: {
-          padding: 6,
-          borderRadius: 10,
-          border: "1px solid #ddd",
-          fontSize: 12,
-          cursor: "pointer",
-          width: 130,
-          textAlign: "center",
-          background: "white",
-        },
-      };
+      return makeNode(u, { x, y });
     });
   });
 
@@ -102,37 +132,30 @@ export default function FacultyMapClient(props: {
       return props.users.map((u) => {
         const existing = prevMap.get(u.id);
         const dragged = draggedPositionsRef.current.get(u.id);
-        return {
-          id: u.id,
-          position: dragged ?? existing?.position ?? { x: 0, y: 0 },
-          data: { label: u.name },
-          style: existing?.style ?? {
-            padding: 6,
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            fontSize: 12,
-            cursor: "pointer",
-            width: 130,
-            textAlign: "center",
-            background: "white",
-          },
-        };
+        return makeNode(u, dragged ?? existing?.position ?? { x: 0, y: 0 });
       });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.users.length]);
 
+  // A link between two departments is drawn thick and teal; a link inside one department stays thin and grey.
   const edgesRF: Edge[] = useMemo(
     () =>
-      props.edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        label: e.label,
-        animated: false,
-      })),
-    [props.edges]
+      props.edges.map((e) => {
+        const cross = deptOf.get(e.source) !== deptOf.get(e.target);
+        return {
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          label: e.label,
+          animated: false,
+          style: { stroke: cross ? CROSS_COLOR : SAME_COLOR, strokeWidth: cross ? 2.6 : 1.4 },
+        };
+      }),
+    [props.edges, deptOf]
   );
+
+  const crossCount = useMemo(() => props.edges.filter((e) => deptOf.get(e.source) !== deptOf.get(e.target)).length, [props.edges, deptOf]);
 
   const selected = props.users.find((u) => u.id === selectedId) ?? null;
 
@@ -206,19 +229,25 @@ export default function FacultyMapClient(props: {
     }
 
     // Simulation
+    // Pairings: keep the whole school in one compact cloud so each card stays readable when the map is fitted to its box.
+    const compact = mode === "pairings";
     const sim = forceSimulation(start as any)
       .alpha(1)
       .alphaDecay(0.08)
-      .force("charge", forceManyBody().strength(-260))
-      .force("collide", forceCollide(48))
+      .force("charge", forceManyBody().strength(compact ? -70 : -260))
+      .force("collide", forceCollide(compact ? 62 : 48))
       .force("center", forceCenter(550, 360));
+    if (compact) {
+      sim.force("x", forceX(550).strength(0.09));
+      sim.force("y", forceY(360).strength(0.12));
+    }
 
     // Pairing cohesion (always helps, but strongest in pairings mode)
     sim.force(
       "link",
       forceLink(links)
         .id((d: any) => d.id)
-        .distance(mode === "pairings" ? 90 : 130)
+        .distance(mode === "pairings" ? 150 : 130)
         .strength(mode === "pairings" ? 0.9 : 0.25)
     );
 
@@ -320,6 +349,22 @@ export default function FacultyMapClient(props: {
               </button>
             )
           )}
+        </div>
+
+        <div
+          style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", padding: "8px 10px", borderBottom: "1px solid #eee", background: "white", fontSize: 11.5 }}
+          aria-label="Map key"
+        >
+          {Array.from(palette.entries()).map(([dept, c]) => (
+            <span key={dept} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#14122b" }}>
+              <span style={{ width: 11, height: 11, borderRadius: 3, background: c.fill, border: `1.5px solid ${c.line}` }} />
+              {dept}
+            </span>
+          ))}
+          <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, color: "#14122b", fontWeight: 600 }}>
+            <span style={{ width: 22, height: 0, borderTop: `3px solid ${CROSS_COLOR}` }} />
+            links two departments ({crossCount})
+          </span>
         </div>
 
         <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
