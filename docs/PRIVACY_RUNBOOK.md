@@ -26,7 +26,11 @@ The code is written so it works **before and after** each script, so deploying a
 2. **Run `scripts/apply_022_to_024.sql`.** Copy the whole file, paste it in the Supabase SQL editor, click **Run**. Each part ends
    with a self-test: a clean run means the rules hold. It only adds protection and deletes nothing. If Supabase asks about
    row-level security, choose **Run and enable RLS**.
-3. **Check it** (below).
+3. **Prove it works on this database: run `scripts/smoke_test_privacy.sql`.** Paste it in the SQL editor and run it. It plays the whole flow
+   (the school lead makes codes, a visitor who is not signed in uses one, results are held while the survey is open, closing releases the
+   decision, the helper functions refuse a visitor) on a throwaway survey, then **rolls everything back**: nothing is saved, and Nick's real
+   survey is never touched. The last message is "SMOKE TEST PASSED", or a plain "FAIL: ..." line saying which rule is missing.
+   Then **check it** (below).
 4. **Close the survey when enough teachers have answered.** Reports, "Culture Scan access", "Close the survey and release results".
    (Or in SQL: `update public.surveys set closes_at = now() where id = '<survey id>';`.) Until then results stay hidden on purpose.
 5. **Make codes** (same panel) and hand them out so nobody can tell which code went to whom.
@@ -76,7 +80,8 @@ callable without signing in except the survey ones.
 
 ## What was tested
 
-`tests/sql-privacy.test.ts` runs the four scripts against an in-memory Postgres (PGlite) with stand-ins for Supabase's roles and
+`scripts/smoke_test_privacy.sql` does the same on a real database (it is also run by the tests below, including a run that must fail when 022 is
+missing). `tests/sql-privacy.test.ts` runs the four scripts against an in-memory Postgres (PGlite) with stand-ins for Supabase's roles and
 Nick's helper functions, using the real function bodies. It checks: who can call what; that signed-in users keep working; every
 release rule (not closed, no data, fewer than five, under 60%, no headcount, demo rows); that another school's lead and a teacher
 are refused with the same answer as an unknown survey; that the database's figures equal the app's own to nine decimals; that codes
@@ -84,4 +89,4 @@ work once, in any typing, and are stored only scrambled; that incomplete or out-
 usable; and that after 025 a direct insert is refused but a code still saves. `tests/report-privacy.test.ts` checks the app side.
 Run both with `npm test`.
 
-It has **not** been run against Nick's real database, which is why step 2 above ends with self-tests.
+The scripts have **not** been run against Nick's real database yet: that is steps 2 and 3, and why each script ends with a self-test and the smoke test exists.

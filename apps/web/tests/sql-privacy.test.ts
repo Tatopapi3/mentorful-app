@@ -516,3 +516,33 @@ describe("the combined script Juan pastes into the SQL editor", () => {
     expect(script("apply_022_to_024.sql")).not.toContain("drop policy");
   });
 });
+
+describe("the smoke test Juan runs on the real database", () => {
+  it("passes on a database with 022 to 024 applied, and leaves nothing behind", async () => {
+    const db = await newDb();
+    await seedItems(db);
+    await db.exec(script("apply_022_to_024.sql"));
+    const count = async (t: string) => ((await db.query(`select count(*)::int as n from public.${t}`)).rows[0] as { n: number }).n;
+    const before = { surveys: await count("surveys"), codes: await count("survey_codes"), answers: await count("survey_responses") };
+    await db.exec(script("smoke_test_privacy.sql"));
+    expect({ surveys: await count("surveys"), codes: await count("survey_codes"), answers: await count("survey_responses") }).toEqual(before);
+  }, 60000);
+
+  it("fails loudly if the lock-downs are missing (022 not applied)", async () => {
+    const db = await newDb();
+    await seedItems(db);
+    await db.exec(script("023_culture_scan_aggregates.sql"));
+    await db.exec(script("024_survey_codes.sql"));
+    const e = await failure(db.exec(script("smoke_test_privacy.sql")));
+    expect(e?.message).toMatch(/FAIL: a visitor can still call is_admin/);
+    await db.exec("rollback");
+  }, 60000);
+
+  it("also passes after the lock (025)", async () => {
+    const db = await newDb();
+    await seedItems(db);
+    await db.exec(script("apply_022_to_024.sql"));
+    await db.exec(script("025_close_anon_insert.sql"));
+    await db.exec(script("smoke_test_privacy.sql"));
+  }, 60000);
+});

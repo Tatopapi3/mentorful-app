@@ -25,9 +25,10 @@ technical detail for each item.
 
 ## B. Ours (Juan and the team)
 
-7. **A full run-through on the real database.** Teacher side is tested (note, goal, practice entry, lookbook, chat, logging).
-   Still to do as the admin: Reports (map and PDF), Insights, Trust page, and Present. Then delete our test rows (about a dozen
-   across the notes, goals, practice, lookbook, time and chat tables, plus the two logged conversations) so Nick starts clean.
+7. **A full run-through on the real database.** Teacher side is tested (note, goal, practice entry, lookbook, chat, logging), and our test rows
+   are already deleted (checked Nov 3: every teacher table is empty). For the privacy build, `scripts/smoke_test_privacy.sql` replaces a
+   manual run-through: it plays the codes and release flow on the real database and rolls back. Still worth doing once as the school lead:
+   Reports (map and PDF), Insights, the Trust page and the Culture Scan access panel.
 8. **A real email sender.** Sign-in links go out by email, and the built-in sender allows about two emails an hour. That is why we
    hit "rate limit exceeded". Before a school uses it, connect a real sender (Supabase, Authentication, SMTP).
 9. **Run the database scripts on Nick's project.** `scripts/apply_017_to_021.sql` adds the teacher tables. Also set each school's
@@ -49,7 +50,7 @@ technical detail for each item.
 17. **Per-field lookbook choices.** Nick named this as the later improvement (teachers choosing which of name, department and
     strengths show).
 
-## D. Added Nov 2
+## D. Added Nov 2 and 3
 
 18. **Culture Scan warning levels.** Insights and Pulse mark each average **Low** (below 3.5, the scale's middle), **Watch** (3.5 to
     4.5) or on track. These cutoffs are a first reading, in one place (`src/lib/admin/scan-level.ts`); Nick can confirm or change them.
@@ -60,3 +61,7 @@ technical detail for each item.
 21. **Setting it up on Nick's project:** `docs/NICK_SETUP.md`.
 22. **Private test site:** set `SITE_ACCESS_KEY` on a non-production deployment to close it to anyone without the key (`src/proxy.ts`).
 23. **If Eric does not finish the privacy lane:** `docs/PRIVACY_FALLBACK.md` collects everything shared so far and has a step-by-step design for each of his five items, in the order to build them.
+23. **Handoff plan (Nov 3).** Handoff to Nick is Wednesday, Nov 4. Order: run `apply_022_to_024.sql`, then `scripts/smoke_test_privacy.sql`
+    (must say SMOKE TEST PASSED), then deploy `team-integration`, then hand Nick `docs/NICK_SETUP.md`. `025` waits until the new survey
+    page is live everywhere. Before a real school's data goes in, Nick removes the demo data: the 50 demo respondents, the demo faculty
+    (`profiles.is_demo`) and our 32 sample logged conversations, and sets each school's `faculty_headcount`.
