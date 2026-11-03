@@ -58,3 +58,4 @@ technical detail for each item.
     versions are department totals only, with no names.
 21. **Setting it up on Nick's project:** `docs/NICK_SETUP.md`.
 22. **Private test site:** set `SITE_ACCESS_KEY` on a non-production deployment to close it to anyone without the key (`src/proxy.ts`).
+23. **If Eric does not finish the privacy lane:** `docs/PRIVACY_FALLBACK.md` collects everything shared so far and has a step-by-step design for each of his five items, in the order to build them.

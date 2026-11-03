@@ -30,7 +30,7 @@ lands separately; see `docs/HANDOFF.md` for where each piece plugs in.
    **Rate Limits**, raise emails per hour to fit the faculty.
 3. Optional, **Emails, Templates, Magic link:** change the subject to "Your Mentorful sign-in link".
 
-## 4. The app's settings (Vercel, Environment Variables)
+## 3. The app's settings (Vercel, Environment Variables)
 
 | Name | What it is |
 |---|---|
@@ -43,7 +43,7 @@ lands separately; see `docs/HANDOFF.md` for where each piece plugs in.
 Never set `SITE_ACCESS_KEY` in production. It exists only to keep a private test site closed.
 Optional switches, all off unless set to `1`: `NEXT_PUBLIC_FEATURE_GAMES`, `NEXT_PUBLIC_FEATURE_VIDEO`, `NEXT_PUBLIC_FEATURE_CTLE`.
 
-## 5. The first accounts
+## 4. The first accounts
 
 A person's sign-in email belongs to one profile. After someone signs in for the first time they see "No profile is linked yet".
 Link them in the SQL editor:
@@ -57,7 +57,7 @@ where id = '<their profile id>' and auth_user_id is null;
 A school lead's profile has `role = 'admin'`; teachers' have `role = 'teacher'`. `docs/TEAMMATE_ACCESS.md` has a longer example that
 creates admin profiles and links teachers in one go.
 
-## 6. Check it
+## 5. Check it
 
 1. Sign in as the school lead. You should land on **Pulse**.
 2. Open **Trust** (`/admin/privacy`). Every private row should read **0 · Private, as designed**.
@@ -65,7 +65,7 @@ creates admin profiles and links teachers in one go.
    the counts must still be **0**. That is the proof leadership cannot read them.
 4. Run `npm test`, `npx tsc --noEmit` and `npm run build` in `apps/web`.
 
-## 7. After testing
+## 6. After testing
 
 Delete the test rows before real teachers use it (chat messages, notes to self, practice entries, goals, Lookbook choices, time on
 platform, test conversation logs and any test survey answers). Keep your real survey answers.
