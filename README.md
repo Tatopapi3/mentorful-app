@@ -29,13 +29,13 @@ npm install
 npm run demo
 ```
 
-Then open <http://localhost:3400/demo>, the first page of the presentation. From there:
+Then open <http://localhost:3400/demo>, the first page of the presentation. The word-for-word script is in
+[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md). From there:
 
 | Open | What it is |
 | --- | --- |
 | <http://localhost:3400/demo> | The audience-facing first page: the story, the cast, the three screens |
 | <http://localhost:3400/demo/slides> | The five Demo Day slides (arrow keys to move, `F` for full screen) |
-| <http://localhost:3400/demo/script> | The word-for-word script with timings (a team page; it opens with no key on a local run) |
 | <http://localhost:3400/preview/as/admin?next=/admin/pulse> | The principal's dashboard, signed in as the sample principal |
 | <http://localhost:3400/preview/as/teacher?next=/dashboard> | A teacher's dashboard (Ms. Afiya, English) |
 | <http://localhost:3400/preview/as/teacher?who=second&next=/dashboard> | The other teacher (Mr. Stefano, Science) |

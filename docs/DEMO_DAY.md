@@ -14,7 +14,7 @@ npm run demo          # http://localhost:3400
 Open http://localhost:3400/preview once. It lists every screen. First visits compile, so click through every page you will
 show once before you go on stage.
 
-The words to say are in `docs/DEMO_SCRIPT.md` (5 minutes), and on the stage link at `/demo/script` (the "Script (for us)" tab). `/demo` is the audience-facing first page.
+The words to say are in `docs/DEMO_SCRIPT.md` (5 minutes) and in the team's Google Doc, "Mentorful Demo Day Script (5 minutes)". `/demo` is the audience-facing first page; the team's "Share links" tab is `/demo/links`.
 
 ## How to use it on stage
 

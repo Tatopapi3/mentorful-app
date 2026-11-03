@@ -4,7 +4,6 @@
  * move between the principal and the two teachers without opening the wrong screen. It is hidden when printing.
  */
 import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
-import { CopyHere } from "./copy-here";
 
 export type StageRole = "admin" | "first" | "second";
 
@@ -45,7 +44,6 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
         </a>
       ))}
       <span className="sep" aria-hidden />
-      <CopyHere who={current} />
       <a href={stage && process.env.NEXT_PUBLIC_WALKTHROUGH !== "1" ? "/preview/reset?next=/demo" : "/preview/reset?next=/"} aria-label="Reset the demo to its starting point">
         Reset
         <small>start over</small>
