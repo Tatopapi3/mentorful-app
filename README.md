@@ -63,17 +63,19 @@ Use one browser tab: the role is shared by every tab in the browser. The first v
 - Reports are department-level. The deck, the board summary and the Excel files contain no teacher names. The faculty map in
   Reports does show names, for the school lead only.
 
-## Status and known gaps
+## Status and what is left
 
-The demo build is finished and tested. The real product is a working pilot, not yet cleared for real school data. These privacy items
-from the client's requirements are still open on `team-integration` and are listed, with a design for each, in
-`docs/PRIVACY_FALLBACK.md` on that branch:
+The demo build is finished and tested. The real product is a working pilot. Nick's five privacy requirements are built on
+`team-integration` (code, database scripts 022 to 025 and tests) and written up in `docs/PRIVACY_RUNBOOK.md` on that branch:
 
-1. One-time survey codes (today the survey link is open).
-2. Release results only after the survey closes.
-3. Move reports off the service-role ("master") key and rotate it.
-4. Close database functions that can be called without signing in.
-5. Put the public `/report` page behind sign-in.
+1. One-time survey codes (a teacher needs a code to submit; nothing links a code to an answer).
+2. Results are released only after the survey closes.
+3. The report reads its numbers through an admin-only database function, so it no longer needs the master (service-role) key.
+4. Database functions that a visitor could call without signing in are closed.
+5. The Culture Scan report page needs a signed-in school lead.
+
+What is left is running the scripts on the client's real database (a copy-and-paste step with built-in self-tests) and rotating the
+old key afterwards. The privacy rules are tested on an in-memory Postgres; they have not yet been run against the client's database.
 
 ## Tech stack
 
