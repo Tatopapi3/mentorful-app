@@ -32,6 +32,11 @@ describe("the script is for the team only", () => {
     expect(passed(proxy(req("/demo/script", "team_key=team123")))).toBe(true);
     expect(rewritten(proxy(req("/demo/script", "team_key=nope")))).toMatch(/closed-for-walkthrough/);
   });
+  it("keeps the share links page for the team too", () => {
+    process.env.TEAM_KEY = "team123";
+    expect(rewritten(proxy(req("/demo/links")))).toMatch(/closed-for-walkthrough/);
+    expect(passed(proxy(req("/demo/links", "team_key=team123")))).toBe(true);
+  });
   it("never touches the audience pages", () => {
     process.env.TEAM_KEY = "team123";
     expect(passed(proxy(req("/demo")))).toBe(true);

@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const WALKTHROUGH = process.env.NEXT_PUBLIC_WALKTHROUGH === "1";
 
 /**
- * The script is for the team only (TEAM_KEY is set): /demo/script answers "not found" until the browser has opened it once
+ * The script and the share links are for the team only (TEAM_KEY is set): /demo/script and /demo/links answer "not found" until the browser has opened it once
  * with ?team=<key>, which leaves a cookie. Without TEAM_KEY (local development) it is open.
  */
 export function teamKeyOk(req: NextRequest): boolean {
@@ -22,7 +22,7 @@ function open(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const closed = () => NextResponse.rewrite(new URL("/closed-for-walkthrough", req.url));
   if (WALKTHROUGH && (path === "/demo" || path.startsWith("/demo/") || path === "/preview")) return closed();
-  if (path === "/demo/script" || path.startsWith("/demo/script/")) {
+  if (path === "/demo/script" || path.startsWith("/demo/script/") || path === "/demo/links") {
     const key = process.env.TEAM_KEY;
     if (key && req.nextUrl.searchParams.get("team") === key) {
       const clean = req.nextUrl.clone();

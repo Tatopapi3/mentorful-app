@@ -4,6 +4,7 @@
  * move between the principal and the two teachers without opening the wrong screen. It is hidden when printing.
  */
 import { STAGE_CHARACTERS } from "@/lib/preview/stageTables";
+import { CopyHere } from "./copy-here";
 
 export type StageRole = "admin" | "first" | "second";
 
@@ -28,6 +29,10 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
         .demo-switcher a small{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#a5a3c6}
         .demo-switcher a[aria-current=true]{background:linear-gradient(135deg,#0ea5a4,#4f46e5)}
         .demo-switcher a[aria-current=true] small{color:#e6e5ff}
+        .demo-switcher button{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:7px 14px;border-radius:999px;color:#f2f1ff;background:transparent;border:0;font:inherit;cursor:pointer;min-width:96px}
+        .demo-switcher button small{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#a5a3c6}
+        .demo-switcher button:hover{background:rgba(255,255,255,.12)}
+        .demo-switcher button:focus-visible{outline:2px solid #5eead4;outline-offset:2px}
         .demo-switcher a:hover:not([aria-current=true]){background:rgba(255,255,255,.12)}
         .demo-switcher a:focus-visible{outline:2px solid #5eead4;outline-offset:2px}
         .demo-switcher .sep{width:1px;height:26px;background:rgba(255,255,255,.2);margin:0 4px}
@@ -40,6 +45,7 @@ export function DemoSwitcher({ current, stage = true }: { current: StageRole; st
         </a>
       ))}
       <span className="sep" aria-hidden />
+      <CopyHere who={current} />
       <a href={stage && process.env.NEXT_PUBLIC_WALKTHROUGH !== "1" ? "/preview/reset?next=/demo" : "/preview/reset?next=/"} aria-label="Reset the demo to its starting point">
         Reset
         <small>start over</small>
