@@ -1,6 +1,7 @@
 # Demo Day run sheet
 
-This branch (`demo/day`) is for the stage only. It is never merged back: `team-integration` stays the clean handoff for Nick and Eric.
+This build is for the stage. Since Nov 2 it is also `main` (the capstone submission), so the repo's default branch runs the demo.
+`team-integration` is still the clean real product and the handoff for Nick and Eric; the demo build is never merged into it.
 It runs offline on made-up changes in memory, so there is no database, no email and no internet to go wrong.
 
 ## Start it
