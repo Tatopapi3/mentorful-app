@@ -6,6 +6,7 @@ import { buildFacts } from "@/lib/admin/facts";
 import { coverage, departmentMatrix } from "@/lib/admin/network";
 import { requireAdmin } from "@/lib/admin/require";
 import { loadAdminSnapshot } from "@/lib/admin/snapshot";
+import SurveyCodesPanel from "@/components/admin/survey-codes-panel";
 
 const btnClass = (_skin: Skin, primary?: boolean) => `ev-btn sm${primary ? " primary" : ""}`;
 
@@ -88,6 +89,10 @@ export default async function ReportsView({ skin, searchParams }: { skin: Skin; 
             <Get skin={skin} href="/report">Open the report</Get>
           </div>
         </Row>
+      </Panel>
+
+      <Panel skin={skin} title="Culture Scan access" eyebrow="Codes and closing">
+        <SurveyCodesPanel open={snap.scanHold === "not-closed" || snap.scanHold === "misconfigured"} />
       </Panel>
 
       <Panel skin={skin} title="Board summary" eyebrow="One page">

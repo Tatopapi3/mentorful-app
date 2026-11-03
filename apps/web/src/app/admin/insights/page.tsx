@@ -1,6 +1,6 @@
 import { LOOK, lookBase } from "@/lib/admin/look";
 import { FEATURES } from "@/lib/teacher/features";
-import { respondentsText } from "@/lib/report/gates";
+import { holdText, respondentsText } from "@/lib/report/gates";
 import { CycleSwitcher } from "@/components/admin/kit";
 import ParticipationPanel from "@/components/admin/participation-panel";
 import GrowthActivityPanel from "@/components/admin/growth-activity-panel";
@@ -58,8 +58,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/insights`} />
       {!scan && (
         <div className="ev-empty" style={{ marginTop: 20 }}>
-          <strong>No Culture Scan results yet.</strong>
-          <p className="ev-muted" style={{ margin: 0 }}>Results appear once enough teachers respond. Nothing is guessed before then.</p>
+          <strong>{holdText(snap.scanHold).title}</strong>
+          <p className="ev-muted" style={{ margin: 0 }}>{holdText(snap.scanHold).body}</p>
         </div>
       )}
 

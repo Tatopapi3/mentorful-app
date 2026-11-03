@@ -44,29 +44,12 @@ const DIMENSIONS = [
   },
 ] as const;
 
-/**
- * TODO — PLACEHOLDER, NOT REAL DATA. Faculty participation is hardcoded.
- *
- * These numbers are invented and identical for every teacher who finishes.
- * Two things are missing before they can be real:
- *
- *   1. Faculty headcount is not modelled anywhere (no `schools.faculty_count`
- *      or equivalent), so the denominator does not exist. This is the same gap
- *      that blocks the real participation floor — see MIN_RESPONDENTS in
- *      src/lib/report/data.ts.
- *   2. The numerator cannot be read from the browser. `survey_responses` has no
- *      SELECT policy, so only the service-role key can count distinct
- *      respondents; a real count needs a server route returning an aggregate,
- *      never rows.
- *
- * Deliberately not plumbed around tonight. Until both exist, this block is
- * decoration — do not cite it, and do not let it ship to a real school.
+/*
+ * This page used to show a faculty progress count and a closing day. Those numbers were invented and the same for
+ * everyone, so they are gone: with one-time codes nobody, including us, can say who has finished, and a made-up count
+ * must never be shown to a real teacher.
  */
-const FACULTY_PROGRESS = { finished: 32, total: 50, closes: "Friday" };
-
 export default function SurveyCompletePage() {
-  const pct = Math.round((FACULTY_PROGRESS.finished / FACULTY_PROGRESS.total) * 100);
-
   return (
     <AuroraPublic right={<span className="ap-prog"><span className="lbl" style={{ color: "var(--ev-teal)" }}>Complete</span></span>}>
       <main className="ap-done">
@@ -95,20 +78,11 @@ export default function SurveyCompletePage() {
 
         <div className="ap-partic">
           <div className="ap-label" style={{ marginBottom: 0 }}>
-            Faculty progress
+            Your code
           </div>
-          <div className="barwrap">
-            <i style={{ width: `${pct}%` }} />
-          </div>
-          <div className="count">
-            <strong>
-              {FACULTY_PROGRESS.finished} of {FACULTY_PROGRESS.total}
-            </strong>{" "}
-            teachers have finished. The scan closes {FACULTY_PROGRESS.closes}.
-          </div>
-          <p className="caveat">
-            We can tell that you finished. We cannot tell what you said. Those are stored separately,
-            on purpose.
+          <p className="caveat" style={{ marginTop: 8 }}>
+            Your one-time code is used up. We keep only a scrambled copy of it, and nothing we store links it to your
+            answers, so nobody can tell who said what, or even who has finished.
           </p>
         </div>
 

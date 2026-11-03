@@ -23,10 +23,13 @@ export default function LoginPage() {
 
   async function sendLink(address: string) {
     const supabase = createClient();
+    // A page that sent you here (the report) can ask to be the place the link lands; the callback only follows paths on this site.
+    const next = new URLSearchParams(window.location.search).get("next");
+    const back = next && next.startsWith("/") && !next.startsWith("//") ? `?next=${encodeURIComponent(next)}` : "";
     return supabase.auth.signInWithOtp({
       email: address,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback${back}`,
       },
     });
   }

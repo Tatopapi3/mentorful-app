@@ -1,5 +1,9 @@
 # Privacy work: everything we need to finish it without Eric
 
+> **Status, Nov 3 2026: built.** Juan took the privacy lane over and all five items are implemented, with database scripts 022 to 025
+> and tests. What to run and how to check it is in `docs/PRIVACY_RUNBOOK.md`. The rest of this page is the original plan and the
+> record of where the requirements came from.
+
 Eric owns the privacy lane (`docs/HANDOFF_CHECKLIST.md`, section A). This page is the safety net: what we know, where it came
 from, and a design for each open item detailed enough that Juan (with Claude) can finish it if no pull request has arrived.
 Last checked Nov 2, 2026: no `eric/privacy` branch, no commits and no pull request from Eric on GitHub.

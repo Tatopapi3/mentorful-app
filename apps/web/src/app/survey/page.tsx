@@ -63,6 +63,43 @@ export default function SurveyPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [started, setStarted] = useState(false);
 
+  // One-time codes (script 024). "checking" until we know whether this database has them; "legacy" before 024 is applied,
+  // when the page still saves directly as it always did. The code is kept in memory only, never in the browser's storage.
+  const [mode, setMode] = useState<"checking" | "codes" | "legacy">("checking");
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [checkingCode, setCheckingCode] = useState(false);
+
+  useEffect(() => {
+    // An empty code is never valid, so this only asks "does survey_code_ok exist?".
+    createClient()
+      .rpc("survey_code_ok", { p_code: "" })
+      .then(({ error }) => {
+        const missing = !!error && (error.code === "PGRST202" || error.code === "42883" || /could not find the function|schema cache/i.test(error.message ?? ""));
+        setMode(missing ? "legacy" : "codes");
+      });
+  }, []);
+
+  async function begin() {
+    if (mode !== "codes") {
+      setStarted(true);
+      return;
+    }
+    setCheckingCode(true);
+    setCodeError(null);
+    const { data, error } = await createClient().rpc("survey_code_ok", { p_code: code });
+    setCheckingCode(false);
+    if (error) {
+      setCodeError("We couldn’t check the code just now. Check your connection and try again.");
+      return;
+    }
+    if (data !== true) {
+      setCodeError("That code isn’t valid, or it has already been used. Ask the person who gave it to you.");
+      return;
+    }
+    setStarted(true);
+  }
+
   useEffect(() => {
     const supabase = createClient();
     let settled = false;
@@ -146,7 +183,7 @@ export default function SurveyPage() {
   }
 
   // Still fetching (items null) or hydrating localStorage — a genuine loading state.
-  if (items === null || !hydrated) {
+  if (items === null || !hydrated || mode === "checking") {
     return (
       <AuroraPublic>
         <div className="ap-card ap-survey">
@@ -177,7 +214,9 @@ export default function SurveyPage() {
 
   const totalSections = sections.length;
 
-  if (!started) {
+  // With codes, the page opens on the code step every time the code is not in memory (a first visit, or a reload mid-way:
+  // the answers are kept on the device, the code is not, so the person types it again and carries on).
+  if (!started || (mode === "codes" && code === "")) {
     return (
       <AuroraPublic right={<span className="ap-prog"><span className="lbl">School Culture Scan</span></span>}>
         <div className="ap-card ap-survey">
@@ -204,13 +243,37 @@ export default function SurveyPage() {
             Answer for the school as it is right now, not as you hope it will be. The scan runs again
             later in the year, and the comparison is the part that matters.
           </p>
+          {mode === "codes" && (
+            <div className="ev-field" style={{ marginTop: 18 }}>
+              <label className="ap-label" htmlFor="survey-code">Your one-time code</label>
+              <input
+                id="survey-code"
+                type="text"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setCodeError(null);
+                }}
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                style={{ fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em" }}
+              />
+              <p className="ap-fine" style={{ marginTop: 6 }}>
+                Your school gave you a code that works once. It lets you in without a login, so nothing ties your answers to you.
+              </p>
+              {codeError && <p className="ap-error">{codeError}</p>}
+            </div>
+          )}
           <button
             type="button"
             className="ev-btn primary"
             style={{ marginTop: 16 }}
-            onClick={() => setStarted(true)}
+            disabled={checkingCode || (mode === "codes" && code.replace(/[^0-9a-z]/gi, "").length < 16)}
+            onClick={begin}
           >
-            Start
+            {checkingCode ? "Checking…" : "Start"}
           </button>
           <p className="ap-fine">
             You can leave and come back. Your answers stay on this device until you submit.
@@ -235,6 +298,22 @@ export default function SurveyPage() {
     if (!items) return;
     setSubmitting(true);
     setSubmitError(null);
+
+    if (mode === "codes") {
+      // The database checks the code, stores the answers against a fresh random id, and marks the code used, in one step.
+      const given: Record<string, number> = {};
+      for (const item of items) given[item.id] = answers[item.id];
+      const { error } = await createClient().rpc("submit_survey", { p_code: code, p_answers: given });
+      if (error) {
+        setSubmitError(error.message);
+        setSubmitting(false);
+        return;
+      }
+      localStorage.removeItem(PROGRESS_KEY);
+      localStorage.setItem(COMPLETED_KEY, new Date().toISOString());
+      router.push("/survey/complete");
+      return;
+    }
 
     const surveyId = process.env.NEXT_PUBLIC_CULTURE_SCAN_SURVEY_ID;
     const schoolId = process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID;

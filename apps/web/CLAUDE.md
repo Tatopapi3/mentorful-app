@@ -2,7 +2,14 @@
 
 Next.js 16 (App Router, Turbopack) + React 19 + TypeScript. Part of the `mentorful-app` monorepo; this app lives at `apps/web`.
 
-## ⚠️ Demo/pilot open access — MUST be reverted before real school data goes live
+## Status, Nov 3 2026: the open-access items below are built
+
+`/report` now needs a signed-in school lead; results are released only after the survey closes; the report reads on the lead's session
+through `culture_scan_aggregates` (script 023) with a floor of 5 and the 60% rule, so the master key is no longer needed; surveys take
+one-time codes (024), and 025 locks direct inserts. What to run and how to check it: `docs/PRIVACY_RUNBOOK.md`. The text below is
+the history; items 1 and 3 of the list are the ones now done, item 2 (wipe the demo rows) is still ours.
+
+## ⚠️ Demo/pilot open access (history) — MUST be reverted before real school data goes live
 
 Deployed to Vercel at `app.mentorful.co` for principal demos and friction-free pilot use. During this phase, access is **intentionally loosened**:
 

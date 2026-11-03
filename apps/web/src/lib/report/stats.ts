@@ -189,23 +189,51 @@ export function dimensionIndex(d: Dimension): number {
 }
 
 /**
- * The one entry point. Everything downstream (panels, findings, the CLI report)
- * consumes ReportStats rather than raw rows — the raw rows never leave the server.
+ * The only numbers the report needs from the raw answers: how many complete respondents, the mean and standard
+ * deviation of each dimension across them, and the 4 by 4 correlation table. The database computes exactly these
+ * (script 023, culture_scan_aggregates), so the app never has to read a single answer; `aggregatesFromRows` computes
+ * them from rows for the legacy path and for tests.
  */
-export function computeReportStats(rows: ResponseRow[], items: ReportItem[]): ReportStats {
+export type Aggregates = {
+  n: number;
+  dropped: number;
+  means: Record<Dimension, number>;
+  sds: Record<Dimension, number>;
+  correlation: number[][];
+};
+
+export function aggregatesFromRows(rows: ResponseRow[], items: ReportItem[]): Aggregates {
   const { scores, respondents, dropped } = dimensionScores(rows, items);
   const n = respondents.length;
   if (n < 3) {
     throw new Error(`Need at least 3 complete respondents to compute stats, got ${n}.`);
   }
+  const means = {} as Record<Dimension, number>;
+  const sds = {} as Record<Dimension, number>;
+  for (const d of DIMENSIONS) {
+    means[d] = mean(scores[d]);
+    sds[d] = sd(scores[d]);
+  }
+  return { n, dropped: dropped.length, means, sds, correlation: correlationMatrix(scores) };
+}
 
-  const correlation = correlationMatrix(scores);
+/**
+ * The one entry point. Everything downstream (panels, findings, the CLI report)
+ * consumes ReportStats rather than raw rows — the raw rows never leave the server.
+ */
+export function computeReportStats(rows: ResponseRow[], items: ReportItem[]): ReportStats {
+  return statsFromAggregates(aggregatesFromRows(rows, items), items);
+}
+
+/** Builds the report from the aggregates alone: the confidence intervals, the partial correlations and each dimension's strength. */
+export function statsFromAggregates(a: Aggregates, items: ReportItem[]): ReportStats {
+  const { n, correlation } = a;
   const partial = partialCorrelationMatrix(correlation);
 
   const dimensions = {} as Record<Dimension, DimensionStat>;
   DIMENSIONS.forEach((d, i) => {
-    const m = mean(scores[d]);
-    const s = sd(scores[d]);
+    const m = a.means[d];
+    const s = a.sds[d];
     const half = (Z_95 * s) / Math.sqrt(n);
     const strength = DIMENSIONS.reduce(
       (acc, _, j) => (i === j ? acc : acc + Math.abs(partial[i][j])),
@@ -225,7 +253,7 @@ export function computeReportStats(rows: ResponseRow[], items: ReportItem[]): Re
 
   return {
     n,
-    droppedCount: dropped.length,
+    droppedCount: a.dropped,
     itemTotal: items.length,
     dimensions,
     correlation,

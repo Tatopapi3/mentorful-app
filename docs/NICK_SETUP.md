@@ -2,8 +2,8 @@
 
 Everything we built runs today on a Supabase project and a GitHub repo that belong to the Pursuit team. Nothing here has touched
 your project or repo. This is the whole list of what it takes to move it, in order, so it is about an hour of copy and paste.
-Eric's privacy work (one-time survey codes, results after close, the master key, anon-callable functions, the `/report` sign-in)
-lands separately; see `docs/HANDOFF.md` for where each piece plugs in.
+The privacy work (one-time survey codes, results after close, the master key, anon-callable functions, the `/report` sign-in) is
+built too: step 1.4 below runs it, and `docs/PRIVACY_RUNBOOK.md` explains each piece and how to check it.
 
 ## 0. What you need
 
@@ -20,6 +20,11 @@ lands separately; see `docs/HANDOFF.md` for where each piece plugs in.
 2. Set the roster size the 60% participation rule measures against:
    `update public.schools set faculty_headcount = 50 where id = '<your school id>';` (use your real number).
 3. Check it worked: `select count(*) from public.pair_messages;` returns `0` rather than an error.
+4. Open `apps/web/scripts/apply_022_to_024.sql`, copy all of it, paste it into the SQL editor and click **Run**. It closes the database
+   functions a visitor could call without signing in, adds the admin-only report numbers (released only after the survey closes) and
+   the one-time survey codes. It only adds protection and each part ends with a self-test. Run `025_close_anon_insert.sql` later, once
+   the new survey page is live on every site, so an answer can only be added with a code. Then you no longer need
+   `SUPABASE_SERVICE_ROLE_KEY` on the site: remove it and rotate it in Supabase (`docs/PRIVACY_RUNBOOK.md`, step 7).
 
 ## 2. Sign-in (Supabase, Authentication)
 

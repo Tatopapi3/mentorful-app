@@ -33,6 +33,26 @@ export const respondentsText = (s: { n: number; includesSynthetic: boolean; demo
   return `${s.n} respondents${demo <= 0 ? "" : demo >= s.n ? " · demo" : ` (${s.n - demo} real, ${demo} demo)`}`;
 };
 
+/** Why a Culture Scan is not showing, in words for the page (Pulse, Insights). Nothing is guessed while it is held back. */
+export function holdText(hold: "not-closed" | "no-data" | "below-floor" | "misconfigured" | null | undefined): { title: string; body: string } {
+  switch (hold) {
+    case "not-closed":
+      return {
+        title: "Results are released when the survey closes.",
+        body: "Nothing is shown while teachers can still answer, so no early result can be read as one person's view. When the survey closes, the school-wide averages appear here.",
+      };
+    case "below-floor":
+      return {
+        title: "Not enough responses to show a result yet.",
+        body: "Results stay closed until enough staff have answered to keep every answer unidentifiable and the picture representative.",
+      };
+    case "misconfigured":
+      return { title: "The Culture Scan could not be read.", body: "Ask the person who set up the database to check the Culture Scan scripts." };
+    default:
+      return { title: "No Culture Scan results yet.", body: "Results appear once enough teachers respond. Nothing is guessed before then." };
+  }
+}
+
 /** "n=56 · demo", "n=6", or "n=56 (6 real, 50 demo)". */
 export function respondentLabel(n: number, demo: number): string {
   if (demo <= 0) return `n=${n}`;

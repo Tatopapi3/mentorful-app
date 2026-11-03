@@ -9,14 +9,15 @@ export type AdminContext = {
 
 /**
  * Same rule as the existing leadership dashboard: a signed-in admin with a school, nobody else. Returns null
- * for a signed-in person who isn't one, so the page can say so; sends the signed-out to sign in.
+ * for a signed-in person who isn't one, so the page can say so; sends the signed-out to sign in, and back to `next`
+ * (a path on this site) afterwards.
  */
-export async function requireAdmin(): Promise<AdminContext | null> {
+export async function requireAdmin(next?: string): Promise<AdminContext | null> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(next && next.startsWith("/") && !next.startsWith("//") ? `/login?next=${encodeURIComponent(next)}` : "/login");
 
   const { data: me } = await supabase
     .from("profiles")

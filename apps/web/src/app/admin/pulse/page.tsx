@@ -1,5 +1,5 @@
 import { LOOK, lookBase } from "@/lib/admin/look";
-import { respondentsText } from "@/lib/report/gates";
+import { holdText, respondentsText } from "@/lib/report/gates";
 import { FocusBanner } from "@/components/admin/diagrams";
 import { CycleSwitcher } from "@/components/admin/kit";
 import Link from "next/link";
@@ -58,7 +58,7 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
       <CycleSwitcher skin={look} cycles={snap.cycles} selectedId={snap.cycle?.id ?? null} path={`${base}/pulse`} />
       {focus && <FocusBanner lead={focus.title} body={focus.detail} href={focus.href} cta={focus.id === "unpaired" ? "Draft a round" : "See why"} tone={needsPairs && focus.id === "unpaired" ? "alert" : undefined} />}
       <div className="v3-rings" style={{ marginTop: 18 }}>
-        <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : "no results yet"} />
+        <Ring pct={facts.scan?.completionPct ?? null} label="Took the scan" sub={scan ? (scan.n > facts.faculty ? `${scan.n} responses` : `${scan.n} of ${facts.faculty}`) : snap.scanHold === "not-closed" ? "released at close" : "no results yet"} />
         <Ring pct={facts.pairedPct} label="Have a partner" sub={`${facts.pairCount} pairs`} />
         <Ring pct={facts.crossPct} label="Cross departments" sub="of all pairs" />
         <Ring pct={null} display={String(facts.conversations)} label="Logged conversations" sub={facts.conversationsPerPair !== null ? `${facts.conversationsPerPair} per pair` : "none yet"} />
@@ -82,8 +82,8 @@ export default async function PulsePage({ searchParams }: { searchParams: Promis
             </>
           ) : (
             <>
-              <h2>Good evidence starts with an honest boundary.</h2>
-              <p>Results appear once enough teachers respond, and nothing is guessed before then.</p>
+              <h2>{snap.scanHold === "not-closed" ? holdText("not-closed").title : "Good evidence starts with an honest boundary."}</h2>
+              <p>{snap.scanHold === "not-closed" ? holdText("not-closed").body : "Results appear once enough teachers respond, and nothing is guessed before then."}</p>
             </>
           )}
           <Link href={`${base}/insights`} className="ev-btn">Open Insights</Link>

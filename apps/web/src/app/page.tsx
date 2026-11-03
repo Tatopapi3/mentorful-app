@@ -6,13 +6,11 @@ import { AuroraPublic } from "@/components/aurora/public-frame";
  * Reports, so that card points there.
  */
 
-// Only the survey and the report open without signing in. The other two need an account, and are shown only in the demo
-// builds (PREVIEW_MOCK=1), where the app runs on made-up data and signs you in as a sample person.
-const OPEN = [
-  { href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." },
-  { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
-];
+// Only the survey opens without signing in (and it needs a one-time code to submit). The rest need an account, and are
+// shown only in the demo builds (PREVIEW_MOCK=1), where the app runs on made-up data and signs you in as a sample person.
+const OPEN = [{ href: "/survey", title: "Culture Scan", blurb: "Take the survey a teacher takes." }];
 const SIGNED_IN = [
+  { href: "/report", title: "Scan report", blurb: "The six slides a school gets back." },
   { href: "/admin/reports", title: "Reports and faculty map", blurb: "A staff network, drawn from data." },
   { href: "/dashboard", title: "Dashboard", blurb: "What a teacher sees day to day." },
 ];

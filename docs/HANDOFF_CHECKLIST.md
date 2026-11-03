@@ -4,21 +4,23 @@ The product is built: teacher dashboard, admin dashboard, sign-in, survey, repor
 This is the short list of what stands between "built" and "ready to hand to Nick", in plain words. `docs/HANDOFF.md` has the
 technical detail for each item.
 
-## A. Eric's privacy lane (before any real school's data goes in)
+## A. The privacy lane (before any real school's data goes in)
 
-1. **One-time survey codes.** Today the survey link is open: anyone who has it can answer, and can answer more than once. Codes
+**Built Nov 3 (Juan, after Eric's lane stayed empty): all six items below are in the code, with database scripts 022 to 025 and tests. Still to do: run `scripts/apply_022_to_024.sql` on the real database, then `025` once the new survey page is live everywhere. Steps and checks: `docs/PRIVACY_RUNBOOK.md`.**
+
+1. **One-time survey codes. Built (024, 025).** Today the survey link is open: anyone who has it can answer, and can answer more than once. Codes
    give each teacher one answer without recording who used which code. (If we stored that link, anonymity would be gone.)
-2. **Release results after the survey closes.** Reports open as soon as enough people have answered. Waiting until the survey
+2. **Release results after the survey closes. Built (023).** Reports open as soon as enough people have answered. Waiting until the survey
    closes means nobody can work out a person's answer by watching the totals change as responses arrive.
-3. **The master key.** One place in the code (`src/lib/report/data.ts`) reads every survey answer with a key that skips the
+3. **The master key. Built (023); the key can be retired once 023 is run.** One place in the code (`src/lib/report/data.ts`) reads every survey answer with a key that skips the
    database's protections. Nick wants that key restricted and replaced with a database function that only ever returns totals.
 4. **The named faculty map: decided.** In Reports, the faculty map draws every teacher as a dot **with their name**, and a line
    for who is paired with whom. Only the school lead sees it. Nick's request (Oct 29) was only that the Overview page not list
    every teacher, so the names stay on the map in Reports and Overview never shows them. Nothing to build; if Nick later wants
    departments only, that is a small change.
-5. **Functions anyone can call without signing in.** Some of Nick's database helper functions can be run by a visitor who isn't
+5. **Functions anyone can call without signing in. Built (022).** Some of Nick's database helper functions can be run by a visitor who isn't
    signed in. Most should be closed; `survey_is_open` has to stay open for the survey.
-6. **The Culture Scan report page (`/report`) is public.** It was left open for the pilot so a principal could open it in a demo.
+6. **The Culture Scan report page (`/report`) is public. Fixed: it needs a signed-in school lead.** It was left open for the pilot so a principal could open it in a demo.
    Before a real school, it needs a sign-in and school scoping (the comment at the top of `src/app/report/page.tsx` says so).
 
 ## B. Ours (Juan and the team)
@@ -30,8 +32,7 @@ technical detail for each item.
    hit "rate limit exceeded". Before a school uses it, connect a real sender (Supabase, Authentication, SMTP).
 9. **Run the database scripts on Nick's project.** `scripts/apply_017_to_021.sql` adds the teacher tables. Also set each school's
    `faculty_headcount` (the roster size that the 60% rule measures against).
-10. **The invented numbers on the thank-you page.** "32 of 50 teachers have finished, the scan closes Friday" is placeholder text.
-    Replace it with a real figure or remove it.
+10. **The invented numbers on the thank-you page. Removed (Nov 3).** With one-time codes nobody can say who has finished, so there is no honest count to show.
 11. **12 lint errors.** The checker (`npx eslint .`) reports 12 errors. They are code-style and safety warnings, not bugs, and
     the app builds and runs fine. Eleven are "uses `any`" in Nick's faculty map file (`FacultyMapClient.tsx`, where the map's
     drawing library doesn't have types), and one is in the survey page (it sets state inside an effect). Fixing means giving

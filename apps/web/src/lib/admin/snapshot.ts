@@ -38,7 +38,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
 
   const { participation, quietPairs } = await loadParticipation({ supabase, schoolId } as AdminContext, cycle?.id ?? null);
   const [growth, ctle] = await Promise.all([loadGrowthActivity({ supabase, schoolId } as AdminContext), FEATURES.ctle ? loadCtleProgress({ supabase, schoolId } as AdminContext) : null]);
-  const report = await loadReportStats();
+  const report = await loadReportStats(supabase);
   let scan: ScanSummary | null = null;
   if (report.status === "ok") {
     const means = {} as Record<Dimension, number>;
@@ -63,6 +63,7 @@ export async function loadAdminSnapshot({ supabase, schoolId }: AdminContext, op
     requests: ((pending.data ?? []) as Row[]).map(toPair),
     conversations: typeof count === "number" ? count : 0,
     scan,
+    scanHold: report.status === "ok" ? null : report.status,
     stats: report.status === "ok" ? report.stats : null,
     participation,
     quietPairs,

@@ -1,4 +1,7 @@
 import { loadReportStats } from "@/lib/report/data";
+import { holdText } from "@/lib/report/gates";
+import { reportAccess } from "@/lib/report/access";
+import { requireAdmin } from "@/lib/admin/require";
 import { buildFindings } from "@/lib/report/findings";
 import { SLIDE_COUNT } from "@/lib/report/deck";
 import { DeckToolbar, SlideActions } from "./DeckExport";
@@ -17,11 +20,10 @@ import { AuroraPublic } from "@/components/aurora/public-frame";
  * here, and only the aggregate reaches the slides. No response row is ever
  * serialized to the client — only dimension-level aggregates.
  *
- * ⚠️ DEMO/PILOT: this page is intentionally PUBLIC (no auth gate) so principals
- * can open it during a demo and it just works. It currently shows SYNTHETIC data
- * behind the amber banner. Before any real school's data goes live this MUST be
- * re-gated (auth + school/role scoping) and the synthetic rows wiped — see the
- * "Demo/pilot open access" section in CLAUDE.md.
+ * Signed-in school leads only: a signed-out visitor is sent to sign in and back here, a signed-in person who is not an
+ * administrator gets a plain "no access" page, and an administrator of a different school than the Culture Scan's is
+ * refused. The database function behind it enforces the same rules again, so this page is not the only lock.
+ * Demo rows (the sample school's) are labelled as demo on every slide.
  */
 
 // Reads the DB on every request; never prerender at build time.
@@ -31,7 +33,38 @@ export const metadata = { title: "Culture Scan report" };
 
 
 export default async function ReportPage() {
-  const load = await loadReportStats();
+  const admin = await requireAdmin("/report");
+  const access = reportAccess(admin?.schoolId ?? null, process.env.NEXT_PUBLIC_CULTURE_SCAN_SCHOOL_ID);
+  if (access !== "ok") {
+    return (
+      <AuroraPublic>
+        <Heading />
+        <div className="ap-card">
+          <p>
+            {access === "not-admin"
+              ? "The Culture Scan report is for your school’s leadership. You are signed in, but not as a school lead."
+              : "This report belongs to a different school than the one you lead."}
+          </p>
+          <p className="ap-fine">If that looks wrong, ask the person who set up your school’s account.</p>
+        </div>
+      </AuroraPublic>
+    );
+  }
+
+  const load = await loadReportStats(admin!.supabase);
+
+  if (load.status === "not-closed") {
+    return (
+      <AuroraPublic>
+        <Heading />
+        <div className="ap-card">
+          <p>
+            <strong>{holdText("not-closed").title}</strong> {holdText("not-closed").body}
+          </p>
+        </div>
+      </AuroraPublic>
+    );
+  }
 
   if (load.status === "misconfigured") {
     return (

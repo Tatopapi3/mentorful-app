@@ -33,6 +33,8 @@ export type AdminSnapshot = {
   /** Total conversations logged, from the count function (leadership never reads the rows). */
   conversations: number;
   scan: ScanSummary | null;
+  /** Why there is no scan: "not-closed" (results are released after the survey closes), "no-data", "below-floor" or "misconfigured". Null when there is one. */
+  scanHold?: "not-closed" | "no-data" | "below-floor" | "misconfigured" | null;
   /** The full report aggregates (for the network and the findings), when a scan has results. */
   stats?: ReportStats | null;
   /** Participation counts from the database function, or null when it is not available. */
