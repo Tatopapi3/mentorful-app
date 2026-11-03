@@ -23,7 +23,7 @@ export default function DemoScript() {
       </p>
       <p style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Link className="ev-btn primary" href="/demo/slides">
-          Open the slides (4)
+          Open the slides (5)
         </Link>
         <Link className="ev-btn" href="/preview/reset?next=/demo/script">
           Reset the demo
@@ -89,7 +89,7 @@ export default function DemoScript() {
 
       <p style={{ marginTop: 24 }}>
         <Link className="ev-btn primary" href="/demo/slides">
-          Open the slides (4)
+          Open the slides (5)
         </Link>{" "}
         <Link className="ev-btn" href="/preview/reset?next=/demo/script">
           Reset the demo

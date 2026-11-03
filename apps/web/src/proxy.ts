@@ -8,9 +8,31 @@ import { NextResponse, type NextRequest } from "next/server";
 // Walkthrough build (NEXT_PUBLIC_WALKTHROUGH=1): the same stage data for a recorded walkthrough, without the Demo Day pages.
 // The script, the slides and the screen launcher answer "not found", and the home page opens straight on the principal's Pulse.
 const WALKTHROUGH = process.env.NEXT_PUBLIC_WALKTHROUGH === "1";
+
+/**
+ * The script is for the team only (TEAM_KEY is set): /demo/script answers "not found" until the browser has opened it once
+ * with ?team=<key>, which leaves a cookie. Without TEAM_KEY (local development) it is open.
+ */
+export function teamKeyOk(req: NextRequest): boolean {
+  const key = process.env.TEAM_KEY;
+  return !key || req.cookies.get("team_key")?.value === key;
+}
+
 function open(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  if (WALKTHROUGH && (path === "/demo" || path.startsWith("/demo/") || path === "/preview")) return NextResponse.rewrite(new URL("/closed-for-walkthrough", req.url));
+  const closed = () => NextResponse.rewrite(new URL("/closed-for-walkthrough", req.url));
+  if (WALKTHROUGH && (path === "/demo" || path.startsWith("/demo/") || path === "/preview")) return closed();
+  if (path === "/demo/script" || path.startsWith("/demo/script/")) {
+    const key = process.env.TEAM_KEY;
+    if (key && req.nextUrl.searchParams.get("team") === key) {
+      const clean = req.nextUrl.clone();
+      clean.searchParams.delete("team");
+      const res = NextResponse.redirect(clean);
+      res.cookies.set("team_key", key, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 14 });
+      return res;
+    }
+    if (!teamKeyOk(req)) return closed();
+  }
   return NextResponse.next();
 }
 

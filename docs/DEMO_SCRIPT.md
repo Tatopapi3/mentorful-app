@@ -7,7 +7,7 @@ Follows the team's 5-minute guide: intros, then the problem, then the live demo,
 The story's numbers belong to a sample school, so say "a school we'll call Lincoln High" and keep "sample school" visible on the slide.
 Both numbers are on screen: Pulse shows this year's scan (4.2 out of 6 for collective efficacy, 70%) with last year's (5.1, 85%) as an orange tick on each bar and "Down 0.9 since last year" above them. The scan is anonymous and has no departments: it shows what fell (Structural, down 1.4), and the Constellation shows where (English and Science, zero connections).
 
-Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Four slides in all, at `/demo/slides` on the stage link. The first page of the stage link (`/demo`, the "show" tab) is the one the audience can see; the word-for-word script is on the "Script (for us)" tab, `/demo/script`.
+Screens: stage link, one tab, switch people with the bar at the bottom. Press **Reset** first. Five slides in all, at `/demo/slides` on the stage link (slide 5 is for questions). The first page of the stage link (`/demo`, the "show" tab) is the one the audience can see; the word-for-word script is on the "Script (for us)" tab, `/demo/script`.
 
 | Starts | Seconds | Who | Screen |
 | --- | --- | --- | --- |
@@ -77,12 +77,13 @@ Each person gets about 25 seconds for their intro (about 50 words); Eric gets ab
 **ERIC (4:33, 20s)** *(Slide 4)*
 "A year ago, eighty-five. This year, seventy. Now the principal knows where to focus. Two strangers are coaching each other, and nobody had to feel watched. Next spring's scan is the proof. Evidence for principals. Privacy for teachers. This is Mentorful. Thank you."
 
-## The four slides
+## The five slides
 
 1. **Title and team:** "Evidence for principals. Privacy for teachers." and who is who.
-2. **Lincoln High, a year ago** (small label "Sample school"): Culture Scan 85%; every teacher had a partner; the principal sees counts, never what was said.
-3. **This year, the scan fell** (small label "Sample school"): 85% to 70%; Structural fell most; eight new teachers with no partner; English and Science, zero conversations.
-4. **Where to focus next year:** 85% to 70%, Structural and the English and Science gap, and the closing line: next spring's scan is the proof.
+2. **Lincoln High, a year ago** (small label "Sample school"): a ring at 85% (5.1 out of 6); every teacher had a partner; the honest answers kept coming; private by design.
+3. **This year, the scan fell** (small label "Sample school"): the score line from 85% to 70%; the four dimensions with last year's tick (Structural Low, down 1.4); the department map with English and Science unconnected; eight new teachers with no partner.
+4. **Where to focus next year:** Structural; English and Science; next spring's scan is the proof. Ends on the closing line.
+5. **Try it, and how it was built** (for questions, not narrated): a QR code to open the sample school on a phone, the tech stack and the timeline. Show it only after the close.
 
 Open them at `/demo/slides` on the stage link (arrow keys to move, F for full screen).
 
@@ -98,3 +99,4 @@ Time it out loud once, with the clicks, before the dress rehearsal on Sat Nov 7.
 - The scan is anonymous and has no departments. Say the scan shows what fell and the map shows where; never say a department scored low.
 - "Sample school" matters: the numbers are a story, and the app screens run on made-up data.
 - Rehearse the switching. The bar at the bottom changes who you are in one click; do not open a second tab.
+- Slide 5 (the QR code and how it was built) is for questions after the close. Do not show it while you present, so nobody looks down at a phone.

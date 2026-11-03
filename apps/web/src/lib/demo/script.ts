@@ -155,5 +155,6 @@ export const NOTES = [
   "Say \"sample school\". The numbers are a story, and the screens run on made-up data.",
   "The scan is anonymous and has no departments. Say the scan shows what fell and the map shows where; never say a department scored low.",
   "Use one tab. The bar at the bottom of every screen switches who you are; do not open a second tab.",
+  "Slide 5 (the QR code and how it was built) is for questions after the close. Do not show it while you present, so nobody looks down at a phone.",
   "Press Reset before every run, and after rehearsing.",
 ];
