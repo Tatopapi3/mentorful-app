@@ -65,8 +65,7 @@ export default async function Links() {
         Share links, <em>one click each.</em>
       </h1>
       <p className="ev-lead">
-        A page copied from the address bar has no access key and does not know who you are, so it opens &ldquo;private&rdquo; for a teammate. Every link below carries both. You can also press <b>Copy link</b> in the bar at the bottom of any
-        screen to copy the page you are on.
+        A page copied from the address bar has no access key and does not know who you are, so it opens &ldquo;private&rdquo; for a teammate. Every link below carries both, so use the Copy link button on the row you need.
       </p>
 
       <Section
