@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { gatePage } from "@/lib/gate-page";
 
 /**
  * A private test site (SITE_ACCESS_KEY is set): closed to anyone who does not have the key. Open the link with ?key=...
@@ -13,7 +14,6 @@ export function proxy(req: NextRequest) {
   if (!key) return NextResponse.next();
   if (req.nextUrl.pathname === "/auth/callback") return NextResponse.next();
 
-  const text = (body: string, status: number) => new NextResponse(body, { status, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });
   if (req.nextUrl.searchParams.get("key") === key) {
     const clean = req.nextUrl.clone();
     clean.searchParams.delete("key");
@@ -22,7 +22,8 @@ export function proxy(req: NextRequest) {
     return res;
   }
   if (req.cookies.get("site_key")?.value === key) return NextResponse.next();
-  return text("This site is private. Open the link you were given, with the key in it.", 401);
+  // Closed: ask for the access code instead of a dead end (a plain link copied from the address bar has no key in it).
+  return new NextResponse(gatePage(req.nextUrl.pathname, req.nextUrl.searchParams, "site"), { status: 401, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }
 
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)"] };

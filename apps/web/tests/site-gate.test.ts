@@ -20,6 +20,17 @@ describe("the private test site gate", () => {
     expect(proxy(req("/admin/pulse")).status).toBe(401);
     expect(proxy(req("/survey?key=wrong")).status).toBe(401);
   });
+  it("asks for the access code on the closed page, keeping where the visitor was going", async () => {
+    process.env.SITE_ACCESS_KEY = "k123";
+    const res = proxy(req("/admin/insights?x=1"));
+    expect(res.status).toBe(401);
+    expect(res.headers.get("content-type")).toMatch(/text\/html/);
+    const html = await res.text();
+    expect(html).toContain('action="/admin/insights"');
+    expect(html).toContain('name="key"');
+    expect(html).toContain('name="x" value="1"');
+    expect(html).not.toContain("k123");
+  });
   it("lets the key in once, remembers it in a cookie and takes it out of the address", () => {
     process.env.SITE_ACCESS_KEY = "k123";
     const res = proxy(req("/login?key=k123"));
