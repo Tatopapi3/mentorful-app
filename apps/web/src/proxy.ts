@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { gatePage } from "@/lib/gate-page";
 
 /**
  * The deployed demo only (PREVIEW_DEPLOY=1): a page that is closed to anyone without the access key. Open the link with
@@ -50,7 +51,8 @@ export function proxy(req: NextRequest) {
     return res;
   }
   if (req.cookies.get("demo_key")?.value === key) return open(req);
-  return text("This demo is private. Open the link you were given.", 401);
+  // Closed: ask for the access code instead of a dead end (a plain link copied from the address bar has no key in it).
+  return new NextResponse(gatePage(req.nextUrl.pathname, req.nextUrl.searchParams, "demo"), { status: 401, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }
 
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)"] };
