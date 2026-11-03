@@ -91,7 +91,7 @@ Open them at `/demo/slides` on the stage link (arrow keys to move, F for full sc
 
 Every line has its own seconds, and they add up to 4:53. The speaking part of each is checked against a calm stage pace of about 130 words a minute, so a line that is too long for its seconds fails the tests. The brackets count as the number of words in their hint.
 If you run long, cut in this order: the Trust page (keep the line), the "Tomorrow the board gets evidence" beat, Slide 3 (say its line over Slide 2), then the "[one skill you're proud of]" sentence in each intro.
-Time it out loud once, with the clicks, before the dress rehearsal on Sat Nov 7.
+Time it out loud once, with the clicks, before the staff dress rehearsal on Wed Nov 4 (presentations start at 6:50 PM, with 20 minutes of practice before). The final dress rehearsals are Sat Nov 7 and Sun Nov 8.
 
 ## Notes
 
