@@ -28,7 +28,9 @@ const where = (i: number, n: number, f: number) => {
   const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n + 0.35;
   // Even the closest planet keeps off the centre, so a lens where everyone ties does not pile them up.
   const rx = R_MIN + (0.35 + 0.65 * f) * (R_MAX - R_MIN);
-  return { x: CX + rx * Math.cos(angle), y: CY + rx * 0.56 * Math.sin(angle) };
+  // Rounded so the server and the browser print the same digits (Math.cos differs in the last decimals between them).
+  const r2 = (v: number) => Math.round(v * 100) / 100;
+  return { x: r2(CX + rx * Math.cos(angle)), y: r2(CY + rx * 0.56 * Math.sin(angle)) };
 };
 
 export function FacultyOrbit({ planets, lenses, directions }: { planets: Planet[]; lenses: Lens[]; directions: Record<Lens, Direction[]> }) {
