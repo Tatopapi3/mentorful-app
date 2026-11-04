@@ -13,7 +13,7 @@ const PLAIN: { role: StageRole; label: string; sub: string; href: string }[] = [
 ];
 
 const STAGE_PEOPLE: { role: StageRole; label: string; sub: string; href: string }[] = [
-  { role: "admin", label: "Juan", sub: "principal", href: "/preview/as/admin?next=/admin/pulse" },
+  { role: "admin", label: "Mr. David", sub: "principal", href: "/preview/as/admin?next=/admin/pulse" },
   { role: "first", label: STAGE_CHARACTERS.first, sub: "English", href: "/preview/as/teacher?next=/dashboard" },
   { role: "second", label: STAGE_CHARACTERS.second, sub: "Science", href: "/preview/as/teacher?who=second&next=/dashboard" },
 ];

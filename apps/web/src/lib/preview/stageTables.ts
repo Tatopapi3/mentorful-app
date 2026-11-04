@@ -95,7 +95,7 @@ export function buildStageTables(): Tables {
   };
 
   const admin = src.profiles.find((p) => p.role === "admin")!;
-  Object.assign(admin, { auth_user_id: IDS.authAdmin, first_name: "Juan", last_name: "Fernandez", email: "admin@preview.test" });
+  Object.assign(admin, { auth_user_id: IDS.authAdmin, first_name: "Mr. David", last_name: "", email: "admin@preview.test" });
   const teachers = Object.values(FACULTY).flat().map((n) => {
     const p = byName.get(n);
     if (!p) throw new Error(`stage dataset: ${n} is not on the faculty map`);
@@ -165,7 +165,7 @@ export function buildStageTables(): Tables {
     });
 
   return {
-    schools: [{ ...school, faculty_headcount: teachers.length }],
+    schools: [{ ...school, name: "Pursuit", faculty_headcount: teachers.length }],
     cycles: [cycle],
     profiles: [admin, ...teachers],
     pairings,

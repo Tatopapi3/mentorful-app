@@ -56,12 +56,12 @@ export default function Demo() {
         ))}
       </ol>
       <p className="ev-muted" style={{ marginTop: 14 }}>
-        Lincoln High is a sample school. The screens run on made-up data.</p>
+        Pursuit is a sample school. The screens run on made-up data.</p>
 
       <h2 style={{ marginTop: 28 }}>Three screens</h2>
       <div className="ap-demos" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <Link className="ap-demo" href="/preview/as/admin?next=/admin/pulse">
-          <b>Juan, the principal</b>
+          <b>Mr. David, the principal</b>
           <span>Pulse, Pairing, Constellation, Reports.</span>
         </Link>
         <Link className="ap-demo" href="/preview/as/teacher?next=/dashboard">

@@ -20,7 +20,7 @@ const AUDIENCE_URL = process.env.NEXT_PUBLIC_AUDIENCE_URL ?? "";
 
 const TEAM = [
   { name: "Eric", initials: "E", role: "Narrator", built: "Owns privacy" },
-  { name: "Juan", initials: "J", role: "The principal", built: "Built the principal's dashboard" },
+  { name: "Juan", initials: "J", role: "Mr. David, the principal", built: "Built the principal's dashboard" },
   { name: "Bernard", initials: "B", role: "Ms. Afiya, English", built: "Built the teacher dashboard" },
   { name: "Bertrand", initials: "B", role: "Mr. Stefano, Science", built: "Built pairing and the pair chat" },
 ] as const;
@@ -266,11 +266,11 @@ export function Slides() {
         </section>
 
         {/* 2. A year ago */}
-        <section className="dd-slide" data-on={i === 1} aria-label="Slide 2: Lincoln High, a year ago">
+        <section className="dd-slide" data-on={i === 1} aria-label="Slide 2: Pursuit, a year ago">
           <span className="dd-tag">Sample school</span>
           <p className="dd-kick">A year ago</p>
           <h2>
-            Lincoln High, <em>a year after Mentorful.</em>
+            Pursuit, <em>a year after Mentorful.</em>
           </h2>
           <div className="dd-split">
             <Gauge value={pct(SLIDE_FACTS.cte.before)} label="Culture Scan" sub={`${SLIDE_FACTS.cte.before.toFixed(1)} out of 6`} />

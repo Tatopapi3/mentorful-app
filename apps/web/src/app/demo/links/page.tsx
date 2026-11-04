@@ -75,7 +75,7 @@ export default async function Links() {
         keyed={key}
         groups={[
           { title: "Audience pages", who: "none", pages: [{ label: "The show", path: "/demo" }, { label: "The slides (5)", path: "/demo/slides" }] },
-          { title: "As Juan, the principal", who: "admin", pages: ADMIN_PAGES },
+          { title: "As Mr. David, the principal", who: "admin", pages: ADMIN_PAGES },
           { title: `As ${STAGE_CHARACTERS.first}, the English teacher`, who: "first", pages: TEACHER_PAGES },
           { title: `As ${STAGE_CHARACTERS.second}, the Science teacher`, who: "second", pages: TEACHER_PAGES.slice(0, 3) },
           { title: "No sign-in needed", who: "none", pages: OPEN_PAGES },

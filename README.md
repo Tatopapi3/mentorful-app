@@ -11,7 +11,7 @@ startup founded by Nick Kurian and Mike. Pursuit AI-Native Builders capstone; De
 
 ## What you are looking at
 
-This branch (`main`) is the **Demo Day build**. It runs entirely on **made-up data** for a sample school, "Lincoln High", so it needs
+This branch (`main`) is the **Demo Day build**. It runs entirely on **made-up data** for a sample school, "Pursuit", so it needs
 no database, no email and no internet. Its story: a year ago the school's Culture Scan scored 85%. This year it fell to 70%. The
 principal finds out what fell, where, and what to focus on next year.
 
@@ -90,7 +90,7 @@ old key afterwards. The privacy rules are tested on an in-memory Postgres; they 
 
 ## How the demo build differs from the real product
 
-`PREVIEW_MOCK=1` swaps the Supabase client for an in-memory fake loaded with the Lincoln High dataset (`apps/web/src/lib/preview`).
+`PREVIEW_MOCK=1` swaps the Supabase client for an in-memory fake loaded with the Pursuit dataset (`apps/web/src/lib/preview`).
 The same pages, components and report code run on top of it. Two things exist only in the demo, on purpose: the "down since last
 year" comparison (the sample school's last-year score) and the `/demo` pages (slides and script).
 

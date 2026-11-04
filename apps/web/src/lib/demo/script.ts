@@ -20,11 +20,11 @@ export type Beat = {
 export const STORY = {
   title: "A school whose Culture Scan fell, one year into Mentorful",
   arc: [
-    { label: "A year ago", text: "Lincoln High, a sample school, adopted Mentorful: pairs across departments, and what teachers write stays private. Its Culture Scan reached 85%." },
+    { label: "A year ago", text: "Pursuit, a sample school, adopted Mentorful: pairs across departments, and what teachers write stays private. Its Culture Scan reached 85%." },
     { label: "This year", text: "Eight new teachers joined with no partner. The scan fell to 70%, most in Structural, and English and Science still have zero connections." },
     { label: "Tonight", text: "The principal finds where, closes the English and Science gap, and takes next year's focus to the board, with no teacher's name in the deck." },
   ],
-  note: "The story's numbers belong to a sample school: say \"a school we'll call Lincoln High\". Both numbers are on screen: Pulse shows this year's scan (4.2 of 6, 70%) with last year's (5.1, 85%) as an orange tick on each bar. The scan is anonymous and has no departments, so it shows what fell (Structural) and the Constellation shows where (English and Science).",
+  note: "The story's numbers belong to a sample school: say \"a school we'll call Pursuit\". Both numbers are on screen: Pulse shows this year's scan (4.2 of 6, 70%) with last year's (5.1, 85%) as an orange tick on each bar. The scan is anonymous and has no departments, so it shows what fell (Structural) and the Constellation shows where (English and Science).",
 } as const;
 
 export type Member = { name: string; plays: string; built: string; screen: string; speaks: string };
@@ -32,7 +32,7 @@ export type Member = { name: string; plays: string; built: string; screen: strin
 /** Everyone on stage: who they play, what they built, which screen is theirs, and when they speak. */
 export const CAST: Member[] = [
   { name: "Eric", plays: "The narrator", built: "Privacy: no teacher can ever be singled out", screen: "Slides (and Mr. Stefano's screen for one line)", speaks: "0:00, 1:55, 2:13, 3:11, 3:49, 4:33" },
-  { name: "Juan", plays: "The principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 2:25, 2:51, 3:53, 4:19" },
+  { name: "Juan", plays: "Mr. David, the principal", built: "The principal's dashboard", screen: "Pulse, Constellation, Pairing, Trust, Reports", speaks: "0:40, 2:25, 2:51, 3:53, 4:19" },
   { name: "Bernard", plays: "Ms. Afiya, the English teacher", built: "The teacher dashboard", screen: "Ms. Afiya's screen: log a conversation", speaks: "1:05, 3:21" },
   { name: "Bertrand", plays: "Mr. Stefano, the Science teacher", built: "Pairing and the pair chat", screen: "Mr. Stefano's screen: the pair chat", speaks: "1:30, 3:39" },
 ];
@@ -69,19 +69,19 @@ const BEAT_DATA: Omit<Beat, "t">[] = [
     secs: 18,
     who: "Eric",
     screen: "Slide 2",
-    say: "Picture a school we'll call Lincoln High. A year after adopting Mentorful, its Culture Scan hit eighty-five percent. Every teacher had a partner, and the honest answers kept coming.",
+    say: "Picture a school we'll call Pursuit. A year after adopting Mentorful, its Culture Scan hit eighty-five percent. Every teacher had a partner, and the honest answers kept coming.",
   },
   {
     secs: 12,
     who: "Eric",
     screen: "Slide 3",
-    say: "Then this year it fell to seventy percent. Eight new teachers, no partners. Tonight the principal is Juan, and he has to find out why.",
+    say: "Then this year it fell to seventy percent. Eight new teachers, no partners. Tonight the principal is Mr. David, and he has to find out why.",
   },
   {
     secs: 26,
     who: "Juan",
     screen: "Pulse, then Constellation",
-    action: "Switch to Juan. Point at the Culture Scan (4.2, down 0.9) and the orange last-year ticks. Open Constellation.",
+    action: "Switch to Mr. David. Point at the Culture Scan (4.2, down 0.9) and the orange last-year ticks. Open Constellation.",
     say: "This year's scan: four point two out of six. Seventy percent, down from eighty-five. Structural fell the most. Any group under five, I can't see, because I'm not allowed to. But the map shows me where. English and Science. Same building. Zero connections.",
   },
   {
@@ -121,7 +121,7 @@ const BEAT_DATA: Omit<Beat, "t">[] = [
     secs: 26,
     who: "Juan",
     screen: "Pulse, then Trust",
-    action: "Switch to Juan. Show Pulse (logged conversations 9 to 10), then the Trust page.",
+    action: "Switch to Mr. David. Show Pulse (logged conversations 9 to 10), then the Trust page.",
     say: "One more logged conversation. But what they said? I can't read a word of it. I can count it. I can't read it. That's why teachers tell the truth.",
   },
   {
