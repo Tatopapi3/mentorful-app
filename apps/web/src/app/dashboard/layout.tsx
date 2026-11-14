@@ -20,7 +20,10 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   if (!data.model) {
     return (
       <NoticePage eyebrow="Your dashboard" title="No teacher profile is linked yet" signedIn>
-        <p>No teacher profile is linked to {data.email}. Ask your school lead to add you to the roster.</p>
+        <p>
+          Your school lead has not added {data.email ?? "this email address"} to the roster yet. Give them this exact address, and once they have added
+          it, sign in again and you will land on your dashboard.
+        </p>
       </NoticePage>
     );
   }

@@ -11,6 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const NAV = [
     { href: `${base}/pulse`, label: "Pulse" },
     { href: `${base}/pairings`, label: "Pairing" },
+    { href: `${base}/roster`, label: "Roster" },
     { href: `${base}/overview`, label: "Overview" },
     { href: `${base}/constellation`, label: "Constellation" },
     { href: `${base}/insights`, label: "Insights" },
@@ -20,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: `${base}/pulse`, label: "See where the program stands", hint: "Pulse" },
     { href: `${base}/pairings`, label: "Review pairing requests", hint: "Pairing" },
     { href: `${base}/pairings`, label: "Draft a randomized pairing round", hint: "Pairing" },
+    { href: `${base}/roster`, label: "Add teachers to the roster", hint: "Roster" },
     { href: `${base}/overview`, label: "Open the overview", hint: "Overview" },
     { href: `${base}/constellation`, label: "See the faculty as a constellation", hint: "Constellation" },
     { href: `${base}/insights`, label: "Read the insights", hint: "Insights" },
@@ -38,7 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   const { data: school } = await admin.supabase.from("schools").select("name").eq("id", admin.schoolId).maybeSingle();
   return (
-    <AuroraChrome schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<PresentButton items={NAV.filter((n) => !n.href.endsWith("/reports"))} />}>
+    <AuroraChrome schoolName={school?.name ?? "Your school"} displayName={admin.displayName} roleLabel="School administrator" nav={NAV} actions={ACTIONS} tools={<PresentButton items={NAV.filter((n) => !n.href.endsWith("/reports") && !n.href.endsWith("/roster"))} />}>
       {children}
     </AuroraChrome>
   );

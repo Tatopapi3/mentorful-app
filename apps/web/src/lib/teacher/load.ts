@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { claimProfile } from "@/lib/roster/claim";
 import { createClient } from "@/lib/supabase/server";
 import { buildModel, type CycleRow, type LogRow, type Model, type PairingRow, type PersonRow } from "./model";
 
@@ -23,7 +24,10 @@ export const loadTeacher = cache(async (): Promise<TeacherData> => {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: meRow } = await supabase.from("profiles").select(PERSON_COLS).eq("auth_user_id", user.id).maybeSingle();
+  const readMe = () => supabase.from("profiles").select(PERSON_COLS).eq("auth_user_id", user.id).maybeSingle();
+  let { data: meRow } = await readMe();
+  // A teacher added to the roster after their first sign-in is linked on their next visit (script 026).
+  if (!meRow && (await claimProfile(supabase))) meRow = (await readMe()).data;
   const me = meRow as (PersonRow & { school_id: string | null }) | null;
   if (!me) return { model: null, email: user.email ?? null };
 

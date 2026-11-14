@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { claimProfile } from "@/lib/roster/claim";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminContext = {
@@ -19,11 +20,10 @@ export async function requireAdmin(next?: string): Promise<AdminContext | null> 
   } = await supabase.auth.getUser();
   if (!user) redirect(next && next.startsWith("/") && !next.startsWith("//") ? `/login?next=${encodeURIComponent(next)}` : "/login");
 
-  const { data: me } = await supabase
-    .from("profiles")
-    .select("id, school_id, role, first_name, last_name")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
+  const read = () => supabase.from("profiles").select("id, school_id, role, first_name, last_name").eq("auth_user_id", user.id).maybeSingle();
+  let { data: me } = await read();
+  // A school lead who was added to the roster after their first sign-in is linked on their next visit (script 026).
+  if (!me && (await claimProfile(supabase))) me = (await read()).data;
   if (!me || me.role !== "admin" || !me.school_id) return null;
 
   return { supabase, schoolId: me.school_id, displayName: [me.first_name, me.last_name].filter(Boolean).join(" ") || "Administrator" };
